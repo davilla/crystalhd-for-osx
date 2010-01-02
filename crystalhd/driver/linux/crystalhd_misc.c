@@ -769,7 +769,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	crystalhd_set_sg(&dio->sg[0], dio->pages[0], 0, uaddr & ~PAGE_MASK);
 	if (nr_pages > 1) {
 		dio->sg[0].length = PAGE_SIZE - dio->sg[0].offset;
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,23)) || defined(CONFIG_X86_64)
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,23)) && defined(CONFIG_X86_64)
 		dio->sg[0].dma_length = dio->sg[0].length;
 #endif
 		count -= dio->sg[0].length;
@@ -791,7 +791,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 		} else {
 			dio->sg[0].length = count - dio->fb_size;
 		}
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,23)) || defined(CONFIG_X86_64)
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,23)) && defined(CONFIG_X86_64)
 		dio->sg[0].dma_length = dio->sg[0].length;
 #endif
 	}
