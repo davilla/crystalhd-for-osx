@@ -383,7 +383,11 @@ static int chd_dec_init_chdev(struct crystalhd_adp *adp)
   crystalhd_class = class_create(THIS_MODULE, "crystalhd");
   if (IS_ERR(crystalhd_class))
     BCMLOG_ERR("failed to create class\n");
-  device_create(crystalhd_class, NULL, MKDEV(adp->chd_dec_major, 0),NULL, "crystalhd");
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26)
+  device_create(crystalhd_class, NULL, MKDEV(adp->chd_dec_major, 0), "crystalhd");
+#else
+  device_create(crystalhd_class, NULL, MKDEV(adp->chd_dec_major, 0), NULL, "crystalhd");
+#endif
 
 	rc = crystalhd_create_elem_pool(adp, BC_LINK_ELEM_POOL_SZ);
 	if (rc)
