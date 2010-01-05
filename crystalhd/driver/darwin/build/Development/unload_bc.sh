@@ -1,1 +1,0 @@
-sudo kextunload /tmp/BroadcomCrystalHD.kext
