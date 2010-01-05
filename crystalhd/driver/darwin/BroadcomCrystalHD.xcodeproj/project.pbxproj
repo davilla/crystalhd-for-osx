@@ -1,0 +1,420 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F5959CA610F03F66004B58B3 /* BroadcomCrystalHD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5959CA510F03F66004B58B3 /* BroadcomCrystalHD.cpp */; };
+		F5959CA910F03F75004B58B3 /* BroadcomCrystalHD.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CA810F03F75004B58B3 /* BroadcomCrystalHD.h */; };
+		F5959CB310F03F8D004B58B3 /* crystalhd_lnx.c in Sources */ = {isa = PBXBuildFile; fileRef = F5959CAA10F03F8D004B58B3 /* crystalhd_lnx.c */; };
+		F5959CB410F03F8D004B58B3 /* crystalhd_hw.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CAB10F03F8D004B58B3 /* crystalhd_hw.h */; };
+		F5959CB510F03F8D004B58B3 /* crystalhd_cmds.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CAC10F03F8D004B58B3 /* crystalhd_cmds.h */; };
+		F5959CB610F03F8D004B58B3 /* crystalhd_cmds.c in Sources */ = {isa = PBXBuildFile; fileRef = F5959CAD10F03F8D004B58B3 /* crystalhd_cmds.c */; };
+		F5959CB710F03F8D004B58B3 /* crystalhd_hw.c in Sources */ = {isa = PBXBuildFile; fileRef = F5959CAE10F03F8D004B58B3 /* crystalhd_hw.c */; };
+		F5959CB810F03F8D004B58B3 /* crystalhd_fw_if.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CAF10F03F8D004B58B3 /* crystalhd_fw_if.h */; };
+		F5959CB910F03F8D004B58B3 /* crystalhd_lnx.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CB010F03F8D004B58B3 /* crystalhd_lnx.h */; };
+		F5959CBA10F03F8D004B58B3 /* crystalhd_misc.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CB110F03F8D004B58B3 /* crystalhd_misc.h */; };
+		F5959CBB10F03F8D004B58B3 /* crystalhd_misc.c in Sources */ = {isa = PBXBuildFile; fileRef = F5959CB210F03F8D004B58B3 /* crystalhd_misc.c */; };
+		F5959CEB10F042CA004B58B3 /* version_lnx.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CEA10F042CA004B58B3 /* version_lnx.h */; };
+		F5959DAB10F052EE004B58B3 /* linux_compatible.c in Sources */ = {isa = PBXBuildFile; fileRef = F5959DA910F052EE004B58B3 /* linux_compatible.c */; };
+		F5959DAC10F052EE004B58B3 /* linux_compatible.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959DAA10F052EE004B58B3 /* linux_compatible.h */; };
+		F59D702910419DED00AD752F /* bc_dts_types.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D702610419DED00AD752F /* bc_dts_types.h */; };
+		F59D702A10419DED00AD752F /* bc_dts_defs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D702710419DED00AD752F /* bc_dts_defs.h */; };
+		F59D702B10419DED00AD752F /* 7411d.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D702810419DED00AD752F /* 7411d.h */; };
+		F59D702F10419DFA00AD752F /* bc_dts_glob_osx.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D702D10419DFA00AD752F /* bc_dts_glob_osx.h */; };
+		F59D703410419E0800AD752F /* bc_defines.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D703210419E0800AD752F /* bc_defines.h */; };
+		F59D703510419E0800AD752F /* bcm_70012_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D703310419E0800AD752F /* bcm_70012_regs.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A6AB003D0AA3B2AC00401E96 /* BroadcomCrystalHD.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BroadcomCrystalHD.kext; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5959CA510F03F66004B58B3 /* BroadcomCrystalHD.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BroadcomCrystalHD.cpp; sourceTree = "<group>"; };
+		F5959CA810F03F75004B58B3 /* BroadcomCrystalHD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BroadcomCrystalHD.h; sourceTree = "<group>"; };
+		F5959CAA10F03F8D004B58B3 /* crystalhd_lnx.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = crystalhd_lnx.c; sourceTree = "<group>"; };
+		F5959CAB10F03F8D004B58B3 /* crystalhd_hw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crystalhd_hw.h; sourceTree = "<group>"; };
+		F5959CAC10F03F8D004B58B3 /* crystalhd_cmds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crystalhd_cmds.h; sourceTree = "<group>"; };
+		F5959CAD10F03F8D004B58B3 /* crystalhd_cmds.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = crystalhd_cmds.c; sourceTree = "<group>"; };
+		F5959CAE10F03F8D004B58B3 /* crystalhd_hw.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = crystalhd_hw.c; sourceTree = "<group>"; };
+		F5959CAF10F03F8D004B58B3 /* crystalhd_fw_if.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crystalhd_fw_if.h; sourceTree = "<group>"; };
+		F5959CB010F03F8D004B58B3 /* crystalhd_lnx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crystalhd_lnx.h; sourceTree = "<group>"; };
+		F5959CB110F03F8D004B58B3 /* crystalhd_misc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crystalhd_misc.h; sourceTree = "<group>"; };
+		F5959CB210F03F8D004B58B3 /* crystalhd_misc.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = crystalhd_misc.c; sourceTree = "<group>"; };
+		F5959CBD10F03F9E004B58B3 /* Info-BroadcomCrystalHD.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-BroadcomCrystalHD.plist"; sourceTree = "<group>"; };
+		F5959CEA10F042CA004B58B3 /* version_lnx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = version_lnx.h; path = ../../include/version_lnx.h; sourceTree = SOURCE_ROOT; };
+		F5959DA910F052EE004B58B3 /* linux_compatible.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = linux_compatible.c; sourceTree = "<group>"; };
+		F5959DAA10F052EE004B58B3 /* linux_compatible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = linux_compatible.h; sourceTree = "<group>"; };
+		F59D702610419DED00AD752F /* bc_dts_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_types.h; path = ../../include/bc_dts_types.h; sourceTree = SOURCE_ROOT; };
+		F59D702710419DED00AD752F /* bc_dts_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_defs.h; path = ../../include/bc_dts_defs.h; sourceTree = SOURCE_ROOT; };
+		F59D702810419DED00AD752F /* 7411d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 7411d.h; path = ../../include/7411d.h; sourceTree = SOURCE_ROOT; };
+		F59D702D10419DFA00AD752F /* bc_dts_glob_osx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_glob_osx.h; path = ../../include/bc_dts_glob_osx.h; sourceTree = "<group>"; };
+		F59D703210419E0800AD752F /* bc_defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bc_defines.h; sourceTree = "<group>"; };
+		F59D703310419E0800AD752F /* bcm_70012_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bcm_70012_regs.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A6AB00350AA3B2AC00401E96 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		089C166AFE841209C02AAC07 /* AppleSamplePCI */ = {
+			isa = PBXGroup;
+			children = (
+				F59D701F10419DD500AD752F /* Include */,
+				247142CAFF3F8F9811CA285C /* Source */,
+				089C167CFE841241C02AAC07 /* Resources */,
+				19C28FB6FE9D52B211CA2CBB /* Products */,
+				F5959CBD10F03F9E004B58B3 /* Info-BroadcomCrystalHD.plist */,
+			);
+			name = AppleSamplePCI;
+			sourceTree = "<group>";
+		};
+		089C167CFE841241C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		19C28FB6FE9D52B211CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A6AB003D0AA3B2AC00401E96 /* BroadcomCrystalHD.kext */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		247142CAFF3F8F9811CA285C /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				F5959CA510F03F66004B58B3 /* BroadcomCrystalHD.cpp */,
+				F5959CA810F03F75004B58B3 /* BroadcomCrystalHD.h */,
+				F5959DA910F052EE004B58B3 /* linux_compatible.c */,
+				F5959DAA10F052EE004B58B3 /* linux_compatible.h */,
+				F5959CAD10F03F8D004B58B3 /* crystalhd_cmds.c */,
+				F5959CAC10F03F8D004B58B3 /* crystalhd_cmds.h */,
+				F5959CAF10F03F8D004B58B3 /* crystalhd_fw_if.h */,
+				F5959CAE10F03F8D004B58B3 /* crystalhd_hw.c */,
+				F5959CAB10F03F8D004B58B3 /* crystalhd_hw.h */,
+				F5959CAA10F03F8D004B58B3 /* crystalhd_lnx.c */,
+				F5959CB010F03F8D004B58B3 /* crystalhd_lnx.h */,
+				F5959CB210F03F8D004B58B3 /* crystalhd_misc.c */,
+				F5959CB110F03F8D004B58B3 /* crystalhd_misc.h */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		F59D701F10419DD500AD752F /* Include */ = {
+			isa = PBXGroup;
+			children = (
+				F59D702D10419DFA00AD752F /* bc_dts_glob_osx.h */,
+				F5959CEA10F042CA004B58B3 /* version_lnx.h */,
+				F59D702610419DED00AD752F /* bc_dts_types.h */,
+				F59D702710419DED00AD752F /* bc_dts_defs.h */,
+				F59D702810419DED00AD752F /* 7411d.h */,
+				F59D703110419E0800AD752F /* link */,
+			);
+			name = Include;
+			sourceTree = "<group>";
+		};
+		F59D703110419E0800AD752F /* link */ = {
+			isa = PBXGroup;
+			children = (
+				F59D703210419E0800AD752F /* bc_defines.h */,
+				F59D703310419E0800AD752F /* bcm_70012_regs.h */,
+			);
+			name = link;
+			path = ../../include/link;
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		A6AB002E0AA3B2AC00401E96 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F59D702910419DED00AD752F /* bc_dts_types.h in Headers */,
+				F59D702A10419DED00AD752F /* bc_dts_defs.h in Headers */,
+				F59D702B10419DED00AD752F /* 7411d.h in Headers */,
+				F59D702F10419DFA00AD752F /* bc_dts_glob_osx.h in Headers */,
+				F59D703410419E0800AD752F /* bc_defines.h in Headers */,
+				F59D703510419E0800AD752F /* bcm_70012_regs.h in Headers */,
+				F5959CA910F03F75004B58B3 /* BroadcomCrystalHD.h in Headers */,
+				F5959CB410F03F8D004B58B3 /* crystalhd_hw.h in Headers */,
+				F5959CB510F03F8D004B58B3 /* crystalhd_cmds.h in Headers */,
+				F5959CB810F03F8D004B58B3 /* crystalhd_fw_if.h in Headers */,
+				F5959CB910F03F8D004B58B3 /* crystalhd_lnx.h in Headers */,
+				F5959CBA10F03F8D004B58B3 /* crystalhd_misc.h in Headers */,
+				F5959CEB10F042CA004B58B3 /* version_lnx.h in Headers */,
+				F5959DAC10F052EE004B58B3 /* linux_compatible.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		A6AB002C0AA3B2AC00401E96 /* BroadcomCrystalHD */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A6AB00380AA3B2AC00401E96 /* Build configuration list for PBXNativeTarget "BroadcomCrystalHD" */;
+			buildPhases = (
+				A6AB002D0AA3B2AC00401E96 /* ShellScript */,
+				A6AB002E0AA3B2AC00401E96 /* Headers */,
+				A6AB00310AA3B2AC00401E96 /* Resources */,
+				A6AB00320AA3B2AC00401E96 /* Sources */,
+				A6AB00350AA3B2AC00401E96 /* Frameworks */,
+				A6AB00360AA3B2AC00401E96 /* Rez */,
+				A6AB00370AA3B2AC00401E96 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BroadcomCrystalHD;
+			productInstallPath = "$(SYSTEM_LIBRARY_DIR)/Extensions";
+			productName = AppleSamplePCI;
+			productReference = A6AB003D0AA3B2AC00401E96 /* BroadcomCrystalHD.kext */;
+			productType = "com.apple.product-type.kernel-extension.iokit";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		089C1669FE841209C02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = A65146A00A50ADC4006021BE /* Build configuration list for PBXProject "BroadcomCrystalHD" */;
+			compatibilityVersion = "Xcode 2.4";
+			hasScannedForEncodings = 1;
+			mainGroup = 089C166AFE841209C02AAC07 /* AppleSamplePCI */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A6AB002C0AA3B2AC00401E96 /* BroadcomCrystalHD */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A6AB00310AA3B2AC00401E96 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXRezBuildPhase section */
+		A6AB00360AA3B2AC00401E96 /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A6AB002D0AA3B2AC00401E96 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "script=\"${SYSTEM_DEVELOPER_DIR}/ProjectBuilder Extras/Kernel Extension Support/KEXTPreprocess\";\nif [ -x \"$script\" ]; then\n    . \"$script\"\nfi";
+		};
+		A6AB00370AA3B2AC00401E96 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "script=\"${SYSTEM_DEVELOPER_DIR}/ProjectBuilder Extras/Kernel Extension Support/KEXTPostprocess\";\nif [ -x \"$script\" ]; then\n    . \"$script\"\nfi";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A6AB00320AA3B2AC00401E96 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F5959CA610F03F66004B58B3 /* BroadcomCrystalHD.cpp in Sources */,
+				F5959CB310F03F8D004B58B3 /* crystalhd_lnx.c in Sources */,
+				F5959CB610F03F8D004B58B3 /* crystalhd_cmds.c in Sources */,
+				F5959CB710F03F8D004B58B3 /* crystalhd_hw.c in Sources */,
+				F5959CBB10F03F8D004B58B3 /* crystalhd_misc.c in Sources */,
+				F5959DAB10F052EE004B58B3 /* linux_compatible.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A65146A10A50ADC4006021BE /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
+			};
+			name = Development;
+		};
+		A65146A20A50ADC4006021BE /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Deployment;
+		};
+		A65146A30A50ADC4006021BE /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Default;
+		};
+		A6AB00390AA3B2AC00401E96 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = i386;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = __KERNEL__;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = "Info-BroadcomCrystalHD.plist";
+				INSTALL_GROUP = wheel;
+				INSTALL_MODE_FLAG = "a-w,u+w,a+rX";
+				INSTALL_OWNER = root;
+				INSTALL_PATH = "$(SYSTEM_LIBRARY_DIR)/Extensions";
+				KERNEL_MODULE = YES;
+				LIBRARY_SEARCH_PATHS = "";
+				MODULE_IOKIT = YES;
+				MODULE_NAME = com.broadcom.crystalhd.driver;
+				MODULE_VERSION = 1.0.0d1;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = BroadcomCrystalHD;
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SECTORDER_FLAGS = "";
+				VALID_ARCHS = "i386 x86_64";
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+				);
+				WRAPPER_EXTENSION = kext;
+				ZERO_LINK = NO;
+			};
+			name = Development;
+		};
+		A6AB003A0AA3B2AC00401E96 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = i386;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = __KERNEL__;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = "Info-BroadcomCrystalHD.plist";
+				INSTALL_GROUP = wheel;
+				INSTALL_MODE_FLAG = "a-w,u+w,a+rX";
+				INSTALL_OWNER = root;
+				INSTALL_PATH = "$(SYSTEM_LIBRARY_DIR)/Extensions";
+				KERNEL_MODULE = YES;
+				LIBRARY_SEARCH_PATHS = "";
+				MODULE_IOKIT = YES;
+				MODULE_NAME = com.broadcom.crystalhd.driver;
+				MODULE_VERSION = 1.0.0d1;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = BroadcomCrystalHD;
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SECTORDER_FLAGS = "";
+				VALID_ARCHS = "i386 x86_64";
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+				);
+				WRAPPER_EXTENSION = kext;
+				ZERO_LINK = NO;
+			};
+			name = Deployment;
+		};
+		A6AB003B0AA3B2AC00401E96 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = i386;
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_PREPROCESSOR_DEFINITIONS = __KERNEL__;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = "Info-BroadcomMediaPC.plist";
+				INSTALL_GROUP = wheel;
+				INSTALL_MODE_FLAG = "a-w,u+w,a+rX";
+				INSTALL_OWNER = root;
+				INSTALL_PATH = "$(SYSTEM_LIBRARY_DIR)/Extensions";
+				KERNEL_MODULE = YES;
+				LIBRARY_SEARCH_PATHS = "";
+				MODULE_IOKIT = YES;
+				MODULE_NAME = com.broadcom.mediapc.driver;
+				MODULE_VERSION = 1.0.0d1;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = BroadcomMediaPC;
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SECTORDER_FLAGS = "";
+				VALID_ARCHS = "i386 x86_64";
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+				);
+				WRAPPER_EXTENSION = kext;
+			};
+			name = Default;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A65146A00A50ADC4006021BE /* Build configuration list for PBXProject "BroadcomCrystalHD" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A65146A10A50ADC4006021BE /* Development */,
+				A65146A20A50ADC4006021BE /* Deployment */,
+				A65146A30A50ADC4006021BE /* Default */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Default;
+		};
+		A6AB00380AA3B2AC00401E96 /* Build configuration list for PBXNativeTarget "BroadcomCrystalHD" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A6AB00390AA3B2AC00401E96 /* Development */,
+				A6AB003A0AA3B2AC00401E96 /* Deployment */,
+				A6AB003B0AA3B2AC00401E96 /* Default */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Default;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 089C1669FE841209C02AAC07 /* Project object */;
+}
