@@ -1,2 +1,2 @@
-sudo cp -R build/Development/BroadcomMediaPC.kext /tmp
+sudo cp -R build/Development/BroadcomCrystalHD.kext /tmp
 sudo kextload -v /tmp/BroadcomCrystalHD.kext
