@@ -45,6 +45,11 @@ clean:
 	rm -f  ${OBJFILES}
         
 install:
+	# this is messy yes, xbmc needs the headers in /opt/local/include
+	if [ -d /opt/local/include ] ; then mkdir -p /opt/local/include/libcrystalhd ; fi
+	if [ -d /opt/local/include ] ; then cp libcrystalhd_if.h /opt/local/include/libcrystalhd/; fi
+	if [ -d /opt/local/include ] ; then cp $(ROOTDIR)/include/bc_dts_defs.h /opt/local/include/libcrystalhd/ ; fi
+	if [ -d /opt/local/include ] ; then cp $(ROOTDIR)/include/bc_dts_types.h /opt/local/include/libcrystalhd/ ; fi
 	mkdir -p /usr/include/libcrystalhd
 	cp libcrystalhd_if.h /usr/include/libcrystalhd/
 	cp $(ROOTDIR)/include/bc_dts_defs.h /usr/include/libcrystalhd/
