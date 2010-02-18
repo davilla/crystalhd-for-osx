@@ -145,7 +145,7 @@ int main()
         }
 
         // Push input data to driver
-        ret = DtsProcInput(device, input, inputLen, 0, FALSE);
+        ret = DtsProcInput(device, input, inputLen, 0, 0);
         if (ret == BC_STS_SUCCESS)
         {
           chunksSent++;
