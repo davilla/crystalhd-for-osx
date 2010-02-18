@@ -3,11 +3,14 @@
 #include <stdint.h>
 #include <string.h>
 #include <semaphore.h>
-#include "bc_dts_types.h"
-#include "bc_ldil_if.h"
 #include <iostream>
 #include <fstream>
 #include <sys/shm.h>
+
+#define __LINUX_USER__
+#include <libcrystalhd/bc_dts_defs.h>
+#include <libcrystalhd/bc_dts_types.h>
+#include <libcrystalhd/libcrystalhd_if.h>
 
 #define TRY_CALL_1(func, p1, errmsg) \
   if (BC_STS_SUCCESS != func(p1)) \
@@ -36,7 +39,11 @@ int main()
   {
     printf("starting up\n");
     // Initialize the Link and Decoder devices
-    U32 mode = DTS_PLAYBACK_MODE | DTS_LOAD_FILE_PLAY_FW | DTS_SKIP_TX_CHK_CPB | DTS_DFLT_RESOLUTION(vdecRESOLUTION_720p29_97);
+    uint32_t mode = DTS_PLAYBACK_MODE          |
+                    DTS_LOAD_FILE_PLAY_FW      |
+                    DTS_PLAYBACK_DROP_RPT_MODE |
+                    DTS_DFLT_RESOLUTION(vdecRESOLUTION_720p23_976);
+
     ret = DtsDeviceOpen(&device, mode);
     if (ret != BC_STS_SUCCESS) {
       printf("crap, DtsDeviceOpen failed\n");
@@ -67,49 +74,40 @@ int main()
       printf("crap, DtsStartCapture failed\n");
       throw "Failed to start capture";
     }
-#if 0
-    TRY_CALL_2(DtsDeviceOpen, &device, mode, "Failed to open device");
-    TRY_CALL_2(DtsOpenDecoder, device, BC_STREAM_TYPE_ES, "Failed to open decoder");
-    TRY_CALL_6(DtsSetVideoParams, device, BC_VID_ALGO_H264, FALSE, FALSE, TRUE, 0x80000000 | vdecFrameRate23_97, "Failed to set video params");
-    TRY_CALL_2(DtsSet422Mode, device, MODE422_YUY2, "Failed to set 422 mode");
-    TRY_CALL_1(DtsStartDecoder, device, "Failed to start decoder");
-    TRY_CALL_1(DtsStartCapture, device, "Failed to start capture");
-#endif
-    printf("try calls done\n");
 
     // Open the input stream
-    inFile.open("/home/jarod/src/bcm70012/testing/test_video.264", std::ios::in | std::ios::binary);
+    inFile.open("/Users/Shared/crystalhd-for-osx/crystalhd/examples/test_video.264", std::ios::in | std::ios::binary);
     if (!inFile.is_open())
       throw "Unable to open input file";
     else
       printf("file opened successfully\n");
 
     // Create a 4-byte aligned input buffer
-    U8 oddBytes = 0;
-    U32 inputLen = 32768;
-    U8* input = (U8*)malloc(inputLen+4);
+    uint8_t oddBytes = 0;
+    uint32_t inputLen = 32768;
+    uint8_t* input = (uint8_t*)malloc(inputLen+4);
     printf("Input Buffer: %p\n", input);
     if(((uintptr_t)input)%4)
-      oddBytes = 4 - ((U8)((uintptr_t)input % 4));
-    U8* input_aligned = input + oddBytes;
+      oddBytes = 4 - ((uint8_t)((uintptr_t)input % 4));
+    uint8_t* input_aligned = input + oddBytes;
     printf("Aligned Input Buffer: %p, Offset = %d\n", input_aligned, oddBytes);
 
     // Create a 4-byte aligned output buffer
-    U32 ysize = 4147200; // 1920 x 1080
-    U32 uvsize = 0;
-    U8* rawBuf =  (U8*)malloc(ysize + uvsize + 4);
-    U8* alignedBuf = rawBuf;
+    uint32_t ysize = 4147200; // 1920 x 1080
+    uint32_t uvsize = 0;
+    uint8_t* rawBuf =  (uint8_t*)malloc(ysize + uvsize + 4);
+    uint8_t* alignedBuf = rawBuf;
     if(((uintptr_t)rawBuf)%4)
     {
-      oddBytes = 4 - ((U8)((uintptr_t)rawBuf % 4));
+      oddBytes = 4 - ((uint8_t)((uintptr_t)rawBuf % 4));
       alignedBuf = rawBuf + oddBytes;
       printf("Aligned Buffer: %p, Offset = %d\n", alignedBuf, oddBytes);
     }
 
     // If UV is in use, it's data immediately follows Y
-    U8* ybuf = alignedBuf;
+    uint8_t* ybuf = alignedBuf;
     printf("Y Buffer: %p\n", ybuf);
-    U8* uvbuf = NULL;
+    uint8_t* uvbuf = NULL;
     if (uvsize)
     {
       uvbuf = alignedBuf + ysize;
@@ -117,16 +115,16 @@ int main()
     }
 
     bool needData = true;
-    U32 bytesRead = 0;
+    uint32_t bytesRead = 0;
     bool formatChanged = false;
 
     // Open the output stream
     //std::fstream outFile;
     //outFile.open("/home/davilla/dozer/dump.yuv", std::ios::binary | std::ios::out);
-    U32 chunksSent = 0;
-    U32 bytesSent = 0;
-    U32 picsDecoded = 0;
-    U32 lastDecoded = 0xFF;
+    uint32_t chunksSent = 0;
+    uint32_t bytesSent = 0;
+    uint32_t picsDecoded = 0;
+    uint32_t lastDecoded = 0xFF;
     for (;;)
     {
       for (int i = 0; i < 2; i++)
