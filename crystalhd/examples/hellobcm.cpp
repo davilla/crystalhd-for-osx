@@ -127,7 +127,7 @@ int main()
     uint32_t lastDecoded = 0xFF;
     for (;;)
     {
-      for (int i = 0; i < 2; i++)
+      for (int i = 0; i < 6; i++)
       {
         // Read from input file if previously-read data was sent successfully
         if (needData)
