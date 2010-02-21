@@ -258,7 +258,7 @@ int main()
       }
     }
   }
-  catch(char* msg)
+  catch(const char* msg)
   {
     printf("%s\n", msg);
   }
