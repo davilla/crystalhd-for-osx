@@ -177,10 +177,10 @@ do {									\
 	remove_wait_queue(ev, &entry);					\
 } while(0)
 #else
-// these need a re-write to match linux behavior for example, you can have a created 
+// Rewrite to match better linux behavior, you can have an event get set (DMA done) 
 // event get set before calling crystalhd_wait_on_event (classic interrupt race) and
-// crystalhd_wait_on_event should return immediately. This implementation does NOT
-// mimic this behavior.
+// crystalhd_wait_on_event should return immediately. This code tried to avoid this
+// but might miss by one 1ms cycle. 
 #define crystalhd_create_event(ev) \
 do{ \
 	*ev = (wait_queue_head_t)NULL; \
