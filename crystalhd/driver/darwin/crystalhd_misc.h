@@ -189,28 +189,31 @@ do{ \
 #define crystalhd_set_event(ev)	thread_wakeup((event_t)ev)
 
 #define crystalhd_wait_on_event(ev, condition, timeout, ret, nosig) \
-do{ \
-  if (condition) { \
-    ret = 0; \
-    break; \
-  } \
-	wait_result_t result; \
-	result = assert_wait_timeout((event_t)ev,THREAD_ABORTSAFE,timeout,1000*NSEC_PER_USEC); \
-	if (result == THREAD_WAITING) { \
-		result = thread_block(THREAD_CONTINUE_NULL); \
-	} \
-  if (condition) { \
-    ret = 0; \
-  } else { \
-    ret = -1; \
-    if (result == THREAD_TIMED_OUT) { \
+do { \
+  wait_result_t result; \
+  uint32_t timeout_tick = 0; \
+  for (;;) { \
+    if (condition) { \
+      ret = 0; \
+      break; \
+    } \
+    if (timeout_tick > timeout) { \
       ret = -EBUSY; \
+      break; \
+    } \
+    result = assert_wait_timeout((event_t)ev, THREAD_ABORTSAFE, 1, 1000*NSEC_PER_USEC); \
+    if (result == THREAD_WAITING) { \
+      result = thread_block(THREAD_CONTINUE_NULL); \
+    } \
+    if (result == THREAD_TIMED_OUT) { \
+      timeout_tick++; \
     } \
     if (!nosig && result == THREAD_INTERRUPTED) { \
       ret = -EINTR; \
+      break; \
     } \
   } \
-}while(0)
+} while(0)
 #endif
 
 /*================ Direct IO mapping routines ==================*/
