@@ -21,7 +21,7 @@ CPPFLAGS = -D__LINUX_USER__
 # -D_USE_SHMEM_
 
 CPPFLAGS += ${INCLUDES}
-CPPFLAGS += -O2 -Wall -fPIC -arch i386 -shared -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
+CPPFLAGS += -g -O0 -Wall -fPIC -arch i386 -shared -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
 LDFLAGS = -dynamiclib -flat_namespace -undefined suppress 
 
 SRCFILES = 	libcrystalhd_if.cpp \

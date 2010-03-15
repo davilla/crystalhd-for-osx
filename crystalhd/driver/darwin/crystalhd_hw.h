@@ -316,10 +316,10 @@ struct crystalhd_hw {
 	/* Rx DMA Engine Specific Locks */
 	spinlock_t		rx_lock;
 	uint32_t		rx_list_post_index;
-#ifdef __APPLE__
-	uint32_t		rx_list_sts[DMA_ENGINE_CNT];            
-#else
+#ifndef __APPLE__
 	list_sts		rx_list_sts[DMA_ENGINE_CNT];
+#else
+	uint32_t		rx_list_sts[DMA_ENGINE_CNT];            
 #endif
 	crystalhd_dioq_t		*rx_rdyq;
 	crystalhd_dioq_t		*rx_freeq;
@@ -333,6 +333,13 @@ struct crystalhd_hw {
 	uint32_t		core_clock_mhz;
 	uint32_t		prev_n;
 	uint32_t		pwr_lock;
+
+    /* Picture Information Block Management Variables */
+	uint32_t        PICWidth;       /* Pic Width Recieved On Format Change for link/With WidthField On Flea*/	
+	uint32_t        PICHeight;      /* Pic Height Recieved on format change[Link and Flea]/Not Used in Flea*/	
+	uint32_t        LastPicNo;      /* For Repeated Frame Detection */
+	uint32_t        LastTwoPicNo;   /* For Repeated Frame Detection on Interlace clip*/
+	uint32_t        LastSessNum;    /* For Session Change Detection */
 };
 
 /* Clock defines for power control */
@@ -399,7 +406,9 @@ BC_STATUS crystalhd_hw_get_cap_buffer(struct crystalhd_hw *hw,
 BC_STATUS crystalhd_hw_stop_capture(struct crystalhd_hw *hw);
 BC_STATUS crystalhd_hw_start_capture(struct crystalhd_hw *hw);
 void crystalhd_hw_stats(struct crystalhd_hw *hw, struct crystalhd_hw_stats *stats);
-
+bool crystalhd_hw_peek_next_decoded_frame(struct crystalhd_hw *hw, uint32_t *meta_payload, uint32_t	pic_width);
+bool crystalhd_hw_check_input_full(struct crystalhd_adp *adp, uint32_t needed_sz, uint32_t *empty_sz,
+				 bool b_188_byte_pkts, uint8_t flags);
 /* API to program the core clock on the decoder */
 BC_STATUS crystalhd_hw_set_core_clock(struct crystalhd_hw *);
 

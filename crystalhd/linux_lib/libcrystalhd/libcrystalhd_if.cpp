@@ -26,6 +26,15 @@
  *
  *******************************************************************/
 
+
+/* Code-In fifo */
+/* TODO: this comes from crystalhd_hw.h (driver include) */
+#define REG_DecCA_RegCinCTL 0xa00
+#define REG_DecCA_RegCinBase	0xa0c
+#define REG_DecCA_RegCinEnd	0xa10
+#define REG_DecCA_RegCinWrPtr	0xa04
+#define REG_DecCA_RegCinRdPtr	0xa08
+
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -275,6 +284,12 @@ DtsDeviceOpen(
 
 	/* Setup Hardware Specific Configuration */
 	DtsSetupConfig(DtsGetContext(*hDevice), DeviceID, RevID, FixFlags);
+
+	/* Enable single threaded mode in the context */
+	if (FixFlags & DTS_SINGLE_THREADED_MODE) {
+		DebugLog_Trace(LDIL_DBG,"Enable single threaded mode\n");
+		DtsGetContext(*hDevice)->SingleThreadedAppMode = 1;
+  }
 
 	if(mode == DTS_PLAYBACK_MODE){
 		globMode |= 0x1;
@@ -564,6 +579,10 @@ DtsOpenDecoder(HANDLE  hDevice, uint32_t StreamType)
 	Ctx->CapState = 0;
 	Ctx->picWidth = 0;
 	Ctx->picHeight = 0;
+	if(Ctx->SingleThreadedAppMode) {
+		Ctx->cpbBase = 0;
+		Ctx->cpbEnd = 0;
+	}
 	
 	sts = DtsSetVideoClock(hDevice,0);
 	if (sts != BC_STS_SUCCESS)
@@ -699,6 +718,11 @@ DtsSetVideoParams(
 	//Ctx->VidParams.Reserved = rsrv;
 	//Ctx->VidParams.FrameRate = FrameRate;
 	Ctx->VidParams.OptFlags = OptFlags;
+	// SingleThreadedAppMode is bit 7 of OptFlags
+	if(OptFlags & 0x80)
+		Ctx->SingleThreadedAppMode = 1;
+	else
+		Ctx->SingleThreadedAppMode = 0;
 
 	return BC_STS_SUCCESS;
 }
@@ -1337,13 +1361,13 @@ DtsProcInput( HANDLE  hDevice ,
 			temp = (uint8_t*) ((uintptr_t)temp & ~0x3); /*Take care of alignment*/
 
 			if(temp==NULL){
-				DebugLog_Trace(TEXT("DtsProcInput: Failed to alloc mem for  ASFHdr for SPES:%x\n"),(char *)sts);
+				DebugLog_Trace(LDIL_DBG,"DtsProcInput: Failed to alloc mem for  ASFHdr for SPES:%x\n",sts);
 				return BC_STS_INSUFF_RES;
 			}
 
 			sts =DtsPrepareMdataASFHdr(Ctx, im, temp);
 			if(sts != BC_STS_SUCCESS){
-				DebugLog_Trace(TEXT("DtsProcInput: Failed to Prepare ASFHdr for SPES:%x\n"),(char *)sts);
+				DebugLog_Trace(LDIL_DBG,"DtsProcInput: Failed to Prepare ASFHdr for SPES:%x\n",sts);
 				return sts;
 			}
 			
@@ -1354,7 +1378,7 @@ DtsProcInput( HANDLE  hDevice ,
 		}
 	
 		//sts = DtsTxDmaText(hDevice,(uint8_t*)&im->Spes,sizeof(im->Spes),&DramOff, encrypted);
-        sts = DtsTxDmaText(hDevice,temp,sz,&DramOff, encrypted);
+		sts = DtsTxDmaText(hDevice,temp,sz,&DramOff, encrypted);
 		if(sts != BC_STS_SUCCESS){
 			DebugLog_Trace(LDIL_DBG,"DtsProcInput: Failed to send Spes hdr:%x\n",sts);
 			DtsFreeMdata(Ctx,im,TRUE);
@@ -1363,7 +1387,7 @@ DtsProcInput( HANDLE  hDevice ,
 
 		sts = DtsInsertMdata(Ctx,im);
 		if(sts != BC_STS_SUCCESS){
-			DebugLog_Trace(TEXT("DtsProcInput: DtsInsertMdata failed\n"),(char *)sts);
+			DebugLog_Trace(LDIL_DBG,"DtsProcInput: DtsInsertMdata failed\n");
 		}
 	}
 	
@@ -1402,6 +1426,12 @@ DtsFlushInput( HANDLE  hDevice ,
 		Ctx->FlushIssued = TRUE;
 	else
 		DtsClrPendMdataList(Ctx);
+
+	// Clear the saved cpb base and end for SingleThreadedAppMode
+	if(Ctx->SingleThreadedAppMode) {
+		Ctx->cpbBase = 0;
+		Ctx->cpbEnd =0;
+	}
 
 	return BC_STS_SUCCESS;
 }
@@ -1741,6 +1771,13 @@ DtsGetDriverStatus( HANDLE  hDevice,
 {
     BC_DTS_STATS temp;
     BC_STATUS ret;
+    DTS_LIB_CONTEXT *Ctx = NULL;
+    uint64_t NextTimeStamp = 0;
+
+    DTS_GET_CTX(hDevice,Ctx);
+
+    if (Ctx->SingleThreadedAppMode)
+        temp.DrvNextMDataPLD = Ctx->picWidth | (0x1 << 31);
 
     ret = DtsGetDrvStat(hDevice, &temp);
 
@@ -1753,8 +1790,17 @@ DtsGetDriverStatus( HANDLE  hDevice,
     pStatus->InputCount         = temp.ipSampleCnt;
     pStatus->InputBusyCount     = temp.TxFifoBsyCnt;
     pStatus->InputTotalSize     = temp.ipTotalSize;
+    pStatus->cpbEmptySize       = temp.DrvcpbEmptySize;
 
     pStatus->PowerStateChange   = temp.pwr_state_change;
+
+    // return the timestamp of the next picture to be returned by ProcOutput
+    if((pStatus->ReadyListCount > 0) && Ctx->SingleThreadedAppMode) {
+        DtsFetchTimeStampMdata(Ctx, ((temp.DrvNextMDataPLD & 0xFF) << 8) | ((temp.DrvNextMDataPLD & 0xFF00) >> 8), &NextTimeStamp);
+        pStatus->NextTimeStamp = NextTimeStamp;
+    } else {
+      pStatus->NextTimeStamp = 0;
+    }
 
 	return ret;
 }

@@ -139,7 +139,7 @@ typedef struct _DTS_VIDEO_PARAMS {
 	BOOL		MetaDataEnable;
 	BOOL		Progressive;
 	BOOL		FrameRate; //currently not used, frame rate is passed in the 1st byte of the OptFlags member
-	uint32_t	OptFlags; //currently has the DEc_operation_mode in bits 4 and 5, bits 0:3 have the default framerate
+	uint32_t	OptFlags; //currently has the DEc_operation_mode in bits 4 and 5, bits 0:3 have the default framerate, Ignore frame rate is bit 6. Bit 7 is SingleThreadedAppMode
 } DTS_VIDEO_PARAMS;
 
 /* Input MetaData handling.. */
@@ -250,6 +250,10 @@ typedef struct _DTS_LIB_CONTEXT{
 
 	char				DilPath[MAX_PATH+1];	/* DIL runtime Location.. */
 
+	uint8_t				SingleThreadedAppMode;				/* flag to indicate that we are running in single threaded mode */
+	uint32_t				cpbBase;				/* Only used in single threaded mode to save base and end to reduce number of HW reads */
+	uint32_t				cpbEnd;					
+
 	/* Power management and dynamic clock frequency changes related */
 	uint8_t				totalPicsCounted;
 	uint8_t				rptPicsCounted;
@@ -304,6 +308,7 @@ BC_STATUS DtsClrPendMdataList(DTS_LIB_CONTEXT *Ctx);
 BC_STATUS DtsInsertMdata(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA	*Mdata);
 BC_STATUS DtsRemoveMdata(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA	*Mdata, BOOL sync);
 BC_STATUS DtsFetchMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, BC_DTS_PROC_OUT *pout);
+BC_STATUS DtsFetchTimeStampMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, uint64_t *TimeStamp);
 BC_STATUS DtsPrepareMdata(DTS_LIB_CONTEXT *Ctx, uint64_t timeStamp, DTS_INPUT_MDATA **mData);
 BC_STATUS DtsPrepareMdataASFHdr(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA *mData, uint8_t* buf);
 BC_STATUS DtsNotifyOperatingMode(HANDLE hDevice,uint32_t Mode);

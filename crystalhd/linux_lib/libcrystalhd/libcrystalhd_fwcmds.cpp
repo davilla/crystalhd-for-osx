@@ -578,6 +578,7 @@ DtsFWStartVideo(
 
 	sVid->defaultFrameRate = (OptFlags&0x0f);
 	sVid->decOperationMode = (OptFlags&0x30)>>4;
+	//sVid->MaxFrameRateMode = (OptFlags&0x40)>>6;
 
 	if( (sts=DtsDrvCmd(Ctx,BCM_IOC_FW_CMD,1,pIocData,FALSE)) != BC_STS_SUCCESS){
 		DebugLog_Trace(LDIL_DBG,"DtsStartVideo: Ioctl failed: %d\n",sts);
