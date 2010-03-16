@@ -422,7 +422,7 @@ BC_STATUS DtsCheckProfile(HANDLE hDevice)
 		}
 	}
 */
-	return BC_STS_SUCCESS;	
+	return BC_STS_SUCCESS;
 }
 
 BC_STATUS DtsAddH264SCode(HANDLE hDevice, uint8_t **ppBuffer, uint32_t *pUlDataSize, uint64_t *pTimeStamp)
