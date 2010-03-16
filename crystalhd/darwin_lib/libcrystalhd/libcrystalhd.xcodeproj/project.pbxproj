@@ -1,0 +1,165 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXFileReference section */
+		F5C091E0115008BA0094A9B0 /* libcrystalhd_fwcmds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libcrystalhd_fwcmds.h; sourceTree = SOURCE_ROOT; };
+		F5C091E1115008BA0094A9B0 /* libcrystalhd_fwcmds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = libcrystalhd_fwcmds.cpp; sourceTree = SOURCE_ROOT; };
+		F5C091E2115008C20094A9B0 /* libcrystalhd_fwdiag_if.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libcrystalhd_fwdiag_if.h; sourceTree = SOURCE_ROOT; };
+		F5C091E3115008C20094A9B0 /* libcrystalhd_fwdiag_if.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = libcrystalhd_fwdiag_if.cpp; sourceTree = SOURCE_ROOT; };
+		F5C091E4115008C80094A9B0 /* libcrystalhd_if.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libcrystalhd_if.h; sourceTree = SOURCE_ROOT; };
+		F5C091E5115008C80094A9B0 /* libcrystalhd_if.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = libcrystalhd_if.cpp; sourceTree = SOURCE_ROOT; };
+		F5C091E6115008CE0094A9B0 /* libcrystalhd_int_if.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libcrystalhd_int_if.h; sourceTree = SOURCE_ROOT; };
+		F5C091E7115008CE0094A9B0 /* libcrystalhd_int_if.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = libcrystalhd_int_if.cpp; sourceTree = SOURCE_ROOT; };
+		F5C091E8115008D60094A9B0 /* libcrystalhd_priv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libcrystalhd_priv.h; sourceTree = SOURCE_ROOT; };
+		F5C091E9115008D60094A9B0 /* libcrystalhd_priv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = libcrystalhd_priv.cpp; sourceTree = SOURCE_ROOT; };
+		F5C092DC115022620094A9B0 /* libcrystalhd_parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libcrystalhd_parser.h; sourceTree = SOURCE_ROOT; };
+		F5C092E1115022EC0094A9B0 /* libcrystalhd_parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = libcrystalhd_parser.cpp; sourceTree = SOURCE_ROOT; };
+		F5C0939E11503A640094A9B0 /* bc_dts_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_defs.h; path = ../../include/bc_dts_defs.h; sourceTree = SOURCE_ROOT; };
+		F5C0939F11503A6C0094A9B0 /* bc_dts_glob_osx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_glob_osx.h; path = ../../include/bc_dts_glob_osx.h; sourceTree = SOURCE_ROOT; };
+		F5C093A011503A730094A9B0 /* bc_dts_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_types.h; path = ../../include/bc_dts_types.h; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* libcrystalhd */ = {
+			isa = PBXGroup;
+			children = (
+				F5C091C0115008220094A9B0 /* source */,
+			);
+			name = libcrystalhd;
+			sourceTree = "<group>";
+		};
+		F5C091C0115008220094A9B0 /* source */ = {
+			isa = PBXGroup;
+			children = (
+				F5C0939E11503A640094A9B0 /* bc_dts_defs.h */,
+				F5C093A011503A730094A9B0 /* bc_dts_types.h */,
+				F5C0939F11503A6C0094A9B0 /* bc_dts_glob_osx.h */,
+				F5C091E0115008BA0094A9B0 /* libcrystalhd_fwcmds.h */,
+				F5C091E1115008BA0094A9B0 /* libcrystalhd_fwcmds.cpp */,
+				F5C091E2115008C20094A9B0 /* libcrystalhd_fwdiag_if.h */,
+				F5C091E3115008C20094A9B0 /* libcrystalhd_fwdiag_if.cpp */,
+				F5C091E4115008C80094A9B0 /* libcrystalhd_if.h */,
+				F5C091E5115008C80094A9B0 /* libcrystalhd_if.cpp */,
+				F5C092E1115022EC0094A9B0 /* libcrystalhd_parser.cpp */,
+				F5C092DC115022620094A9B0 /* libcrystalhd_parser.h */,
+				F5C091E6115008CE0094A9B0 /* libcrystalhd_int_if.h */,
+				F5C091E7115008CE0094A9B0 /* libcrystalhd_int_if.cpp */,
+				F5C091E8115008D60094A9B0 /* libcrystalhd_priv.h */,
+				F5C091E9115008D60094A9B0 /* libcrystalhd_priv.cpp */,
+			);
+			name = source;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		D28A88AD04BDD90700651E21 /* libcrystalhd */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = 1DEB918F08733D9F0010E9CD /* Build configuration list for PBXLegacyTarget "libcrystalhd" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			dependencies = (
+			);
+			name = libcrystalhd;
+			passBuildSettingsInEnvironment = 1;
+			productName = libcrystalhd;
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB919308733D9F0010E9CD /* Build configuration list for PBXProject "libcrystalhd" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* libcrystalhd */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D28A88AD04BDD90700651E21 /* libcrystalhd */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB919008733D9F0010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				DEBUGGING_SYMBOLS = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = libcrystalhd;
+			};
+			name = Debug;
+		};
+		1DEB919108733D9F0010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = libcrystalhd;
+			};
+			name = Release;
+		};
+		1DEB919408733D9F0010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+			};
+			name = Debug;
+		};
+		1DEB919508733D9F0010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB918F08733D9F0010E9CD /* Build configuration list for PBXLegacyTarget "libcrystalhd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB919008733D9F0010E9CD /* Debug */,
+				1DEB919108733D9F0010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB919308733D9F0010E9CD /* Build configuration list for PBXProject "libcrystalhd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB919408733D9F0010E9CD /* Debug */,
+				1DEB919508733D9F0010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
