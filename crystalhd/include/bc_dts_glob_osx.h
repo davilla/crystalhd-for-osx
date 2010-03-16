@@ -165,15 +165,8 @@ typedef struct _BC_DTS_STATS {
 	uint32_t		DrvPIBMisses;
 	uint32_t		DrvPauseTime;
 	uint32_t		DrvRepeatedFrms;
-	/* 
-	 * BIT-31 MEANS READ Next PIB Info.
-	 * Width will be in bit 0-16.
-	 */
-	uint32_t		DrvNextMDataPLD;	
-	uint32_t		DrvcpbEmptySize;
+	uint32_t		res1[13];
 
-	uint32_t		res1[11];
-	
 } BC_DTS_STATS;
 
 typedef struct _BC_PROC_INPUT_ {
