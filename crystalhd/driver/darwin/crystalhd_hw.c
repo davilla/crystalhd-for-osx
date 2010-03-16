@@ -480,6 +480,8 @@ GetPictureInfo(struct crystalhd_hw *hw,
 
 #ifndef __APPLE__
 	Base = (uint8_t*)vmap(dio->pages, dio->page_cnt, VM_MAP, PAGE_KERNEL);
+	if (!Base)
+		goto getpictureinfo_err;
 #else
 	dma_command = OSDynamicCast(IODMACommand, (OSMetaClassBase*)dio->io_class);
 	if (!dma_command)
