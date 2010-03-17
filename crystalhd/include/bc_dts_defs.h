@@ -90,9 +90,6 @@ typedef struct _BC_REG_CONFIG{
 } BC_REG_CONFIG;
 
 #if defined(__KERNEL__) || defined(__LINUX_USER__)
-#ifdef __APPLE__
-#define ALIGN(x)
-#endif
 #else
 /* Align data structures */
 #define ALIGN(x)	__declspec(align(x))

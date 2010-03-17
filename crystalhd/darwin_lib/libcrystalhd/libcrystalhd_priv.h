@@ -303,9 +303,9 @@ typedef struct _DTS_LIB_CONTEXT{
 
 	BC_PIC_INFO_BLOCK	FormatInfo;
 
-	ALIGN(4) uint8_t		alignBuf[ALIGN_BUF_SIZE];
-	ALIGN(4) uint8_t		pendingBuf[TX_HOLD_BUF_SIZE];
-	ALIGN(4) uint8_t		FPpendingBuf[FP_TX_BUF_SIZE];
+	__attribute__((aligned(4))) uint8_t		alignBuf[ALIGN_BUF_SIZE];
+	__attribute__((aligned(4))) uint8_t		pendingBuf[TX_HOLD_BUF_SIZE];
+	__attribute__((aligned(4))) uint8_t		FPpendingBuf[FP_TX_BUF_SIZE];
 	uint8_t				bScaling;
 
 	/* Power management and dynamic clock frequency changes related */

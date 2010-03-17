@@ -29,6 +29,8 @@
 #ifndef CPARSE
 #define CPARSE
 
+#include <sys/types.h>
+
 //VC1 prefix 000001
 #define VC1_FRM_SUFFIX	0x0D
 #define VC1_SEQ_SUFFIX	0x0F
@@ -153,10 +155,12 @@ BC_STATUS DtsFindIDR(HANDLE hDevice, uint8_t* pInputBuffer, uint32_t ulSizeInByt
 BC_STATUS DtsFindStartCode(HANDLE hDevice, uint8_t* pInputBuffer, uint32_t ulSizeInBytes, uint32_t* pOffset);
 BOOL DtsFindPTSInfoCode(HANDLE hDevice, uint8_t* pInputBuffer, uint32_t ulSizeInBytes);
 
-
 inline int DtsSymbIntNextBit ( HANDLE hDevice );
 BC_STATUS DtsSymbIntSiUe (HANDLE hDevice, ULONG* pCode);
 BC_STATUS DtsSymbIntSiBuffer (HANDLE hDevice, uint8_t* pInputBuffer, ULONG ulSize);
+
+void *DtsAlignedMalloc(size_t size, size_t alignment);
+void DtsAlignedFree(void *ptr);
 
 void PTS2MakerBit5Bytes(uint8_t *pMakerBit, int64_t llPTS);
 uint16_t WORD_SWAP(uint16_t x);

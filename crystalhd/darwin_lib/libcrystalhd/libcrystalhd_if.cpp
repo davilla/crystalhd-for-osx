@@ -78,7 +78,7 @@ inline bool memmove_s(void *dest, size_t sizeInBytes, void *src, size_t count)
 #endif
 
 // Full TS packet of EOS
-static ALIGN(4) uint8_t eos_mpeg[184] =
+static __attribute__((aligned(4))) uint8_t eos_mpeg[184] =
 {
     0x00, 0x00, 0x01, 0xb7,
     0x00, 0x00, 0x01, 0xb7,
@@ -127,7 +127,7 @@ static ALIGN(4) uint8_t eos_mpeg[184] =
     0x00, 0x00, 0x01, 0xb7,
     0x00, 0x00, 0x01, 0xb7
 };
-static ALIGN(4) uint8_t eos_avc_vc1[184] =
+static __attribute__((aligned(4))) uint8_t eos_avc_vc1[184] =
 {
     0x00, 0x00, 0x01, 0x0a,
     0x00, 0x00, 0x01, 0x0a,
@@ -176,7 +176,7 @@ static ALIGN(4) uint8_t eos_avc_vc1[184] =
     0x00, 0x00, 0x01, 0x0a,
     0x00, 0x00, 0x01, 0x0a
 };
-static ALIGN(4) uint8_t eos_vc1_spmp_link[32] =
+static __attribute__((aligned(4))) uint8_t eos_vc1_spmp_link[32] =
 {
     0x5a, 0x5a, 0x5a, 0x5a,
     0x00, 0x00, 0x00, 0x20,
@@ -189,7 +189,7 @@ static ALIGN(4) uint8_t eos_vc1_spmp_link[32] =
 };
 
 
-static ALIGN(4) uint8_t eos_divx[184] =
+static __attribute__((aligned(4))) uint8_t eos_divx[184] =
 {
     0x00, 0x00, 0x01, 0xb1,
     0x00, 0x00, 0x01, 0xb1,
@@ -239,13 +239,13 @@ static ALIGN(4) uint8_t eos_divx[184] =
     0x00, 0x00, 0x01, 0xb1
 };
 
-static ALIGN(4) uint8_t btp_video_done_es_private[] =
+static __attribute__((aligned(4))) uint8_t btp_video_done_es_private[] =
 {
     /* 0x81, 0x01, 0x14, 0x80,*/
     0x42, 0x52, 0x43, 0x4D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     /*, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00,*/
 };
-static ALIGN(4) uint8_t btp_video_done_es[] =
+static __attribute__((aligned(4))) uint8_t btp_video_done_es[] =
 {
                                         /*0x81, 0x01, 0x14, 0x80, 0x42, 0x52, 0x43, 0x4D, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,*/ 0x00, 0x00, 0x00,
@@ -262,7 +262,7 @@ static ALIGN(4) uint8_t btp_video_done_es[] =
 };
 
 #if 0
-static uint8_t btp_video_plunge_es[] =
+static __attribute__((aligned(4))) uint8_t btp_video_plunge_es[] =
 {
                                         /*0x81, 0x01, 0x14, 0x80, 0x42, 0x52, 0x43, 0x4D, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,*/ 0x00, 0x00, 0x00,
@@ -2036,7 +2036,7 @@ DtsSendSPESPkt(HANDLE  hDevice ,
 	{
 		if(Ctx->VidParams.VideoAlgo == BC_VID_ALGO_VC1MP)
 		{
-			pSPESPkt = new ALIGN(4) uint8_t[32+sizeof(BC_PES_HDR_FORMAT)];
+			pSPESPkt = (uint8_t*)DtsAlignedMalloc(32+sizeof(BC_PES_HDR_FORMAT), 4);
 			if(pSPESPkt==NULL){
 				DebugLog_Trace(LDIL_DBG, "DtsProcInput: Failed to alloc mem for  ASFHdr for SPES:%x\n", sts);
 				return BC_STS_INSUFF_RES;
@@ -2045,12 +2045,14 @@ DtsSendSPESPkt(HANDLE  hDevice ,
 			sts =DtsPrepareMdataASFHdr(Ctx, im, pSPESPkt);
 		
 			if(sts != BC_STS_SUCCESS){
+                DtsAlignedFree(pSPESPkt);
 				DebugLog_Trace(LDIL_DBG, "DtsProcInput: Failed to Prepare ASFHdr for SPES:%x\n", sts);
-			return sts;
+                return sts;
 			}				
-			ulSize = 32+sizeof(BC_PES_HDR_FORMAT);										
+			ulSize = 32+sizeof(BC_PES_HDR_FORMAT);
 		}
 		sts = DtsSendData(hDevice, pSPESPkt, ulSize, 0, encrypted);
+        DtsAlignedFree(pSPESPkt);
 
 		if(sts != BC_STS_SUCCESS){
 			DebugLog_Trace(LDIL_DBG, "DtsProcInput: Failed to send Spes hdr:%x\n", sts);
@@ -2371,8 +2373,8 @@ DtsSendEOS(HANDLE  hDevice, uint32_t Op)
 	uint8_t	*pEOS;
 	uint32_t nEOSLen;
 	uint32_t	nTag;
-	ALIGN(4) uint8_t	ExtData[2] = {0x00, 0x00};
-	//unused ALIGN(4) uint8_t	Plunge[200];
+	__attribute__((aligned(4))) uint8_t	ExtData[2] = {0x00, 0x00};
+	//unused __attribute__((aligned(4))) uint8_t	Plunge[200];
 
 	//unused uint8_t	*alignBuf = Ctx->alignBuf;
 

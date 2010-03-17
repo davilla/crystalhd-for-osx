@@ -139,11 +139,11 @@ BC_STATUS DtsReleasePESConverter(HANDLE hDevice)
 	DTS_GET_CTX(hDevice,Ctx);	
 
 	if (Ctx->PESConvParams.m_pSpsPpsBuf)
-		delete Ctx->PESConvParams.m_pSpsPpsBuf;
+		DtsAlignedFree(Ctx->PESConvParams.m_pSpsPpsBuf);
 	Ctx->PESConvParams.m_pSpsPpsBuf = NULL;
 
 	if (Ctx->PESConvParams.pStartcodePendBuff)
-		delete Ctx->PESConvParams.pStartcodePendBuff;
+		DtsAlignedFree(Ctx->PESConvParams.pStartcodePendBuff);
 	Ctx->PESConvParams.pStartcodePendBuff = NULL;
 
 	return BC_STS_SUCCESS;	
@@ -194,7 +194,7 @@ BC_STATUS DtsSetVC1SH(HANDLE hDevice)
 	if((Ctx->VidParams.MediaSubType == BC_MSUBTYPE_WVC1) || (Ctx->VidParams.MediaSubType == BC_MSUBTYPE_WMVA))
 	{
 		Ctx->PESConvParams.m_iSpsPpsLen = Ctx->VidParams.MetaDataSz;
-		Ctx->PESConvParams.m_pSpsPpsBuf = new ALIGN(4) uint8_t[Ctx->PESConvParams.m_iSpsPpsLen];
+		Ctx->PESConvParams.m_pSpsPpsBuf = (uint8_t*)DtsAlignedMalloc(Ctx->PESConvParams.m_iSpsPpsLen, 4);
 		memcpy(Ctx->PESConvParams.m_pSpsPpsBuf, Ctx->VidParams.pMetaData, Ctx->PESConvParams.m_iSpsPpsLen);
 	}
 	else
@@ -204,11 +204,11 @@ BC_STATUS DtsSetVC1SH(HANDLE hDevice)
 			if (Ctx->PESConvParams.m_pSpsPpsBuf)
 				delete Ctx->PESConvParams.m_pSpsPpsBuf;
 			Ctx->PESConvParams.m_iSpsPpsLen = 32;
-			Ctx->PESConvParams.m_pSpsPpsBuf = new ALIGN(4) uint8_t[Ctx->PESConvParams.m_iSpsPpsLen];
+			Ctx->PESConvParams.m_pSpsPpsBuf = (uint8_t*)DtsAlignedMalloc(Ctx->PESConvParams.m_iSpsPpsLen, 4);
 
 			memcpy(Ctx->PESConvParams.m_pSpsPpsBuf, b_asf_vc1_sm_codein_seqhdr, Ctx->PESConvParams.m_iSpsPpsLen);
-			*((uint16_t *)(Ctx->PESConvParams.m_pSpsPpsBuf + 17)) = WORD_SWAP((uint16_t)Ctx->VidParams.WidthInPixels);
-			*((uint16_t *)(Ctx->PESConvParams.m_pSpsPpsBuf + 19)) = WORD_SWAP((uint16_t)Ctx->VidParams.HeightInPixels);
+			*((uint16_t*)(Ctx->PESConvParams.m_pSpsPpsBuf + 17)) = WORD_SWAP((uint16_t)Ctx->VidParams.WidthInPixels);
+			*((uint16_t*)(Ctx->PESConvParams.m_pSpsPpsBuf + 19)) = WORD_SWAP((uint16_t)Ctx->VidParams.HeightInPixels);
 			memcpy(Ctx->PESConvParams.m_pSpsPpsBuf + 21, Ctx->VidParams.pMetaData, 4);
 		}
 		else if (Ctx->DevId == BC_PCI_DEVID_FLEA)
@@ -216,10 +216,10 @@ BC_STATUS DtsSetVC1SH(HANDLE hDevice)
 			if (Ctx->PESConvParams.m_pSpsPpsBuf)
 				delete Ctx->PESConvParams.m_pSpsPpsBuf;
 			Ctx->PESConvParams.m_iSpsPpsLen = 12;
-			Ctx->PESConvParams.m_pSpsPpsBuf = new ALIGN(4) uint8_t[Ctx->PESConvParams.m_iSpsPpsLen];
+			Ctx->PESConvParams.m_pSpsPpsBuf = (uint8_t*)DtsAlignedMalloc(Ctx->PESConvParams.m_iSpsPpsLen, 4);
 			memcpy(Ctx->PESConvParams.m_pSpsPpsBuf, b_asf_vc1_sm_seqhdr, Ctx->PESConvParams.m_iSpsPpsLen);
-			*((uint16_t *)(Ctx->PESConvParams.m_pSpsPpsBuf + 4)) = WORD_SWAP((uint16_t)Ctx->VidParams.WidthInPixels);
-			*((uint16_t *)(Ctx->PESConvParams.m_pSpsPpsBuf + 6)) = WORD_SWAP((uint16_t)Ctx->VidParams.HeightInPixels);
+			*((uint16_t*)(Ctx->PESConvParams.m_pSpsPpsBuf + 4)) = WORD_SWAP((uint16_t)Ctx->VidParams.WidthInPixels);
+			*((uint16_t*)(Ctx->PESConvParams.m_pSpsPpsBuf + 6)) = WORD_SWAP((uint16_t)Ctx->VidParams.HeightInPixels);
 			memcpy(Ctx->PESConvParams.m_pSpsPpsBuf + 8, Ctx->VidParams.pMetaData, 4);			
 		}
 	}
@@ -283,7 +283,7 @@ BC_STATUS DtsSetSpsPps(HANDLE hDevice)
 			}
 		}
 		Ctx->PESConvParams.m_iSpsPpsLen = iSHSize + (BRCM_START_CODE_SIZE - iStartSize) * (iPktIdx);
-		Ctx->PESConvParams.m_pSpsPpsBuf = new ALIGN(4) uint8_t[Ctx->PESConvParams.m_iSpsPpsLen];
+		Ctx->PESConvParams.m_pSpsPpsBuf = (uint8_t*)DtsAlignedMalloc(Ctx->PESConvParams.m_iSpsPpsLen, 4);
 		if(Ctx->PESConvParams.m_pSpsPpsBuf != NULL)
 		{
 			//Default
@@ -447,12 +447,12 @@ BC_STATUS DtsAddH264SCode(HANDLE hDevice, uint8_t **ppBuffer, uint32_t *pUlDataS
 	if(Ctx->PESConvParams.lPendBufferSize < (*pUlDataSize*2))
 	{
 		if (Ctx->PESConvParams.pStartcodePendBuff)
-			delete Ctx->PESConvParams.pStartcodePendBuff;
+			DtsAlignedFree(Ctx->PESConvParams.pStartcodePendBuff);
 
 		Ctx->PESConvParams.lPendBufferSize = *pUlDataSize * 2;
 		if (Ctx->PESConvParams.lPendBufferSize < 1024)
 			Ctx->PESConvParams.lPendBufferSize = 1024;
-		Ctx->PESConvParams.pStartcodePendBuff = new ALIGN(4) uint8_t[Ctx->PESConvParams.lPendBufferSize];
+		Ctx->PESConvParams.pStartcodePendBuff = (uint8_t*)DtsAlignedMalloc(Ctx->PESConvParams.lPendBufferSize, 4);
 	}
 	//Replace Start Code
 	lDataRemained = *pUlDataSize;
@@ -547,7 +547,7 @@ BC_STATUS DtsAddH264SCode(HANDLE hDevice, uint8_t **ppBuffer, uint32_t *pUlDataS
 				Ctx->PESConvParams.m_lStartCodeDataSize = 0;
 				Ctx->PESConvParams.m_bIsAdd_SCode_CodeIn = false;
 				if (Ctx->PESConvParams.pStartcodePendBuff)
-					delete Ctx->PESConvParams.pStartcodePendBuff;
+					DtsAlignedFree(Ctx->PESConvParams.pStartcodePendBuff);
 				Ctx->PESConvParams.lPendBufferSize = 0;
 				Ctx->PESConvParams.pStartcodePendBuff = NULL;				
 				return BC_STS_SUCCESS;
@@ -621,7 +621,7 @@ BC_STATUS DtsAddVC1SCode(HANDLE hDevice, uint8_t **ppBuffer, uint32_t *pUlDataSi
 	{
 		Ctx->PESConvParams.m_bIsAdd_SCode_CodeIn = false;
 		if (Ctx->PESConvParams.pStartcodePendBuff)
-			delete Ctx->PESConvParams.pStartcodePendBuff;
+			DtsAlignedFree(Ctx->PESConvParams.pStartcodePendBuff);
 		Ctx->PESConvParams.lPendBufferSize = 0;
 		Ctx->PESConvParams.pStartcodePendBuff = NULL;
 		return BC_STS_SUCCESS;
@@ -630,12 +630,12 @@ BC_STATUS DtsAddVC1SCode(HANDLE hDevice, uint8_t **ppBuffer, uint32_t *pUlDataSi
 	if(Ctx->PESConvParams.lPendBufferSize < (*pUlDataSize*2))
 	{
 		if (Ctx->PESConvParams.pStartcodePendBuff)
-			delete Ctx->PESConvParams.pStartcodePendBuff;
+			DtsAlignedFree(Ctx->PESConvParams.pStartcodePendBuff);
 
 		Ctx->PESConvParams.lPendBufferSize = *pUlDataSize * 2;
 		if (Ctx->PESConvParams.lPendBufferSize < 1024)
 			Ctx->PESConvParams.lPendBufferSize = 1024;
-		Ctx->PESConvParams.pStartcodePendBuff = new ALIGN(4) uint8_t[Ctx->PESConvParams.lPendBufferSize];
+		Ctx->PESConvParams.pStartcodePendBuff = (uint8_t*)DtsAlignedMalloc(Ctx->PESConvParams.lPendBufferSize, 4);
 	}
 
 	//unused uint8_t* pSequenceHeader = Ctx->VidParams.pMetaData;
@@ -1248,3 +1248,25 @@ inline int DtsSymbIntNextBit ( HANDLE hDevice )
 	pSymbint->m_ulOffset++;
 	return nBit;
 }
+
+void *DtsAlignedMalloc(size_t size, size_t alignment)
+{
+    void *p1 ,*p2; // basic pointer needed for computation.
+
+    if((p1 =(void *) malloc(size + alignment + sizeof(size_t)))==NULL)
+        return NULL;
+
+    size_t addr = (size_t)p1 + alignment + sizeof(size_t);
+    p2 = (void *)(addr - (addr%alignment));
+
+    *((size_t *)p2-1) = (size_t)p1;
+
+    return p2;
+}
+
+void DtsAlignedFree(void *ptr)
+{
+    if (ptr)
+        free((void *)(*((size_t *) ptr-1)));
+}
+
