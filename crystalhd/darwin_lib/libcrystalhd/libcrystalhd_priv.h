@@ -160,13 +160,13 @@ typedef struct _DTS_VIDEO_PARAMS {
 	BOOL		Progressive;
 	BOOL		FrameRate;  //currently not used, frame rate is passed in the 1st byte of the OptFlags member
 	uint32_t	OptFlags; //currently has the DEc_operation_mode in bits 4 and 5, bits 0:3 have the default framerate, Ignore frame rate is bit 6. Bit 7 is SingleThreadedAppMode
-	BC_MEDIA_SUBTYPE	MediaSubType;
-	uint32_t		StartCodeSz;
-	uint8_t 		*pMetaData;
-	uint32_t		MetaDataSz;
-	uint32_t		NumOfRefFrames;
-	uint32_t		LevelIDC;
-	uint32_t		StreamType;
+	BC_MEDIA_SUBTYPE MediaSubType;
+	uint32_t	StartCodeSz;
+	uint8_t		*pMetaData;
+	uint32_t	MetaDataSz;
+	uint32_t	NumOfRefFrames;
+	uint32_t	LevelIDC;
+	uint32_t	StreamType;
 } DTS_VIDEO_PARAMS;
 
 /* Input MetaData handling.. */
@@ -188,12 +188,12 @@ typedef struct _BC_PES_HDR_FORMAT{
 }BC_PES_HDR_FORMAT;
 
 typedef struct _DTS_INPUT_MDATA{
-	struct _DTS_INPUT_MDATA		*flink;
-	struct _DTS_INPUT_MDATA		*blink;
-	uint32_t							IntTag;
-	uint32_t							Reserved;
-	uint64_t							appTimeStamp;
-	BC_SEQ_HDR_FORMAT			Spes;
+	struct _DTS_INPUT_MDATA	*flink;
+	struct _DTS_INPUT_MDATA	*blink;
+	uint32_t			IntTag;
+	uint32_t			Reserved;
+	uint64_t			appTimeStamp;
+	BC_SEQ_HDR_FORMAT	Spes;
 }DTS_INPUT_MDATA;
 
 
@@ -227,7 +227,6 @@ typedef struct _DTS_LIB_CONTEXT{
 	BOOL			ProcOutPending;	/* To avoid muliple ProcOuts */
 	BOOL			CancelWaiting;	/* Notify FetchOut to signal */
 #ifndef __APPLE__
-	BOOL			CancelWaiting;	/* Notify FetchOut to signal */
 	sem_t			CancelProcOut;	/* Cancel outstanding ProcOut Request */
 #else
 	sem_t			*CancelProcOut;	/* Cancel outstanding ProcOut Request */

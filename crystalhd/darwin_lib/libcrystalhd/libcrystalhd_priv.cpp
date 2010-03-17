@@ -1877,7 +1877,7 @@ void DtsTestMdata(DTS_LIB_CONTEXT	*gCtx)
 		}
 	}
 #endif
-//	DebugLog_Trace(TEXT("Deleting Pool...\n"));
+//	DebugLog_Trace(LDIL_DBG,"Deleting Pool...\n");
 //	DtsDeleteMdataPool(gCtx);
 
 }
