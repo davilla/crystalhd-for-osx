@@ -626,6 +626,13 @@ DtsFWStartVideo(
 	if(!(pIocData = DtsAllocIoctlData(Ctx)))
 		return BC_STS_INSUFF_RES;
 
+#if 0
+// sdd, not sure if we still need this
+	/* Let Driver know the Response offset for PIB Delivery and Response Qs.*/
+	pIocData->u.fwCmd.flags = BC_FW_CMD_PIB_QS;
+	pIocData->u.fwCmd.add_data = ((long) &((DecRspChannelStartVideo *)0)->picInfoDeliveryQ);
+#endif
+
 	sVid = (DecCmdChannelStartVideo *)&pIocData->u.fwCmd.cmd;
 
 	sVid->command		= eCMD_C011_DEC_CHAN_START_VIDEO;

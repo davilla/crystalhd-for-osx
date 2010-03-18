@@ -2,7 +2,6 @@
 #  Broadcom "BCM970012" Crystal HD device interface library.
 #
 #
-BCLIB_NAME= libcrystalhd.so
 BCLIB=libcrystalhd.dylib
 LIBDIR=/usr/lib
 
@@ -43,7 +42,7 @@ help:
 	${ECHO} LNM = ${BCLIB} ${BCLIB_SL}
 
 clean:
-	rm -f  ${BCLIB} ${BCLIB_NAME} *.o
+	rm -f  ${BCLIB} *.o
 	rm -f  ${OBJFILES}
         
 install:
@@ -56,7 +55,8 @@ install:
 	cp libcrystalhd_if.h /usr/include/libcrystalhd/
 	cp $(ROOTDIR)/include/bc_dts_defs.h /usr/include/libcrystalhd/
 	cp $(ROOTDIR)/include/bc_dts_types.h /usr/include/libcrystalhd/
-	cp $(ROOTDIR)/firmware/fwbin/70012/bcmFilePlayFw.bin /usr/lib/
-	cp $(BCLIB) /usr/lib/
-	install -m 755 $(BCLIB) /usr/lib
+	cp $(ROOTDIR)/firmware/fwbin/70012/bcm70012fw.bin $(LIBDIR)
+	cp $(ROOTDIR)/firmware/fwbin/70015/bcm70015fw.bin $(LIBDIR)
+	cp $(BCLIB) $(LIBDIR)
+	install -m 755 $(BCLIB) $(LIBDIR)
 

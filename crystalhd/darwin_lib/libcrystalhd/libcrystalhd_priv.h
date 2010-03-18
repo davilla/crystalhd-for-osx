@@ -116,7 +116,7 @@ enum _DtsAppSpecificCfgFlags {
 
 };
 
-#define BC_DTS_DEF_CFG		(BC_MPOOL_INCL_YUV_BUFFS | BC_EN_DIAG_MODE |  BC_DEC_VCLK_74MHZ)
+#define BC_DTS_DEF_CFG		(BC_MPOOL_INCL_YUV_BUFFS | BC_EN_DIAG_MODE | BC_DEC_VCLK_74MHZ | BC_ADDBUFF_MOVE)
 
 /* !!!!Note!!!!
  * Don't forget to change this value
@@ -125,12 +125,8 @@ enum _DtsAppSpecificCfgFlags {
 #define BC_MAX_FW_FNAME_SIZE	32
 #define MAX_PATH		256
 
-#define TSHEXFILE		"stream.hex"
-#define DECOHEXFILE		"vdec_outer.hex"
-#define DECIHEXFILE		"vdec_inner.hex"
-#define FWBINFILE		"bcm70012fwbd.bin"
-#define FWBINFILE_LNK	"bcm70012fwbd.bin"
-#define FWBIN_FILE_PLAY_LNK	"bcm70012fw.bin"
+#define FWBINFILE_70012	"bcm70012fw.bin"
+#define FWBINFILE_70015	"bcm70015fw.bin"
 
 #define BC_DTS_DEF_OPTIONS	0x0D
 #define BC_DTS_DEF_OPTIONS_LINK	0xB0000005

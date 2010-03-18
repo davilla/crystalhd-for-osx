@@ -26,11 +26,13 @@
  *
  *******************************************************************/
 
+#include "7411d.h"
+#include "bc_defines.h"
 #include "libcrystalhd_int_if.h"
 #include "libcrystalhd_if.h"
 #include "libcrystalhd_priv.h"
 #include "libcrystalhd_fwdiag_if.h"
-#include "bc_defines.h"
+#include "libcrystalhd_fwload_if.h"
 
 /* BOOTLOADER IMPLEMENTATION */
 /* Functions */
@@ -53,6 +55,7 @@ DtsSendFWDiagCmd(HANDLE hDevice,BC_HOST_CMD_BLOCK_ST hostMsg)
 	}
 
 	/* Issue done */
+
 	hostMsg.done = BC_HOST_CMD_POSTED;
 	status = DtsDevMemWr(hDevice,&(hostMsg.done),4,BC_HOST_CMD_ADDR);
 	if(BC_STS_ERROR == status)

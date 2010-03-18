@@ -779,117 +779,6 @@ static void DtsSetupProcOutInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, BC_
 		}
 	}
 }
-/*
-static int DtsgetDllFirmwarepath(DTS_LIB_CONTEXT	*Ctx)
-{
-
-	size_t pathLen;
-    int8_t s, s1,s2,s3,s4;
-	
-	uint32_t offset = 0;
-	int8_t dllpath[MAX_PATH+1];
-    int8_t fulldllpath[MAX_PATH+1];
-	int8_t tempdllpath[MAX_PATH+1];
-	uint32_t pos = 0,tpos = 0;
-	
-	bool Done = false;
-	memset(dllpath,'\0',MAX_PATH+1);
-	::GetModuleFileName((HINSTANCE)&__ImageBase, (LPTSTR)fulldllpath, _MAX_PATH);
-	
-    s = fulldllpath[pos]; 
-    s1 = fulldllpath[pos+1];
-    s2 = fulldllpath[pos+2];
-    s3 = fulldllpath[pos+3];
-    s4 = fulldllpath[pos+4];
-	while(!((Done == true) && (s1 == '.') && (s2 == 'd') && (s3 == 'l') && (s4 == 'l')) ){
-
-	             
-			if(fulldllpath[pos] !='\0'){
-				tempdllpath[tpos] = fulldllpath[pos];
-				tpos++;          
-			}
-			if (tpos > 5){
-                s = tempdllpath[tpos-5] ;
-                s1 = tempdllpath[tpos-4] ;
-				s2 = tempdllpath[tpos-3] ;
-				s3 = tempdllpath[tpos-2] ;
-				s4 = tempdllpath[tpos-1] ;  
-			}
-			tempdllpath[tpos] = '\0';
-			struct _finddata_t c_file;
-			if((s1 == '.') && (s2 == 'd') && (s3 == 'l') && (s4 == 'l')) {
-				//BOOL bWorking = finder.FindFile( (LPTSTR)fulldllpath);
-              
-              intptr_t sdone = _findfirst(tempdllpath,&c_file);
-			  if(sdone != -1){
-	             Done = true; 	      
-			  }
-			}
-			pos++;		
-	}
-    tempdllpath[tpos] = '\0';
-	if (tempdllpath != NULL) {
-        pathLen = strlen(tempdllpath);
-		s = tempdllpath[pathLen];
-		for (int pos = (int) pathLen; s!='\\' ; pos--) {
-			 offset++;	  
-            s = tempdllpath[pos];
-		}
-		offset = offset -3;
-		int val = (int )pathLen-offset;
-        strncpy_s(dllpath,(pathLen-offset),tempdllpath,_TRUNCATE);
-        dllpath[val + 1] = '\0';
-
-		// Save DIL runtime path for cert usage.
-		strncpy_s(Ctx->DilPath,sizeof(Ctx->DilPath),dllpath,_TRUNCATE);
-
-		strncpy_s(Ctx->StreamFile,sizeof(Ctx->StreamFile),dllpath,_TRUNCATE);
-		strncat_s(Ctx->StreamFile,sizeof(Ctx->StreamFile),TSHEXFILE,_TRUNCATE);
-
-		strncpy_s(Ctx->VidInner,sizeof(Ctx->VidInner),dllpath,_TRUNCATE);
-		strncat_s(Ctx->VidInner,sizeof(Ctx->VidInner),DECIHEXFILE,_TRUNCATE);
-
-		strncpy_s(Ctx->VidOuter,sizeof(Ctx->VidOuter),dllpath,_TRUNCATE);
-		strncat_s(Ctx->VidOuter,sizeof(Ctx->VidOuter),DECOHEXFILE,_TRUNCATE);
-
-		strncpy_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),dllpath,_TRUNCATE);
-
-		if(Ctx->DevId == BC_PCI_DEVID_LINK || Ctx->DevId == BC_PCI_DEVID_FLEA){
-			if(Ctx->FixFlags & DTS_LOAD_FILE_PLAY_FW){
-				strncat_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBIN_FILE_PLAY_LNK,_TRUNCATE);
-			} else {
-				strncat_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBINFILE_LNK,_TRUNCATE);
-			}
-		}else{
-			strncat_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBINFILE,_TRUNCATE);
-		}
-		return 0;
-
-	} else {
-		  return -1;
-	}
-
-}
-*/
-
-/*
-static void DtsSetDefaultFirmwareFiles(DTS_LIB_CONTEXT	*Ctx)
-{
-	strncpy_s(Ctx->StreamFile,sizeof(Ctx->StreamFile),TSHEXFILE,_TRUNCATE);
-	strncpy_s(Ctx->VidInner,sizeof(Ctx->VidInner),DECIHEXFILE,_TRUNCATE);
-	strncpy_s(Ctx->VidOuter,sizeof(Ctx->VidOuter),DECOHEXFILE,_TRUNCATE);
-
-	if(Ctx->DevId == BC_PCI_DEVID_LINK || Ctx->DevId == BC_PCI_DEVID_FLEA){
-		if(Ctx->FixFlags & DTS_LOAD_FILE_PLAY_FW){
-			strncat_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBIN_FILE_PLAY_LNK,_TRUNCATE);
-		} else {
-			strncat_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBINFILE_LNK,_TRUNCATE);
-		}
-	}else{
-		strncpy_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBINFILE,_TRUNCATE);
-	}
-}
-*/
 
 // Input Meta Data related funtions..
 static BC_STATUS	DtsCreateMdataPool(DTS_LIB_CONTEXT *Ctx)
@@ -1768,23 +1657,32 @@ int dtscallback(struct dl_phdr_info *info, size_t size, void *data)
 //------------------------------------------------------------------------ 
 BC_STATUS DtsGetFirmwareFiles(DTS_LIB_CONTEXT *Ctx)
 {
-	
+    int fwfile_len;
 	char fwfile[MAX_PATH + 1];
+	char fwfilepath[MAX_PATH + 1];
 #ifndef __APPLE__
 	const char fwdir[] = "/lib/firmware/";
 #else
 	const char fwdir[] = "/usr/lib/";
 #endif
 
-	if (strlen(fwdir) + strlen(FWBINFILE_LNK) > (MAX_PATH + 1)) {
+	if(Ctx->DevId == BC_PCI_DEVID_FLEA) {
+        fwfile_len = strlen(FWBINFILE_70015);
+        strncat(fwfile, FWBINFILE_70015, fwfile_len);
+    } else {
+        fwfile_len = strlen(FWBINFILE_70012);
+        strncat(fwfile, FWBINFILE_70012, fwfile_len);
+    }
+
+	if ((strlen(fwdir) + fwfile_len) > (MAX_PATH + 1)) {
 		DebugLog_Trace(LDIL_DATA,"DtsGetFirmwareFiles:Path is too large ....");
 		return BC_STS_ERROR;
 	}
-	
-	strncpy(fwfile, fwdir, strlen(fwdir) + 1);
-	strncat(fwfile, FWBINFILE_LNK, strlen(FWBINFILE_LNK));
-	fwfile[strlen(fwdir) + strlen(FWBINFILE_LNK)] = '\0';
-	strncpy(Ctx->FwBinFile, fwfile, strlen(fwdir) + strlen(FWBINFILE_LNK));
+
+	strncpy(fwfilepath, fwdir, strlen(fwdir) + 1);
+    strncat(fwfilepath, fwfile, fwfile_len);
+    fwfilepath[strlen(fwdir) + fwfile_len] = '\0';
+    strncpy(Ctx->FwBinFile, fwfilepath, strlen(fwdir) + fwfile_len);
 	DebugLog_Trace(LDIL_DATA,"DtsGetFirmwareFiles:Ctx->FwBinFile is %s\n", Ctx->FwBinFile);
 	
 	return BC_STS_SUCCESS;

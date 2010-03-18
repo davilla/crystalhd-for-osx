@@ -515,13 +515,16 @@ DtsDeviceOpen(
 	}
 
 	if (FixFlags & DTS_ADAPTIVE_OUTPUT_PER) {
-
-		if (!DtsGetFWVersion(*hDevice, &fwVer, &decVer, &hwVer, (char*)FWBINFILE_LNK, 0)) {
+        if(DtsGetContext(*hDevice)->DevId == BC_PCI_DEVID_FLEA)
+            Sts = DtsGetFWVersion(*hDevice, &fwVer, &decVer, &hwVer, (char*)FWBINFILE_70015, 0);
+        else
+            Sts = DtsGetFWVersion(*hDevice, &fwVer, &decVer, &hwVer, (char*)FWBINFILE_70012, 0);
+        if(Sts == BC_STS_SUCCESS) {
 			if (fwVer >= ((14 << 16) | (8 << 8) | (1)))		// 2.14.8.1 (ignore 2)
 				FixFlags |= DTS_ADAPTIVE_OUTPUT_PER;
 			else
 				FixFlags &= (~DTS_ADAPTIVE_OUTPUT_PER);
-		}
+        }
 	}
 
 	/* only enable dropping of repeated pictures for Adobe mode and MFT mode */
@@ -716,7 +719,10 @@ DtsGetFWVersionFromFile(
 	if(fname){
 		strncat(fwfile,(const char*)fname,sizeof(fwfile));
 	}else{
-		strncat(fwfile,FWBINFILE_LNK,sizeof(FWBINFILE_LNK));
+        if(Ctx->DevId == BC_PCI_DEVID_FLEA)
+            strncat(fwfile,FWBINFILE_70015,sizeof(FWBINFILE_70015));
+        else
+            strncat(fwfile,FWBINFILE_70012,sizeof(FWBINFILE_70012));
 	}
 	
 
