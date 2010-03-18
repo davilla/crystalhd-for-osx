@@ -42,6 +42,7 @@
 #else
 #include <sys/errno.h>
 #include "linux_compatible.h"
+#include "crystalhd_fw_if.h"
 #include "bc_dts_glob_osx.h"
 #endif
 /* Global log level variable defined in crystal_misc.c file */

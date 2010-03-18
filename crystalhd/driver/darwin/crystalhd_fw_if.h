@@ -235,8 +235,6 @@ typedef struct {
 
 } C011_PIB;
 
-
-
 typedef struct {
     uint32_t	command;
     uint32_t	sequence;
