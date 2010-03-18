@@ -34,7 +34,6 @@
 #include "bc_dts_glob_osx.h"
 #endif
 #include "libcrystalhd_parser.h"
-#include "7411d.h"
 #include <semaphore.h>
 
 #ifdef __cplusplus
@@ -67,6 +66,10 @@ enum _crystalhd_ldil_globals {
 	RX_START_DELIVERY_THRESHOLD = 0,
 	PAUSE_DECODER_THRESHOLD = 12,
 	RESUME_DECODER_THRESHOLD = 5,
+    FLEA_RT_PD_THRESHOLD = 14,
+    FLEA_RT_PU_THRESHOLD = 3,
+	HARDWARE_INIT_RETRY_CNT = 10,
+	HARDWARE_INIT_RETRY_LINK_CNT = 1,
 };
 
 enum _BC_PCI_DEV_IDS {
@@ -90,20 +93,25 @@ enum _DtsRunState {
 
 /* Bit fields */
 enum _BCMemTypeFlags {
-        BC_MEM_DEC_YUVBUFF             = 0x1,
+        BC_MEM_DEC_YUVBUFF  = 0x1,
 	BC_MEM_USER_MODE_ALLOC	= 0x80000000,
+};
+
+enum _STCapParams{
+	NO_PARAM				= 0,
+	ST_CAP_IMMIDIATE		= 0x01, 
 };
 
 /* Application specific run-time configurations */
 enum _DtsAppSpecificCfgFlags {
 	BC_MPOOL_FLAGS_DEF	= 0x000,
 	BC_MPOOL_INCL_YUV_BUFFS	= 0x001,	/* Include YUV Buffs allocation */
-//	BC_DEC_EN_DUART		= 0x002,	/* Enable DUART for FW log */
+	BC_DEC_EN_DUART		= 0x002,	/* Enable DUART for FW log */
 	BC_DEC_INIT_MEM		= 0x004,	/* Initialize Entire DRAM takes about a min */
 	BC_DEC_VCLK_74MHZ	= 0x008,	/* Enable Vidoe clock to 75 MHZ */
 	BC_EN_DIAG_MODE		= 0x010,	/* Enable Diag Mode application */
 	BC_PIX_WID_1080		= 0x020,	/* FIX_ME: deprecate this after PIB work */
-//	BC_ADDBUFF_MOVE		= 0x040,	/* FIX_ME: Deleteme after testing.. */
+	BC_ADDBUFF_MOVE		= 0x040,	/* FIX_ME: Deleteme after testing.. */
 	BC_DEC_VCLK_77MHZ	= 0x080		/* Enable Vidoe clock to 77 MHZ */
 
 };
@@ -120,10 +128,9 @@ enum _DtsAppSpecificCfgFlags {
 #define TSHEXFILE		"stream.hex"
 #define DECOHEXFILE		"vdec_outer.hex"
 #define DECIHEXFILE		"vdec_inner.hex"
-#define FWBINFILE		"bcmDecFw.bin"
-//#define FWBINFILE_LNK	"link_fw.bin"
-#define FWBINFILE_LNK	"bcmFilePlayFw.bin"
-#define FWBIN_FILE_PLAY_LNK	"bcmFilePlayFw.bin"
+#define FWBINFILE		"bcm70012fwbd.bin"
+#define FWBINFILE_LNK	"bcm70012fwbd.bin"
+#define FWBIN_FILE_PLAY_LNK	"bcm70012fw.bin"
 
 #define BC_DTS_DEF_OPTIONS	0x0D
 #define BC_DTS_DEF_OPTIONS_LINK	0xB0000005
@@ -246,75 +253,77 @@ typedef struct _DTS_LIB_CONTEXT{
 	BC_IOCTL_DATA	*pOutData;		/* Current Active Proc Out Buffer */
 
 	/* Place Holder for FW file paths */
-	char				StreamFile[MAX_PATH+1];
-	char				VidInner[MAX_PATH+1];
-	char				VidOuter[MAX_PATH+1];
+	char			StreamFile[MAX_PATH+1];
+	char			VidInner[MAX_PATH+1];
+	char			VidOuter[MAX_PATH+1];
 
-	uint32_t				InMdataTag;				/* InMetaData Tag for TimeStamp */
+	uint32_t		InMdataTag;				/* InMetaData Tag for TimeStamp */
 	void			*MdataPoolPtr;			/* allocated memory PoolPointer */
 
 	struct _DTS_INPUT_MDATA	*MDFreeHead;	/* MetaData Free List Head */
 
 	struct _DTS_INPUT_MDATA	*MDPendHead;	/* MetaData Pending List Head */
 	struct _DTS_INPUT_MDATA	*MDPendTail;	/* MetaData Pending List Tail */
-	uint32_t			MDPendCount;
+
+	//Reserve the Last Fetch Tag
+	uint32_t		MDLastFetchTag;
 
 	/* End Of Stream detection */
 	BOOL			FlushIssued;			/* Flag to start EOS detection */
-	uint32_t				eosCnt;					/* Last picture repetition count */
-	uint32_t				LastPicNum;				/* Last picture number */
-	uint32_t				LastSessNum;			/* Last session number */
-	uint8_t 				PullDownFlag;
+	uint32_t		eosCnt;					/* Last picture repetition count */
+	uint32_t		LastPicNum;				/* Last picture number */
+	uint32_t		LastSessNum;			/* Last session number */
+	uint8_t 		PullDownFlag;
 	BOOL			bEOS;
 
 	/* Statistics Related */
-	uint32_t				prevPicNum;				/* Previous received frame */
-	uint32_t				CapState;				/* 0 = Not started, 1 = Interlaced, 2 = progressive */
-	uint32_t				PibIntToggle;			/* Toggle flag to detect PIB miss in Interlaced mode.*/
-	uint32_t				prevFrameRate;			/* Previous frame rate */
+	uint32_t		prevPicNum;				/* Previous received frame */
+	uint32_t		CapState;				/* 0 = Not started, 1 = Interlaced, 2 = progressive */
+	uint32_t		PibIntToggle;			/* Toggle flag to detect PIB miss in Interlaced mode.*/
+	uint32_t		prevFrameRate;			/* Previous frame rate */
 
 	BC_REG_CONFIG	RegCfg;					/* Registry Configurable options.*/
 
-	char				FwBinFile[MAX_PATH+1];	/* Firmware Bin file place holder */
+	char			FwBinFile[MAX_PATH+1];	/* Firmware Bin file place holder */
 
 	BC_OUTPUT_FORMAT b422Mode;				/* 422 Mode Identifier for Link */
-	uint32_t				picWidth;
-	uint32_t				picHeight;
+	uint32_t		picWidth;
+	uint32_t		picHeight;
 
-	char				DilPath[MAX_PATH+1];	/* DIL runtime Location.. */
+	char			DilPath[MAX_PATH+1];	/* DIL runtime Location.. */
 
-	uint8_t				SingleThreadedAppMode;				/* flag to indicate that we are running in single threaded mode */
-	uint32_t				cpbBase;				/* Only used in single threaded mode to save base and end to reduce number of HW reads */
-	uint32_t				cpbEnd;					
+	uint8_t			SingleThreadedAppMode;	/* flag to indicate that we are running in single threaded mode */
+	uint32_t		cpbBase;				/* Only used in single threaded mode to save base and end to reduce number of HW reads */
+	uint32_t		cpbEnd;					
 	PES_CONVERT_PARAMS PESConvParams;	
-	BC_HW_CAPS			capInfo;
-	uint16_t				InSampleCount;
-	uint8_t				bMapOutBufDone;
+	BC_HW_CAPS		capInfo;
+	uint16_t		InSampleCount;
+	uint8_t			bMapOutBufDone;
 #ifdef TX_CIRCULAR_BUFFER
-	uint32_t				nTxHoldBufRead;
-	uint32_t				nTxHoldBufWrite;
-	uint16_t				nTxHoldBufCounter;
+	uint32_t		nTxHoldBufRead;
+	uint32_t		nTxHoldBufWrite;
+	uint16_t		nTxHoldBufCounter;
 #else
-	uint32_t				nPendBufInd;
+	uint32_t		nPendBufInd;
 #endif
-	uint32_t				nPendFPBufInd;
-	uint8_t				FPDrain; // FP has initiated drain operation
+	uint32_t		nPendFPBufInd;
+	uint8_t			FPDrain; // FP has initiated drain operation
 
 	BC_PIC_INFO_BLOCK	FormatInfo;
 
 	__attribute__((aligned(4))) uint8_t		alignBuf[ALIGN_BUF_SIZE];
 	__attribute__((aligned(4))) uint8_t		pendingBuf[TX_HOLD_BUF_SIZE];
 	__attribute__((aligned(4))) uint8_t		FPpendingBuf[FP_TX_BUF_SIZE];
-	uint8_t				bScaling;
+	uint8_t			bScaling;
 
 	/* Power management and dynamic clock frequency changes related */
-	uint8_t				totalPicsCounted;
-	uint8_t				rptPicsCounted;
-	uint8_t				nrptPicsCounted;
-	uint8_t				numTimesClockChanged;
-	uint8_t				minClk;
-	uint8_t				maxClk;
-	uint8_t				curClk;
+	uint8_t			totalPicsCounted;
+	uint8_t			rptPicsCounted;
+	uint8_t			nrptPicsCounted;
+	uint8_t			numTimesClockChanged;
+	uint8_t			minClk;
+	uint8_t			maxClk;
+	uint8_t			curClk;
 
 }DTS_LIB_CONTEXT;
 
@@ -345,7 +354,7 @@ void DtsRelIoctlData(DTS_LIB_CONTEXT *Ctx, BC_IOCTL_DATA *pIoData);
 BC_IOCTL_DATA *DtsAllocIoctlData(DTS_LIB_CONTEXT *Ctx);
 BC_STATUS DtsAllocMemPools(DTS_LIB_CONTEXT *Ctx);
 void DtsReleaseMemPools(DTS_LIB_CONTEXT *Ctx);
-BC_STATUS DtsAddOutBuff(DTS_LIB_CONTEXT *Ctx, PVOID buff, uint32_t flags);
+BC_STATUS DtsAddOutBuff(DTS_LIB_CONTEXT *Ctx, PVOID buff, uint32_t BuffSz, uint32_t flags);
 BC_STATUS DtsRelRxBuff(DTS_LIB_CONTEXT *Ctx, BC_DEC_YUV_BUFFS *buff,BOOL SkipAddBuff);
 BC_STATUS DtsFetchOutInterruptible(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *DecOut, uint32_t dwTimeout);
 BC_STATUS DtsCancelFetchOutInt(DTS_LIB_CONTEXT *Ctx);
@@ -364,7 +373,6 @@ BC_STATUS DtsFetchMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, BC_DTS_PROC_OUT *po
 BC_STATUS DtsFetchTimeStampMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, uint64_t *TimeStamp);
 BC_STATUS DtsPrepareMdataASFHdr(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA *mData, uint8_t* buf);
 BC_STATUS DtsPrepareMdata(DTS_LIB_CONTEXT *Ctx, uint64_t timeStamp, DTS_INPUT_MDATA **mData, uint8_t** pDataBuf, uint32_t *pSize);
-BC_STATUS OldDtsPrepareMdata(DTS_LIB_CONTEXT *Ctx, uint64_t timeStamp, DTS_INPUT_MDATA **mData);
 BC_STATUS DtsNotifyOperatingMode(HANDLE hDevice, uint32_t Mode);
 /* Internal helper function */
 uint32_t DtsGetWidthfromResolution(DTS_LIB_CONTEXT *Ctx, uint32_t Resolution);
@@ -403,6 +411,9 @@ void DtsUpdateOutStats(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *pOut);
 /*====================== Debug Routines ========================================*/
 void DtsTestMdata(DTS_LIB_CONTEXT	*gCtx);
 BOOL DtsDbgCheckPointers(DTS_LIB_CONTEXT *Ctx,BC_IOCTL_DATA *pIo);
+
+BOOL DtsCheckRptPic(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut);
+BC_STATUS DtsUpdateVidParams(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut);
 
 /*============== Global shared area usage ======================*/
 

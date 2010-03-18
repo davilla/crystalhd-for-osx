@@ -22,6 +22,8 @@
 		F5C0939E11503A640094A9B0 /* bc_dts_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_defs.h; path = ../../include/bc_dts_defs.h; sourceTree = SOURCE_ROOT; };
 		F5C0939F11503A6C0094A9B0 /* bc_dts_glob_osx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_glob_osx.h; path = ../../include/bc_dts_glob_osx.h; sourceTree = SOURCE_ROOT; };
 		F5C093A011503A730094A9B0 /* bc_dts_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_types.h; path = ../../include/bc_dts_types.h; sourceTree = SOURCE_ROOT; };
+		F5C0965C115159300094A9B0 /* libcrystalhd_fwload_if.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = libcrystalhd_fwload_if.cpp; sourceTree = SOURCE_ROOT; };
+		F5C0965D115159300094A9B0 /* libcrystalhd_fwload_if.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libcrystalhd_fwload_if.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -43,10 +45,12 @@
 				F5C091E1115008BA0094A9B0 /* libcrystalhd_fwcmds.cpp */,
 				F5C091E2115008C20094A9B0 /* libcrystalhd_fwdiag_if.h */,
 				F5C091E3115008C20094A9B0 /* libcrystalhd_fwdiag_if.cpp */,
+				F5C0965D115159300094A9B0 /* libcrystalhd_fwload_if.h */,
+				F5C0965C115159300094A9B0 /* libcrystalhd_fwload_if.cpp */,
 				F5C091E4115008C80094A9B0 /* libcrystalhd_if.h */,
 				F5C091E5115008C80094A9B0 /* libcrystalhd_if.cpp */,
-				F5C092E1115022EC0094A9B0 /* libcrystalhd_parser.cpp */,
 				F5C092DC115022620094A9B0 /* libcrystalhd_parser.h */,
+				F5C092E1115022EC0094A9B0 /* libcrystalhd_parser.cpp */,
 				F5C091E6115008CE0094A9B0 /* libcrystalhd_int_if.h */,
 				F5C091E7115008CE0094A9B0 /* libcrystalhd_int_if.cpp */,
 				F5C091E8115008D60094A9B0 /* libcrystalhd_priv.h */,

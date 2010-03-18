@@ -29,6 +29,7 @@ SRCFILES = 	libcrystalhd_if.cpp \
 		libcrystalhd_fwcmds.cpp \
 		libcrystalhd_priv.cpp \
 		libcrystalhd_fwdiag_if.cpp \
+		libcrystalhd_fwload_if.cpp \
 		libcrystalhd_parser.cpp
 
 OBJFILES = ${SRCFILES:.cpp=.o}

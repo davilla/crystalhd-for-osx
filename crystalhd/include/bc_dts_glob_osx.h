@@ -131,12 +131,19 @@ typedef struct _BC_START_RX_CAP_ {
 	uint32_t		StartDeliveryThsh;
 	uint32_t		PauseThsh;
 	uint32_t		ResumeThsh;
+	DecRspChannelStartVideo	SVidRsp;
 } BC_START_RX_CAP;
 
 typedef struct _BC_FLUSH_RX_CAP_ {
 	uint32_t		Rsrd;
 	uint32_t		bDiscardOnly;
 } BC_FLUSH_RX_CAP;
+
+typedef struct _BC_INIT_DRAM_MEM_ {
+	uint32_t		Pattern;
+	uint32_t		offset;
+	uint32_t		ulSizeInDwords;
+} BC_INIT_DRAM_MEM,*PBC_INIT_DRAM_MEM;
 
 typedef struct _BC_DTS_STATS {
 	uint8_t			drvRLL;
@@ -153,9 +160,9 @@ typedef struct _BC_DTS_STATS {
 	uint32_t		pauseCount;
 	uint32_t		pibMisses;
 	uint32_t		discCounter;
+	uint32_t		TxFifoBsyCnt;
 
 	/* Stats from Driver */
-	uint32_t		TxFifoBsyCnt;
 	uint32_t		intCount;
 	uint32_t		DrvIgnIntrCnt;
 	uint32_t		DrvTotalFrmDropped;
@@ -172,7 +179,8 @@ typedef struct _BC_DTS_STATS {
 	uint32_t		DrvNextMDataPLD;	
 	uint32_t		DrvcpbEmptySize;
 
-	uint32_t		res1[11];
+	float           Temperature;
+	uint32_t		res1[10];
 	
 } BC_DTS_STATS;
 
@@ -206,7 +214,7 @@ enum _DECOUT_COMPLETION_FLAGS{
 
 typedef struct _BC_DEC_OUT_BUFF{
 	BC_DEC_YUV_BUFFS	OutPutBuffs;
-	BC_PIC_INFO_BLOCK	PibInfo;
+	BC_PIC_INFO_BLOCK   PibInfo;
 	uint32_t		Flags;
 	uint32_t		BadFrCnt;
 }BC_DEC_OUT_BUFF;
@@ -232,6 +240,7 @@ typedef struct _BC_IOCTL_DATA {
 		BC_HW_TYPE		hwType;
 		BC_PCI_CFG		pciCfg;
 		BC_VERSION_INFO		VerInfo;
+		BC_INIT_DRAM_MEM	InitDramMem;
 		BC_PROC_INPUT		ProcInput;
 		BC_DEC_YUV_BUFFS	RxBuffs;
 		BC_DEC_OUT_BUFF		DecOutData;
@@ -266,7 +275,6 @@ typedef enum _BC_DRV_CMD{
 	DRV_CMD_RST_DRV_STAT,	/* Reset Driver Internal Statistics */
 	DRV_CMD_NOTIFY_MODE,	/* Notify the Mode to driver in which the application is Operating*/
 	DRV_CMD_CHANGE_CLOCK,	/* Change the core clock to either save power or improve performance */
-
 	/* MUST be the last one.. */
 	DRV_CMD_END,			/* End of the List.. */
 }BC_DRV_CMD;

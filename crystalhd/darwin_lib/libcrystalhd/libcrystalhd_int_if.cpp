@@ -26,11 +26,21 @@
  *
  *******************************************************************/
 
+#include "7411d.h"
+#include "bc_defines.h"
+#include "bc_decoder_regs.h"
+#include "libcrystalhd_priv.h"
 #include "libcrystalhd_int_if.h"
 #include "libcrystalhd_fwcmds.h"
-#include "libcrystalhd_priv.h"
 
 #define SV_MAX_LINE_SZ 128
+#define PCI_GLOBAL_CONTROL MISC2_GLOBAL_CTRL
+#define PCI_INT_STS_REG MISC2_INTERNAL_STATUS
+
+// FLEA
+#define BCHP_MISC2_GLOBAL_CTRL 0x00502100 /* Global Control Register */
+#define BCHP_CLK_TEMP_MON_CTRL 0x00070040 /* Temperature monitor control. */
+#define BCHP_CLK_TEMP_MON_STATUS 0x00070044 /* Temperature monitor status. */
 
 
 //===================================Externs ============================================
@@ -73,6 +83,53 @@ DtsGetHwType(
 	return BC_STS_SUCCESS;
 }
 
+DRVIFLIB_INT_API VOID 
+DtsHwReset(
+    HANDLE hDevice
+    )
+{
+
+	return;
+}
+
+DRVIFLIB_INT_API BC_STATUS 
+DtsSoftReset(
+    HANDLE hDevice
+    )
+{
+
+	uint32_t Val = 0;
+	DTS_LIB_CONTEXT		*Ctx = NULL;
+
+	DTS_GET_CTX(hDevice,Ctx);
+
+	if(Ctx->DevId == BC_PCI_DEVID_LINK || Ctx->DevId == BC_PCI_DEVID_DOZER)
+	{
+		DtsDevRegisterWr( hDevice, DecHt_HostSwReset, 0x00000001);	// Assert c011 soft reset
+		bc_sleep_ms(50);
+		DtsDevRegisterWr( hDevice, DecHt_HostSwReset, 0x00000000  );	// Release c011 soft reset
+
+		/* Disable Stuffing.. */
+		DtsFPGARegisterRead(hDevice,PCI_GLOBAL_CONTROL,&Val);
+		Val |= BC_BIT(8);
+		DtsFPGARegisterWr(hDevice,PCI_GLOBAL_CONTROL,Val);
+
+		//DtsSetCoreClock(hDevice, 0);
+	}
+	else if(Ctx->DevId == BC_PCI_DEVID_FLEA)
+	{
+		// For Link, this is used to bring up 7412 and running.
+		// Since the 70012 was running in low power mode, but the 7412 was not.
+		// In flea there is no need for this. In general most of the chip will be in idle mode, 
+		// and should not be needed to reset in order to start up.
+		// In Flea, we can never do full chip reset, because that will reset PCIe as well and
+		// probably cause a BSOD. Individual blocks will have to be reset, either by asserting true resets
+		// (but not from the host) or by re-initializing -like the ARM for example.
+	}
+
+	return BC_STS_SUCCESS;
+}
+
 DRVIFLIB_INT_API BC_STATUS
 DtsSetLinkIn422Mode(HANDLE hDevice)
 {
@@ -89,20 +146,46 @@ DtsSetLinkIn422Mode(HANDLE hDevice)
 	 * 1 -  UYVY Mode.
 	 * 0 - YUY2 Mode.
  	 */
-	DtsFPGARegisterRead(hDevice,MISC2_GLOBAL_CTRL,&Val);
+	DtsFPGARegisterRead(hDevice,PCI_GLOBAL_CONTROL,&Val);
 
-	if (ModeSelect == MODE420) {
+	if (ModeSelect == OUTPUT_MODE420) {
         Val &= 0xffeeffff;
 	} else {	
 		Val |= BC_BIT(16);
-		if(ModeSelect == MODE422_UYVY) {
+		if(ModeSelect == OUTPUT_MODE422_UYVY) {
 			Val |= BC_BIT(20);
 		} else {
 			Val &= ~BC_BIT(20);
 		}
 	}
 
-	DtsFPGARegisterWr(hDevice,MISC2_GLOBAL_CTRL,Val);
+	DtsFPGARegisterWr(hDevice,PCI_GLOBAL_CONTROL,Val);
+	return BC_STS_SUCCESS;
+}
+
+DRVIFLIB_INT_API BC_STATUS
+DtsSetFleaIn422Mode(HANDLE hDevice)
+{
+	uint32_t			Val = 0;
+	DTS_LIB_CONTEXT		*Ctx;
+	uint32_t			ModeSelect;
+
+	DTS_GET_CTX(hDevice,Ctx);
+	ModeSelect = Ctx->b422Mode;
+
+	// Flea HW only support UYVY/YUY2
+	if( ModeSelect != OUTPUT_MODE422_UYVY && ModeSelect != OUTPUT_MODE422_YUY2 )
+		return BC_STS_INV_ARG;
+
+	DtsDevRegisterRead(hDevice,BCHP_MISC2_GLOBAL_CTRL,&Val);
+
+	Val &= 0x0000007c;
+	if( ModeSelect == OUTPUT_MODE422_YUY2 ) 
+	{
+		Val |= BC_BIT(1);  // bit_1  0-> UYVY, 1-> YUY2
+	}
+
+	DtsDevRegisterWr(hDevice,BCHP_MISC2_GLOBAL_CTRL,Val);
 	return BC_STS_SUCCESS;
 }
 
@@ -124,7 +207,136 @@ DtsGetConfig(
 	return BC_STS_SUCCESS;
 }
 
+DRVIFLIB_INT_API BC_STATUS 
+DtsSetConfig(
+    HANDLE hDevice,
+	BC_DTS_CFG *cfg
+    )
+{
+	DTS_LIB_CONTEXT		*Ctx;
 
+	DTS_GET_CTX(hDevice,Ctx);
+
+	if(!cfg){
+		return BC_STS_INV_ARG;
+	}
+
+	Ctx->CfgFlags = *cfg;
+
+	return BC_STS_SUCCESS;
+}
+
+BC_STATUS 
+DtsSetCoreClock(
+    HANDLE hDevice,
+	uint32_t freq
+    )
+{
+//	uint32_t Val=0,clkRate=0, cnt;
+	DTS_LIB_CONTEXT		*Ctx;
+//	uint32_t DevID,VendorID,Revision;
+
+	uint32_t reg;
+	uint32_t n, i;
+	uint32_t vco_mg;
+	uint32_t refresh_reg;
+
+	DTS_GET_CTX(hDevice,Ctx);
+	if(Ctx->DevId != BC_PCI_DEVID_LINK && Ctx->DevId != BC_PCI_DEVID_DOZER)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsSetCoreClock is not supported in this device\n");
+		return BC_STS_ERROR;
+	}
+
+#if 0
+	if(BC_STS_SUCCESS != DtsGetHwType(hDevice,&DevID,&VendorID,&Revision))	{
+		DebugLog_Trace(LDIL_DBG,"Get Hardware Type Failed\n");
+		return BC_STS_INV_ARG;
+	}
+
+	if(DevID == BC_PCI_DEVID_LINK) {
+		// Don't set the core clock
+		return BC_STS_SUCCESS;
+	}
+
+	if(freq){
+		DebugLog_Trace(LDIL_DBG,"DtsSetCoreClock: Custom pll settings not implemented yet.\n");
+		return BC_STS_NOT_IMPL;
+	}
+	if(Ctx->CfgFlags & BC_DEC_VCLK_74MHZ){
+		clkRate = 0x000230f0;
+	}else if(Ctx->CfgFlags & BC_DEC_VCLK_77MHZ){
+		clkRate = 0x000230f2;
+	}else{
+		return BC_STS_INV_ARG;
+	}
+#endif
+	if(freq == 0)
+		return BC_STS_CLK_NOCHG;
+
+	n = freq/5;
+	
+	//if (n == Ctx->prev_n)
+	//	return BC_STS_CLK_NOCHG;
+	
+	if ((n * 27) < 560)
+		vco_mg = 0;
+	else if ((n * 27) < 900)
+		vco_mg = 1;
+	else if ((n * 27) < 1030)
+		vco_mg = 2;
+	else
+		vco_mg = 3;
+	
+	DtsDevRegisterRead(hDevice,DecHt_PllACtl, &reg);
+
+	reg &= 0xFFFFCFC0;
+	reg |= n;
+	reg |= vco_mg << 12;
+	
+	refresh_reg = (7 * freq / 16);
+	DtsDevRegisterWr(hDevice,SDRAM_REF_PARAM,((1 << 12) | refresh_reg));
+
+	DtsDevRegisterWr(hDevice, DecHt_PllACtl, reg);
+	DebugLog_Trace(LDIL_DBG,"C set %d\n", freq);
+	i = 0;
+	
+	while (i < 10) { 
+		DtsDevRegisterRead(hDevice,DecHt_PllACtl, &reg);
+		
+		if (reg & 0x00020000) {
+			//Ctx->prev_n = n;
+			return BC_STS_SUCCESS;
+		}
+		else {
+			bc_sleep_ms(10);
+		}
+		i++;
+	}
+
+	return BC_STS_CLK_NOCHG;
+
+#if 0
+	DtsDevRegisterWr( hDevice, DecHt_PllBCtl, clkRate);	
+	cnt = 0;
+	do{
+		bc_sleep_ms(20);
+	
+		DtsDevRegisterRead( hDevice, DecHt_PllBCtl, &Val);
+		if(Val == clkRate)
+			break;
+		cnt++;
+	}while(cnt < 50);
+
+
+	if(Val != clkRate){
+		DebugLog_Trace(LDIL_DBG,"DtsSetCoreClock: Failed to change PLL_B_CTL\n");
+		return BC_STS_NO_ACCESS;
+	}
+
+	return BC_STS_SUCCESS;
+#endif
+}
 
 DRVIFLIB_INT_API BC_STATUS
 DtsSetTSMode(
@@ -138,18 +350,24 @@ DtsSetTSMode(
 
 	DTS_GET_CTX(hDevice,Ctx);
 
-	//if(Ctx->FixFlags & DTS_LOAD_FILE_PLAY_FW)
+	if(Ctx->DevId != BC_PCI_DEVID_LINK && Ctx->DevId != BC_PCI_DEVID_DOZER)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsSetTSMode is not supported in this device\n");
+		return BC_STS_ERROR;
+	}
+
+	if(Ctx->FixFlags & DTS_LOAD_FILE_PLAY_FW)
 		TsMode = FALSE;
 
 	if(TsMode){
-		DtsFPGARegisterRead(hDevice,MISC2_GLOBAL_CTRL,&RegVal);
+		DtsFPGARegisterRead(hDevice,PCI_GLOBAL_CONTROL,&RegVal);
 		RegVal &= 0xFFFFFFFE;		//Reset Bit 0
-		DtsFPGARegisterWr(hDevice,MISC2_GLOBAL_CTRL,RegVal);
+		DtsFPGARegisterWr(hDevice,PCI_GLOBAL_CONTROL,RegVal);
 	}else{
 		// Set the FPGA up in non TS mode
-		DtsFPGARegisterRead(hDevice,MISC2_GLOBAL_CTRL,&RegVal);
+		DtsFPGARegisterRead(hDevice,PCI_GLOBAL_CONTROL,&RegVal);
 		RegVal |= 0x01;		//Set Bit 0
-		DtsFPGARegisterWr(hDevice,MISC2_GLOBAL_CTRL,RegVal);
+		DtsFPGARegisterWr(hDevice,PCI_GLOBAL_CONTROL,RegVal);
 	}
 
 	return BC_STS_SUCCESS;
@@ -158,28 +376,87 @@ DtsSetTSMode(
 DRVIFLIB_INT_API BC_STATUS
 DtsSetProgressive(
 	HANDLE hDevice,
-	uint32_t	resv1
+	uint32_t resv1
 	)
 {
-	uint32_t RegVal;
+	uint32_t			RegVal;
+	DTS_LIB_CONTEXT		*Ctx = NULL;
+
+	DTS_GET_CTX(hDevice,Ctx);
+	if(Ctx->DevId != BC_PCI_DEVID_LINK && Ctx->DevId != BC_PCI_DEVID_DOZER)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsSetProgressive Not Supported for Flea. Returning Success\n");
+		return BC_STS_SUCCESS;
+	}
+
 	// Set the FPGA up in Progressive mode - i.e. 1 vsync/frame
-	DtsFPGARegisterRead(hDevice,MISC2_GLOBAL_CTRL,&RegVal);
+	DtsFPGARegisterRead(hDevice,PCI_GLOBAL_CONTROL,&RegVal);
 	RegVal |= 0x10;		//Set Bit 4
-	DtsFPGARegisterWr(hDevice,MISC2_GLOBAL_CTRL,RegVal);
+	DtsFPGARegisterWr(hDevice,PCI_GLOBAL_CONTROL,RegVal);
 
 	return BC_STS_SUCCESS;
 }
 
+BC_STATUS 
+DtsRstVidClkDLL(
+				HANDLE hDevice)
+{
+	uint32_t RegVal,Cnt=100;
+	
+	DtsFPGARegisterRead(hDevice,PCI_GLOBAL_CONTROL,&RegVal);
+	RegVal |= 0x08;		//Set Bit 3 the Reset Bit
+	DtsFPGARegisterWr(hDevice,PCI_GLOBAL_CONTROL,RegVal);
+	
+	//
+	// Wait for the bit to go low [Unlock]
+	//
+	while(Cnt)
+	{
+		DtsFPGARegisterRead(hDevice,PCI_INT_STS_REG,&RegVal);
+		if(!(RegVal | 0x04) )
+		{
+			break;
+
+		}else{
+			bc_sleep_ms(100);
+			Cnt--;
+		}
+	}
+	bc_sleep_ms(100);
+	DtsFPGARegisterRead(hDevice,PCI_GLOBAL_CONTROL,&RegVal);
+	RegVal &= 0xfffffff7;	//reset bit 3
+	DtsFPGARegisterWr(hDevice,PCI_GLOBAL_CONTROL,RegVal);
+	RegVal=0;	
+	Cnt =100;	
+	while(Cnt)
+	{
+		DtsFPGARegisterRead(hDevice,PCI_INT_STS_REG,&RegVal);
+		if(RegVal & 0x04) 
+		{
+			//
+			// This means that the video clock is locked.
+			//
+			return BC_STS_SUCCESS;
+		}else{
+			bc_sleep_ms(100);
+			Cnt--;
+		}
+	}
+
+	DebugLog_Trace(LDIL_DBG,"DtsSetVideoClock: DLL did not lock.\n");
+	return BC_STS_ERROR;
+}
 
 DRVIFLIB_INT_API BC_STATUS 
 DtsSetVideoClock(
     HANDLE hDevice,
-	uint32_t		freq
+	uint32_t freq
     )
 {
-	
-	DTS_LIB_CONTEXT		*Ctx;
-	uint32_t	DevID,VendorID,Revision;
+	uint32_t Val=0;
+	uint32_t clkRate = 0;
+	DTS_LIB_CONTEXT *Ctx;
+	uint32_t DevID,VendorID,Revision;
 
 	DTS_GET_CTX(hDevice,Ctx);
 
@@ -192,14 +469,85 @@ DtsSetVideoClock(
 		DebugLog_Trace(LDIL_DBG,"Get Hardware Type Failed\n");
 		return BC_STS_INV_ARG;
 	}
-	if(DevID == BC_PCI_DEVID_LINK) {
+	if(DevID == BC_PCI_DEVID_LINK || DevID == BC_PCI_DEVID_FLEA) {
 		// Don't set the video clock
 		return BC_STS_SUCCESS;
 	}
 
+	if(Ctx->CfgFlags & BC_DEC_VCLK_74MHZ){
+		// Program PLL-E to 75 MHZ (n = 44, m = 10, vco_rng = 1)
+		clkRate = 0x000012AC;
+	}else if(Ctx->CfgFlags & BC_DEC_VCLK_77MHZ){
+		// Program PLL-E to 77 MHZ (n = ??, m = ??, vco_rng = ??)
+		clkRate = 0x000012B0;
+	}else{
+		return BC_STS_INV_ARG;
+	}
+
+
+	DtsDevRegisterWr( hDevice, DecHt_PllDCtl, 0x00010000);	// Bypass PLL-D
+
+	bc_sleep_ms(50);
+	
+	DtsDevRegisterRead( hDevice, DecHt_PllDCtl, &Val);
+
+	if(Val != 0x00030000){
+		DebugLog_Trace(LDIL_DBG,"DtsSetVideoClock: Failed to change PLL_D_CTL\n");
+		//FIX_ME
+		//return BC_STS_NO_ACCESS;
+	}
+
+	DtsDevRegisterWr( hDevice, DecHt_PllECtl, clkRate);	
+
+	bc_sleep_ms(50);
+	
+	DtsDevRegisterRead( hDevice, DecHt_PllECtl, &Val);
+
+	if(Val != (clkRate | 0x00020000) ){
+		DebugLog_Trace(LDIL_DBG,"DtsSetVideoClock: Failed to change PLL_E_CTL\n");
+		//FIX_ME
+		//return BC_STS_NO_ACCESS;
+	}
+
+	//if(BC_STS_SUCCESS !=  DtsRstVidClkDLL(hDevice))
+	//{
+	//	DebugLog_Trace(LDIL_DBG,"DtsSetVideoClock: Vid Clk DLL Failed to Lock\n");
+	//	return BC_STS_ERROR;
+	//}
+
 	return BC_STS_SUCCESS;
 }
+DRVIFLIB_INT_API BOOL 
+DtsIsVideoClockSet(HANDLE hDevice)
+{
+	uint32_t RegVal=0;
+	DTS_LIB_CONTEXT *Ctx = NULL;
+	uint32_t DevID,VendorID,Revision;
 
+	DTS_GET_CTX(hDevice,Ctx);
+
+	if(BC_STS_SUCCESS != DtsGetHwType(hDevice,&DevID,&VendorID,&Revision)) {
+		DebugLog_Trace(LDIL_DBG,"Get Hardware Type Failed\n");
+		return FALSE;
+	}
+	if(DevID == BC_PCI_DEVID_LINK || DevID == BC_PCI_DEVID_FLEA) {
+		// Don't set the video clock
+		return FALSE;
+	}
+
+	if((Ctx->RegCfg.DbgOptions & BC_BIT(1)) && (Ctx->OpMode == DTS_PLAYBACK_MODE))
+		return FALSE;
+
+	DtsFPGARegisterRead(hDevice,PCI_GLOBAL_CONTROL,&RegVal);
+
+	if(RegVal & BC_BIT(0))
+		return TRUE;
+	
+	DtsFPGARegisterRead(hDevice,PCI_INT_STS_REG,&RegVal);
+
+	return (RegVal & BC_BIT(2));
+
+}
 
 DRVIFLIB_INT_API BC_STATUS 
 DtsGetPciConfigSpace(
@@ -677,6 +1025,8 @@ DtsTxDmaText( HANDLE  hDevice ,
 	pIocData->u.ProcInput.BuffSz = ulDmaSz;
 	pIocData->u.ProcInput.Mapped = FALSE;
 	pIocData->u.ProcInput.Encrypted = Encrypted;
+	if(Ctx->VidParams.VideoAlgo == BC_VID_ALGO_VC1MP)
+		pIocData->u.ProcInput.Encrypted|=0x2;
 
 
 	status = DtsDrvCmd(Ctx,BCM_IOC_PROC_INPUT,1,pIocData,FALSE);
@@ -759,6 +1109,7 @@ DtsGetDrvStat(
 	BC_DTS_STATS *pIntDrvStat;
 	DTS_LIB_CONTEXT		*Ctx = NULL;
 	BC_STATUS	sts = BC_STS_SUCCESS;
+	float		fTemperature = 0;
 
 	DTS_GET_CTX(hDevice,Ctx);
 
@@ -782,10 +1133,8 @@ DtsGetDrvStat(
 
 	/* DIL counters */
 	pIntDrvStat = DtsGetgStats ( );
-
-//	memcpy_s(pDrvStat, 128, pIntDrvStat, 128);
-	memcpy(pDrvStat,pIntDrvStat, 128);
-
+	//memcpy_s(pDrvStat, 128, pIntDrvStat, 128);
+	memcpy(pDrvStat, pIntDrvStat, 128);
 
 	/* Driver counters */
 	pIntDrvStat = (BC_DTS_STATS *)&pIocData->u.drvStat;
@@ -804,11 +1153,82 @@ DtsGetDrvStat(
 	pDrvStat->TxFifoBsyCnt = pIntDrvStat->TxFifoBsyCnt;
 	pDrvStat->pwr_state_change = pIntDrvStat->pwr_state_change;
 	pDrvStat->DrvNextMDataPLD = pIntDrvStat->DrvNextMDataPLD;
+	pDrvStat->DrvcpbEmptySize = pIntDrvStat->DrvcpbEmptySize;
+	pDrvStat->eosDetected = pIntDrvStat->eosDetected;
+
+
+	DtsGetCoreTemperature(hDevice, &fTemperature);
+	pDrvStat->Temperature = fTemperature;
 
 	DtsRelIoctlData(Ctx,pIocData);
 
 	return BC_STS_SUCCESS;
 }
+
+DRVIFLIB_INT_API BC_STATUS 
+DtsSetTemperatureMeasure(
+    HANDLE			hDevice,
+	BOOL			bTurnOn
+    )
+{
+	DTS_LIB_CONTEXT		*Ctx = NULL;
+	BC_STATUS	sts = BC_STS_SUCCESS;
+	uint32_t	Val = 0;
+
+	DTS_GET_CTX(hDevice,Ctx);
+	if( Ctx->DevId != BC_PCI_DEVID_FLEA )
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsSetTemperatureMeasure Only support for Flea.\n");
+		return BC_STS_SUCCESS;
+	}
+
+	if( bTurnOn )
+	{
+		Val = 0x3; // 
+		sts = DtsDevRegisterWr(hDevice,BCHP_CLK_TEMP_MON_CTRL,Val);
+		bc_sleep_ms(10);
+
+		Val = 0x203; // 
+		sts = DtsDevRegisterWr(hDevice,BCHP_CLK_TEMP_MON_CTRL,Val);
+		bc_sleep_ms(10);
+	}
+	else
+	{
+		Val = 0x103; // 
+		sts = DtsDevRegisterWr(hDevice,BCHP_CLK_TEMP_MON_CTRL,Val);
+		bc_sleep_ms(10);
+	}
+	return sts;
+}
+
+DRVIFLIB_INT_API BC_STATUS 
+DtsGetCoreTemperature(
+    HANDLE			hDevice,
+	float			*pTemperature
+    )
+{
+	DTS_LIB_CONTEXT		*Ctx = NULL;
+	BC_STATUS	sts = BC_STS_ERROR;
+	uint32_t	Val = 0;
+	*pTemperature = 0;
+
+	DTS_GET_CTX(hDevice,Ctx);
+	if( Ctx->DevId != BC_PCI_DEVID_FLEA )
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsSetTemperatureMeasure Only support for Flea.\n");
+		return BC_STS_SUCCESS;
+	}
+
+	sts = DtsDevRegisterRead(hDevice,BCHP_CLK_TEMP_MON_STATUS,&Val);
+	if( sts != BC_STS_SUCCESS )
+		return sts;
+	Val = Val & 0x0000ffff;
+
+	*pTemperature = 267.2 - 0.7 * (float)Val;
+	
+	return sts;
+}
+
 
 DRVIFLIB_INT_API BC_STATUS 
 DtsRstDrvStat(
@@ -835,7 +1255,535 @@ DtsRstDrvStat(
 	/* DIL related counters */
 	DtsRstStats( );
 
+	DebugLog_Trace(LDIL_DBG,"Cleared all stats\n");
+
 	DtsRelIoctlData(Ctx,pIocData);
+
+	return BC_STS_SUCCESS;
+}
+
+DRVIFLIB_INT_API BC_STATUS 
+DtsEpromRead(
+    HANDLE		hDevice,
+    uint8_t		*Buffer,
+    uint32_t	BuffSz,
+    uint32_t	Offset
+    )
+{
+#ifdef _LINK_COMPATIBLE_FPGA_
+	uint32_t regVal = 0;
+	uint32_t lpCnt = 0, ackWait = 0;
+	uint32_t byteCnt = 0;
+	uint32_t rxSize = 0;
+	uint32_t first=0, last=0;
+	uint32_t ix = 0;
+	uint32_t trxSize = 0;
+	BC_STATUS sts = BC_STS_SUCCESS;
+
+	if(!hDevice)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsEpromRead: Invalid Handle\n");
+		return BC_STS_INV_ARG;
+	}
+
+	if(!Buffer)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsEpromRead: Null Buffer\n");
+		return BC_STS_INV_ARG;
+	}
+
+	if(BuffSz % 4)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsEpromRead: Buff Size is not a multiple of DWORD\n");
+		return BC_STS_ERROR;
+	}
+
+	/* Clear any previous operation */
+	sts = DtsFPGARegisterWr(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, 0x0);
+	if(BC_STS_SUCCESS != sts) return sts;
+
+	regVal = EPROM_SLAVE_ADDRESS_VAL;
+	/* Program Slave Address */
+	sts = DtsFPGARegisterWr(hDevice, EPROM_CHIP_ADDR_REG, EPROM_SLAVE_ADDRESS_VAL);
+	if(BC_STS_SUCCESS != sts) return sts;
+
+	ackWait = 0;
+	do {
+
+		/* Program Write Address (High and Low) */
+		regVal = (Offset>>8)&0xFF;
+		sts = DtsFPGARegisterWr(hDevice, EPROM_WRITE_DATA0_REG, regVal);
+		if(BC_STS_SUCCESS != sts) return sts;
+
+		regVal = (Offset&0xFF);
+		sts = DtsFPGARegisterWr(hDevice, EPROM_WRITE_DATA1_REG, regVal);
+		if(BC_STS_SUCCESS != sts) return sts;
+
+		/* Program transfer length to write */
+		regVal = 0x2 & EPROM_BC_CNT_REG1_FIELD;
+		sts = DtsFPGARegisterWr(hDevice, EPROM_BYTE_CNTR_REG, regVal);
+		if(BC_STS_SUCCESS != sts) return sts;
+
+		/* Program write only configuration */
+		regVal = EPROM_CNTRL_REG_INIT_VAL | EPROM_CNTRL_REG_WO_FORMAT;
+		sts = DtsFPGARegisterWr(hDevice, EPROM_CONTROL_REG, regVal);
+		if(BC_STS_SUCCESS != sts) return sts;
+
+		/* Enable the write operation */
+		regVal = EPROM_OP_ENABLE; 
+		sts = DtsFPGARegisterWr(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, regVal);
+		if(BC_STS_SUCCESS != sts) return sts;
+
+		/* Poll for operation complete */
+		lpCnt = 0;
+		do {
+			
+			sts = DtsFPGARegisterRead(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, &regVal);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			if(lpCnt++ > 100) {
+				/* Return appropriate error condition */
+				return BC_STS_ERROR;
+			}
+		} while(!(regVal&EPROM_INTR_PRESENT));
+
+		/* Reset enable register */
+		sts = DtsFPGARegisterWr(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, EPROM_RESET_ENABLE_REG);
+		if(BC_STS_SUCCESS != sts) return sts;
+
+		if(ackWait++ > 100) {
+				/* Return appropriate error condition */
+				return BC_STS_ERROR;
+		}
+
+		/* Check for acknowledge */
+	}while(regVal&EPROM_NOACK_PRESENT);
+
+	/**** Current Read Address Set-up is done ****/
+	/* Now, Continuous reads */
+	byteCnt = BuffSz;
+	while(byteCnt)
+	{
+		if(byteCnt > EPROM_TRANSFER_MAX_SIZE)
+		{
+			/* Bytes remaining is more than 4, so program length to 4 */
+			rxSize = EPROM_TRANSFER_MAX_SIZE;
+		}
+		else
+		{
+			/* Remaining bytes */
+			rxSize = byteCnt;
+			last = 1;
+		}
+
+		if(byteCnt == BuffSz)
+		{
+			first = 1;
+		}
+
+		/* Program transfer length to write */
+		regVal = rxSize & EPROM_BC_CNT_REG1_FIELD;
+		sts = DtsFPGARegisterWr(hDevice, EPROM_BYTE_CNTR_REG, regVal);
+		if(BC_STS_SUCCESS != sts) return sts;
+
+		/* Program write only configuration */
+		regVal = EPROM_CNTRL_REG_INIT_VAL | EPROM_CNTRL_REG_RO_FORMAT;
+		sts = DtsFPGARegisterWr(hDevice, EPROM_CONTROL_REG, regVal);
+		if(BC_STS_SUCCESS != sts) return sts;
+
+		regVal = EPROM_OP_ENABLE;
+		if(first == 1 && last == 0) {
+			regVal |= EPROM_NO_STOP_SEQ;
+		} else if(first == 0 && last == 1) {
+			regVal |= EPROM_NO_START_SEQ;
+		} else if(first == 0 && last == 0) {
+			regVal |= (EPROM_NO_START_SEQ|EPROM_NO_STOP_SEQ);
+		}
+
+		/* Program enable register */
+		sts = DtsFPGARegisterWr(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, regVal);
+		if(BC_STS_SUCCESS != sts) return sts;
+
+		/* Poll for operation complete */
+		lpCnt = 0;
+		do {
+		
+			sts = DtsFPGARegisterRead(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, &regVal);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			if(lpCnt++ > 100) {
+				/* Return appropriate error condition */
+				return BC_STS_ERROR;
+			}
+#define EPROM_INTR_PRESENT			0x02
+		} while(!(regVal&EPROM_INTR_PRESENT));
+
+		/* Reset enable register */
+		sts = DtsFPGARegisterWr(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, EPROM_RESET_ENABLE_REG);
+		if(BC_STS_SUCCESS != sts) return sts;
+
+		/* Collect the data bytes */
+		for(ix = 0; ix < rxSize; ix++)
+		{
+			sts = DtsFPGARegisterRead(hDevice, (EPROM_READ_DATA0_REG+ix*4), &regVal);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			Buffer[trxSize] = (U8)regVal;
+			trxSize++;
+		}
+
+		/* Reduce the byte count */
+		byteCnt -= rxSize;
+
+		/*  */
+		first = 0;
+		last = 0;
+	}
+#endif
+
+	return BC_STS_SUCCESS;
+}
+
+
+DRVIFLIB_INT_API BC_STATUS 
+DtsEpromWrite(
+    HANDLE	hDevice,
+    uint8_t *Buffer,
+    uint32_t BuffSz,
+    uint32_t Offset
+    )
+{
+#ifdef _LINK_COMPATIBLE_FPGA_
+	uint32_t regVal = 0;
+	uint32_t lpCnt = 0, ackWait = 0;
+	uint32_t byteCnt = 0;
+	uint32_t txSize = 0;
+	uint32_t last=0;
+	uint32_t ix = 0;
+	uint32_t pageByteCnt = 0;
+	uint32_t nextPageBndyCnt = 0;
+	uint32_t tSize = 0;
+	BC_STATUS sts = BC_STS_SUCCESS;
+
+	if(!hDevice)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsEpromWrite: Invalid Handle\n");
+		return BC_STS_INV_ARG;
+	}
+
+	if(!Buffer)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsEpromWrite: Null Buffer\n");
+		return BC_STS_INV_ARG;
+	}
+
+	if(BuffSz % 4)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsEpromWrite: Buff Size is not a multiple of DWORD\n");
+		return BC_STS_ERROR;
+	}
+
+	/* Clear any previous operation */
+	sts = DtsFPGARegisterWr(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, 0x0);
+	if(BC_STS_SUCCESS != sts) return sts;
+
+	regVal = EPROM_SLAVE_ADDRESS_VAL;
+	/* Program Slave Address */
+	sts = DtsFPGARegisterWr(hDevice, EPROM_CHIP_ADDR_REG, EPROM_SLAVE_ADDRESS_VAL);
+	if(BC_STS_SUCCESS != sts) return sts;
+
+	pageByteCnt = BuffSz;
+	while(pageByteCnt)
+	{
+		ackWait = 0;
+		do {
+
+			/* Program Write Address (High and Low) */
+			regVal = (Offset>>8)&0xFF;
+			sts = DtsFPGARegisterWr(hDevice, EPROM_WRITE_DATA0_REG, regVal);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			regVal = (Offset&0xFF);
+			sts = DtsFPGARegisterWr(hDevice, EPROM_WRITE_DATA1_REG, regVal);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			/* Program transfer length to write */
+			regVal = 0x2 & EPROM_BC_CNT_REG1_FIELD;
+			sts = DtsFPGARegisterWr(hDevice, EPROM_BYTE_CNTR_REG, regVal);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			/* Program write only configuration */
+			regVal = EPROM_CNTRL_REG_INIT_VAL | EPROM_CNTRL_REG_WO_FORMAT;
+			sts = DtsFPGARegisterWr(hDevice, EPROM_CONTROL_REG, regVal);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			/* Enable the write operation */
+			regVal = EPROM_OP_ENABLE|EPROM_NO_STOP_SEQ; 
+			sts = DtsFPGARegisterWr(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, regVal);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			/* Poll for operation complete */
+			lpCnt = 0;
+			do {
+				
+				sts = DtsFPGARegisterRead(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, &regVal);
+				if(BC_STS_SUCCESS != sts) return sts;
+
+				if(lpCnt++ > 100) {
+					/* Return appropriate error condition */
+					return BC_STS_ERROR;
+				}
+			} while(!(regVal&EPROM_INTR_PRESENT));
+
+			/* Reset enable register */
+			sts = DtsFPGARegisterWr(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, EPROM_RESET_ENABLE_REG);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			if(ackWait++ > 100) {
+					/* Return appropriate error condition */
+					return BC_STS_ERROR;
+			}
+
+			/* Acknowledge polling */
+		} while(regVal&EPROM_NOACK_PRESENT);
+
+		/* Now, Continuous Writes */
+
+		/* Align to EPROM Write Page Boundary and do write */
+		nextPageBndyCnt = EPROM_WR_PAGE_SIZE - (Offset%EPROM_WR_PAGE_SIZE);
+		if(pageByteCnt >= nextPageBndyCnt) {
+			byteCnt = nextPageBndyCnt;
+		} else {
+			byteCnt = pageByteCnt;
+		}
+
+		Offset += byteCnt;
+
+		/* Taking the page size from the total size */
+		pageByteCnt -= byteCnt;
+
+		while(byteCnt)
+		{
+			if(byteCnt > EPROM_TRANSFER_MAX_SIZE)
+			{
+				/* Bytes remaining is more than 4, so program length to 4 */
+				txSize = EPROM_TRANSFER_MAX_SIZE;
+			}
+			else
+			{
+				/* Remaining bytes */
+				txSize = byteCnt;
+				last = 1;
+			}
+
+			/* Program data bytes to Write Data Register */
+			for(ix = 0; ix < txSize; ix++)
+			{
+				regVal = Buffer[tSize];
+				sts = DtsFPGARegisterWr(hDevice, (EPROM_WRITE_DATA0_REG+ix*4), regVal);
+				if(BC_STS_SUCCESS != sts) return sts;
+
+				tSize++;
+			}
+
+			/* Program transfer length to write */
+			regVal = txSize & EPROM_BC_CNT_REG1_FIELD;
+			sts = DtsFPGARegisterWr(hDevice, EPROM_BYTE_CNTR_REG, regVal);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			/* Program write only configuration */
+			regVal = EPROM_CNTRL_REG_INIT_VAL | EPROM_CNTRL_REG_WO_FORMAT;
+			sts = DtsFPGARegisterWr(hDevice, EPROM_CONTROL_REG, regVal);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			regVal = EPROM_OP_ENABLE;
+			if(last == 1) {
+				regVal |= EPROM_NO_START_SEQ;
+			} else if(last == 0) {
+				regVal |= (EPROM_NO_START_SEQ|EPROM_NO_STOP_SEQ);
+			}
+
+			/* Program enable register */
+			sts = DtsFPGARegisterWr(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, regVal);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			/* Poll for operation complete */
+			lpCnt = 0;
+			do {
+			
+				sts = DtsFPGARegisterRead(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, &regVal);
+				if(BC_STS_SUCCESS != sts) return sts;
+
+				if(lpCnt++ > 100) {
+					/* Return appropriate error condition */
+					return BC_STS_ERROR;
+				}
+			} while(!(regVal&EPROM_INTR_PRESENT));
+
+			/* Reset enable register */
+			sts = DtsFPGARegisterWr(hDevice, EPROM_RW_ENABLE_INTERRUPT_REG, EPROM_RESET_ENABLE_REG);
+			if(BC_STS_SUCCESS != sts) return sts;
+
+			/* Reduce the byte count */
+			byteCnt -= txSize;
+
+			/*  */
+			last = 0;
+		}
+	}
+#endif
+	return BC_STS_SUCCESS;
+}
+
+
+
+DRVIFLIB_INT_API BC_STATUS 
+DtsAesEpromWrite(
+    HANDLE	hDevice,
+    uint8_t *Buffer,
+    uint32_t BuffSz,
+    uint32_t Offset
+    )
+{
+
+	uint32_t regVal = 0;
+	// unused uint32_t lpCnt = 0, ackWait = 0;
+	// unused uint32_t byteCnt = 0;
+	// unused uint32_t txSize = 0;
+	// unused uint32_t last=0;
+	uint32_t ix = 0;
+	// unused uint32_t pageByteCnt = 0;
+	// unused uint32_t nextPageBndyCnt = 0;
+	// unused uint32_t tSize = 0;
+	BC_STATUS status = BC_STS_SUCCESS;
+	uint32_t* Temp = (uint32_t*)Buffer;
+
+	if(!hDevice)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsAesEpromWrite: Invalid Handle\n");
+		return BC_STS_INV_ARG;
+	}
+
+	if(!Buffer)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsAesEpromWrite: Null Buffer\n");
+		return BC_STS_INV_ARG;
+	}
+
+	if(BuffSz % 0x10)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsAesEpromWrite: Buff Size is not a multiple of 16 bytes. buffsz is  %d\n",BuffSz);
+		return BC_STS_ERROR;
+	}
+	//Not sure if this check is needed. the Link AES register doc says that 
+	//pcie config info is stored at eprom 0x0
+#if 0
+	if(Offset < 0x20)
+	{
+		DebugLog_Trace(LDIL_DBG,"DtsAesEpromWrite: Offset should be greater than 0x20\n");
+		return BC_STS_ERROR;
+	}
+#endif 
+	uint32_t bytecnt=0;
+	
+	//write start address in EEPROM to AES_EEPROM_CONFIG  
+	regVal = (Offset)+bytecnt;
+	status = DtsFPGARegisterWr(hDevice,AES_EEPROM_CONFIG,regVal);
+	if(BC_STS_SUCCESS != status)
+	{
+		DebugLog_Trace(LDIL_DBG,"Writing FPGA register (0x%X) failed: status=%x\n", AES_EEPROM_CONFIG, status);
+		return (status);
+	}
+	
+	status = DtsFPGARegisterRead(hDevice,OTP_CMD,&regVal);
+	if(BC_STS_SUCCESS != status)
+	{
+		DebugLog_Trace(LDIL_DBG,"Reading FPGA register (0x%X) failed status:%x\n", OTP_CMD, status);
+		return (status);
+	}
+	if(!(regVal & OTP_KEYS_AVAIL)){
+		DebugLog_Trace(LDIL_DBG,"Aborting operation.Keys not available for encryption:%x\n", status);
+		return BC_STS_ERROR;
+	}
+	//Set PREPARE_ENCRYPTION bit in AES_CMD
+	regVal = AES_PREPARE_ENCRYPTION;
+	status = DtsFPGARegisterWr(hDevice,AES_CMD,regVal);
+	if(BC_STS_ERROR == status)
+	{
+		DebugLog_Trace(LDIL_DBG,"Writing FPGA register (0x%X) failed: status=%x\n", AES_CMD, status);
+		return (status);
+	}
+	//Poll on PREPARE_DONE in AES_STATUS
+	ix = 1000;
+		do {
+			status = DtsFPGARegisterRead(hDevice,AES_STATUS,&regVal);
+			if(BC_STS_SUCCESS != status)
+			{
+				DebugLog_Trace(LDIL_DBG,"Reading FPGA register (0x%X) failed status:%x\n", AES_STATUS, status);
+				return (status);
+			}
+			bc_sleep_ms(10);
+		} while(--ix && (!(regVal & AES_PREPARE_DONE)));
+	if(!ix)
+		{
+			DebugLog_Trace(LDIL_DBG,"FPGA PREPARE_DONE timed out. AES_STATUS:(0x%X)\n",AES_STATUS);
+			return BC_STS_TIMEOUT;
+		}
+
+	for(bytecnt =0;bytecnt<BuffSz;bytecnt+=16)
+	{
+
+		//write data to the AES_EEPROM_DATA_X registers
+		int cnt=0;
+		uint32_t regAddr=(uint32_t)AES_EEPROM_DATA_3;
+		
+		for(cnt=0;cnt<4;cnt++)
+		{		
+			regVal = *Temp;
+			//status = DtsFPGARegisterWr(hDevice,regAddr,bswap_32_1(regVal));
+			status = DtsFPGARegisterWr(hDevice,regAddr,regVal);
+			if(BC_STS_ERROR == status)
+			{
+			DebugLog_Trace(LDIL_DBG,"Writing FPGA register (0x%X) failed: status=%x\n", regAddr, status);
+				return (status);
+			}
+			Temp++;
+			regAddr-=4;
+		}
+		//set WRITE_EEPROM 0 and then to 1 in AES_CMD to cause a low to high transition 
+		regVal = 0x0;
+		status = DtsFPGARegisterWr(hDevice,AES_CMD,regVal);
+		if(BC_STS_ERROR == status)
+		{
+			DebugLog_Trace(LDIL_DBG,"Writing FPGA register (0x%X) failed: status=%x\n", AES_CMD, status);
+			return (status);
+		}
+		regVal = AES_WRITE_EEPROM;
+		status = DtsFPGARegisterWr(hDevice,AES_CMD,regVal);
+		if(BC_STS_ERROR == status)
+		{
+			DebugLog_Trace(LDIL_DBG,"Writing FPGA register (0x%X) failed: status=%x\n", AES_CMD, status);
+			return (status);
+		}
+		//Poll on WRITE_DONE in AES_STATUS
+		ix = 1000;
+		do {
+			status = DtsFPGARegisterRead(hDevice,AES_STATUS,&regVal);
+			if(BC_STS_SUCCESS != status)
+			{
+				DebugLog_Trace(LDIL_DBG,"Reading FPGA register (0x%X) failed status:%x\n", AES_STATUS, status);
+				return (status);
+			}
+			bc_sleep_ms(10);
+		} while(--ix && (!(regVal & AES_WRITE_DONE)));
+
+		if(!ix)
+		{
+			DebugLog_Trace(LDIL_DBG,"FPGA WRITE_DONE timed out.AES_STATUS:(0x%X)\n",AES_STATUS);
+				return BC_STS_TIMEOUT;
+		}
+
+	}//end of for
 
 	return BC_STS_SUCCESS;
 }
@@ -910,17 +1858,8 @@ DtsCopyRawDataToOutBuff(DTS_LIB_CONTEXT	*Ctx,
 		/* Check for Valid data based on the filter information */
 		if(Vout->YBuffDoneSz < (dstWidthInPixels * dstHeightInPixels / 2))
 			return BC_STS_IO_XFR_ERROR;
-		/* Calculate the appropriate source width and height */
-		if(dstWidthInPixels > 1280) {
-			srcWidthInPixels = 1920;
-			srcHeightInPixels = dstHeightInPixels;
-		} else if(dstWidthInPixels > 720) {
-			srcWidthInPixels = 1280;
-			srcHeightInPixels = dstHeightInPixels;
-		} else {
-			srcWidthInPixels = 720;
-			srcHeightInPixels = dstHeightInPixels;
-		}
+		srcWidthInPixels = Ctx->picWidth;
+		srcHeightInPixels = dstHeightInPixels;
 	} else {
 		dstWidthInPixels = Vin->PicInfo.width;
 		dstHeightInPixels = Vin->PicInfo.height;
@@ -982,28 +1921,11 @@ BC_STATUS DtsCopyNV12ToYV12(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *Vout, BC_DTS_
 		if((Vout->YBuffDoneSz < (dstWidthInPixels * dstHeightInPixels / 4)) ||
 			(Vout->UVBuffDoneSz < (dstWidthInPixels * dstHeightInPixels/2 / 4)))
 		{
-			DebugLog_Trace(LDIL_DBG,"DtsCopyYV12[%d x %d]: XFER ERROR %x %x \n",
-				dstWidthInPixels, dstHeightInPixels,
-				Vout->YBuffDoneSz, Vout->UVBuffDoneSz);
+			DebugLog_Trace(LDIL_DBG,"DtsCopyYV12: XFER ERROR\n");
 			return BC_STS_IO_XFR_ERROR;
 		}
-
-		/* Calculate the appropriate source width and height */
-		if(dstWidthInPixels > 1280) 
-		{
-			srcWidthInPixels = 1920;
-			srcHeightInPixels = dstHeightInPixels;
-		} 
-		else if(dstWidthInPixels > 720) 
-		{
-			srcWidthInPixels = 1280;
-			srcHeightInPixels = dstHeightInPixels;
-		} 
-		else 
-		{
-			srcWidthInPixels = 720;
-			srcHeightInPixels = dstHeightInPixels;
-		}
+		srcWidthInPixels = Ctx->picWidth;
+		srcHeightInPixels = dstHeightInPixels;
 
 		//copy luma
 		pDest = Vout->Ybuff;
@@ -1055,9 +1977,9 @@ BC_STATUS DtsCopyNV12ToYV12(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *Vout, BC_DTS_
 	
 BC_STATUS DtsCopyNV12(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *Vout, BC_DTS_PROC_OUT *Vin)
 {
-	uint32_t	y,lDestStride=0;
+	uint32_t y,lDestStride=0;
 	uint8_t	*pSrc = NULL, *pDest=NULL;
-	uint32_t	dstWidthInPixels, dstHeightInPixels;
+	uint32_t dstWidthInPixels, dstHeightInPixels;
 	uint32_t srcWidthInPixels, srcHeightInPixels;
 	
 	BC_STATUS	Sts = BC_STS_SUCCESS;
@@ -1079,17 +2001,8 @@ BC_STATUS DtsCopyNV12(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *Vout, BC_DTS_PROC_O
 		if((Vout->YBuffDoneSz < (dstWidthInPixels * dstHeightInPixels / 4)) ||
 			(Vout->UVBuffDoneSz < (dstWidthInPixels * dstHeightInPixels/2 / 4)))
 			return BC_STS_IO_XFR_ERROR;
-		/* Calculate the appropriate source width and height */
-		if(dstWidthInPixels > 1280) {
-			srcWidthInPixels = 1920;
-			srcHeightInPixels = dstHeightInPixels;
-		} else if(dstWidthInPixels > 720) {
-			srcWidthInPixels = 1280;
-			srcHeightInPixels = dstHeightInPixels;
-		} else {
-			srcWidthInPixels = 720;
-			srcHeightInPixels = dstHeightInPixels;
-		}
+		srcWidthInPixels = Ctx->picWidth;
+		srcHeightInPixels = dstHeightInPixels;
 	} else {
 		dstWidthInPixels = Vin->PicInfo.width;
 		dstHeightInPixels = Vin->PicInfo.height;
@@ -1132,11 +2045,11 @@ BC_STATUS DtsCopyNV12(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *Vout, BC_DTS_PROC_O
 
 DRVIFLIB_INT_API BC_STATUS
 DtsPushFwBinToLink(
-	HANDLE	hDevice,
-    uint32_t		*Buffer,
-    uint32_t		BuffSz)
+	HANDLE hDevice,
+    uint32_t *Buffer,
+    uint32_t BuffSz)
 {
-	uint8_t				*pXferBuff;
+	uint8_t			*pXferBuff;
 	BC_IOCTL_DATA	*pIoctlData;	
 	BC_CMD_DEV_MEM	*pMemAccess;
 	uint32_t				BytesReturned, AllocSz;
@@ -1188,129 +2101,6 @@ DtsPushFwBinToLink(
 	return BC_STS_SUCCESS;
 }
 
-
-DRVIFLIB_INT_API BC_STATUS
-DtsPushAuthFwToLink(HANDLE hDevice, char *FwBinFile)
-{
-	BC_STATUS		status=BC_STS_ERROR;
-	uint32_t				byesDnld=0;
-	char			*fwfile=NULL;
-	DTS_LIB_CONTEXT *Ctx=NULL;
-	
-	DTS_GET_CTX(hDevice,Ctx);
-
-	if(Ctx->OpMode == DTS_DIAG_MODE){
-		/* In command line case, we don't get a close
-		 * between successive devinit commands.
-		 */
-		Ctx->FixFlags &= ~DTS_LOAD_FILE_PLAY_FW;
-
-		if(FwBinFile){
-			if(!strncmp(FwBinFile,"FILE_PLAY_BACK",14)){
-				Ctx->FixFlags |=DTS_LOAD_FILE_PLAY_FW;
-				FwBinFile=NULL;
-			}
-		}
-	}
-
-	/* Get the firmware file to download */
-	if (!FwBinFile) 
-	{
-		status = DtsGetFirmwareFiles(Ctx);
-		if (status == BC_STS_SUCCESS) fwfile = Ctx->FwBinFile;
-		else return status;
-
-	} else {
-		fwfile = FwBinFile;
-	}
-
-	//DebugLog_Trace(LDIL_DBG,"Firmware File is :%s\n",fwfile);
-
-	/* Push the F/W bin file to the driver */	
-	status = fwbinPushToLINK(hDevice, fwfile, &byesDnld);
-	
-	if (status != BC_STS_SUCCESS) {
-		DebugLog_Trace(LDIL_DBG,"DtsDownloadAuthFwToLINK: Failed to download firmware\n");
-		return status;
-	}
-	
-
-
-	
-	return BC_STS_SUCCESS;
-}
-
-
-
-DRVIFLIB_INT_API BC_STATUS 
-fwbinPushToLINK(HANDLE hDevice, char *FwBinFile, uint32_t *bytesDnld)
-{
-	BC_STATUS	status=BC_STS_ERROR;
-	uint32_t			FileSz=0;
-	uint8_t			*buff=NULL;
-	FILE 		*fp=NULL;
-
-	if( (!FwBinFile) || (!hDevice) || (!bytesDnld))
-	{
-		DebugLog_Trace(LDIL_DBG,"Invalid Arguments\n");
-		return BC_STS_INV_ARG;
-	}
-	
-	fp = fopen(FwBinFile,"rb");
-	if(!fp)
-	{
-		DebugLog_Trace(LDIL_DBG,"Failed to Open FW file\n");
-		return BC_STS_ERROR;
-	}
-
-	fseek(fp,0,SEEK_END);
-	FileSz = ftell(fp);
-	fseek(fp,0,SEEK_SET);
-
-	buff = (uint8_t *)malloc(FileSz);
-	if (!buff) {
-		DebugLog_Trace(LDIL_DBG,"Failed to allocate memory\n");
-		return BC_STS_INSUFF_RES;
-	}
-
-	*bytesDnld = fread(buff,1,FileSz,fp);
-	if(0 == *bytesDnld)
-	{
-		DebugLog_Trace(LDIL_DBG,"Failed to Read The File\n");
-		return BC_STS_IO_ERROR;
-	}
-
-	status = DtsPushFwBinToLink(hDevice, (uint32_t *)buff, *bytesDnld);
-	if(buff) free(buff);
-	if(fp) fclose(fp);
-	return status;
-}
-
-
-#define rotr32_1(x,n)   (((x) >> n) | ((x) << (32 - n)))
-#define bswap_32_1(x) ((rotr32_1((x), 24) & 0x00ff00ff) | (rotr32_1((x), 8) & 0xff00ff00))
-
-BC_STATUS dec_write_fw_Sig(HANDLE hndl,uint32_t* Sig)
-{
-		unsigned int *ptr = Sig;
-		unsigned int DciSigDataReg = (unsigned int)DCI_SIGNATURE_DATA_7;
-		BC_STATUS sts = BC_STS_ERROR;
-
-		for (int reg_cnt=0;reg_cnt<8;reg_cnt++)
-		{
-			sts = DtsFPGARegisterWr(hndl, DciSigDataReg, bswap_32_1(*ptr));
-			
-			if(sts != BC_STS_SUCCESS)
-			{	
-				DebugLog_Trace(LDIL_DBG,"Error Wrinting Fw Sig data register\n");
-				return sts;
-			}
-			DciSigDataReg-=4;
-			ptr++;
-		}
-		return sts;
-
-}
 /*====================== Debug Routines ========================================*/
 void DumpDataToFile(FILE *fp, char *header, uint32_t off, uint8_t *buff, uint32_t dwcount)
 {

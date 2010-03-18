@@ -40,9 +40,10 @@
 #else
 #include <sys/time.h>
 #endif
+#include "7411d.h"
 #include "libcrystalhd_priv.h"
 
-
+#define	 BC_EOS_DETECTED		0xffffffff
 
 /*============== Global shared area usage ======================*/
 /* Global mode settings */
@@ -255,6 +256,10 @@ BC_DTS_STATS * DtsGetgStats ( void )
 
 /*============== Global shared area usage End.. ======================*/
 
+#define TOP_FIELD_FLAG				0x01
+#define BOTTOM_FIELD_FLAG			0x02
+#define PROGRESSIVE_FRAME_FLAG	0x03
+
 static void DtsGetMaxYUVSize(DTS_LIB_CONTEXT *Ctx, uint32_t *YbSz, uint32_t *UVbSz)
 {
 	if (Ctx->b422Mode) {
@@ -303,6 +308,67 @@ static void DtsDecPend(DTS_LIB_CONTEXT	*Ctx)
 	DtsUnLock(Ctx);
 }
 
+uint32_t DtsGetWidthfromResolution(DTS_LIB_CONTEXT *Ctx, uint32_t Resolution)
+{
+	uint32_t Width;
+	
+	/* For Flea source width is always equal to video width */
+	/* For Link translate from format container to actual source width */
+	if(Ctx->DevId == BC_PCI_DEVID_FLEA)
+		return 0;
+
+	switch (Resolution) {
+	case vdecRESOLUTION_CUSTOM:
+		Width = 0;
+		break;
+	case vdecRESOLUTION_1080i:
+	case vdecRESOLUTION_1080i25:
+    case vdecRESOLUTION_1080i29_97:
+    case vdecRESOLUTION_1080p29_97:
+    case vdecRESOLUTION_1080p30:
+    case vdecRESOLUTION_1080p24:
+    case vdecRESOLUTION_1080p25:
+	case vdecRESOLUTION_1080p0:
+	case vdecRESOLUTION_1080i0:
+	case vdecRESOLUTION_1080p23_976:
+		Width = 1920;
+		break;
+	case vdecRESOLUTION_240p29_97:
+	case vdecRESOLUTION_240p30:
+	case vdecRESOLUTION_288p25:
+		Width = 1440;
+		break;
+	case vdecRESOLUTION_720p:
+    case vdecRESOLUTION_720p50:
+	case vdecRESOLUTION_720p59_94:
+    case vdecRESOLUTION_720p24:	
+	case vdecRESOLUTION_720p29_97:
+	case vdecRESOLUTION_720p0:
+	case vdecRESOLUTION_720p23_976:
+		Width = 1280;
+		break;
+	case vdecRESOLUTION_480i:
+	case vdecRESOLUTION_NTSC:
+	case vdecRESOLUTION_PAL1:
+    case vdecRESOLUTION_SD_DVD:
+    case vdecRESOLUTION_480p656:
+	case vdecRESOLUTION_480p:
+    case vdecRESOLUTION_576p:
+	case vdecRESOLUTION_480p23_976:
+	case vdecRESOLUTION_480p29_97:
+	case vdecRESOLUTION_576p25:
+	case vdecRESOLUTION_480p0:
+	case vdecRESOLUTION_480i0:
+	case vdecRESOLUTION_576p0:
+		Width = 720;
+		break;
+	default:
+		Width = 0;
+		break;
+	}
+	return Width;
+}
+
 static void DtsCopyAppPIB(DTS_LIB_CONTEXT *Ctx, BC_DEC_OUT_BUFF *decOut, BC_DTS_PROC_OUT *pOut)
 {
 	BC_PIC_INFO_BLOCK	*srcPib = &decOut->PibInfo;
@@ -328,11 +394,10 @@ static void DtsCopyAppPIB(DTS_LIB_CONTEXT *Ctx, BC_DEC_OUT_BUFF *decOut, BC_DTS_
 	/* Retrieve Timestamp */
 	if(srcPib->flags & VDEC_FLAG_PICTURE_META_DATA_PRESENT){ 
 		sNum = (uint16_t) ( ((srcPib->picture_meta_payload & 0xFF) << 8) |
-						  ((srcPib->picture_meta_payload& 0xFF00) >> 8) );
+						    ((srcPib->picture_meta_payload& 0xFF00) >> 8) );
 		DtsFetchMdata(Ctx,sNum,pOut);
 	}
 }
-
 static void dts_swap_buffer(uint32_t *dst, uint32_t *src, uint32_t cnt)
 {
 	uint32_t i=0;
@@ -347,12 +412,13 @@ static void DtsGetPibFrom422(uint8_t *pibBuff, uint8_t mode422)
 {
 	uint32_t		i;
 
-	if (mode422 == MODE422_YUY2) {
+	//First stripe has PIB data and second one has Extension PB. so total 256 bytes
+	if (mode422 == OUTPUT_MODE422_YUY2) {
 		for(i=0; i<128; i++) {
 			pibBuff[i] = pibBuff[i*2];
 		}
-	} else if (mode422 == MODE422_UYVY) {
-		for(i=0; i<128; i++) {
+	} else if (mode422 == OUTPUT_MODE422_UYVY) {
+		for(i=0; i<256; i++) {
 			pibBuff[i] = pibBuff[(i*2)+1];
 		}
 	}
@@ -361,46 +427,83 @@ static void DtsGetPibFrom422(uint8_t *pibBuff, uint8_t mode422)
 static BC_STATUS DtsGetPictureInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 {	
 
-	uint16_t					sNum = 0;	
-	uint8_t*					pPicInfoLine = NULL;
-	uint32_t					PictureNumber = 0;
-	uint32_t					PicInfoLineNum; 
+	uint16_t			sNum = 0;	
+	//unused BC_STATUS			sts = BC_STS_SUCCESS;
+	uint8_t*			pPicInfoLine = NULL;
+	uint32_t			PictureNumber = 0;
+	uint32_t			PicInfoLineNum; 
 	
-	if (Ctx->b422Mode == MODE422_YUY2) {
-		PicInfoLineNum = (ULONG)((*(pOut->Ybuff + 6)) & 0xff)
-						| (((ULONG)(*(pOut->Ybuff + 4)) << 8) & 0x0000ff00)
-						| (((ULONG)(*(pOut->Ybuff + 2)) << 16) & 0x00ff0000)
-						| (((ULONG)(*(pOut->Ybuff + 0)) << 24) & 0xff000000);
-	} else if (Ctx->b422Mode == MODE422_UYVY) {
-		PicInfoLineNum = (ULONG)((*(pOut->Ybuff + 7)) & 0xff)
-						| (((ULONG)(*(pOut->Ybuff + 5)) << 8) & 0x0000ff00)
-						| (((ULONG)(*(pOut->Ybuff + 3)) << 16) & 0x00ff0000)
-						| (((ULONG)(*(pOut->Ybuff + 1)) << 24) & 0xff000000);
-	} else {
-		PicInfoLineNum = (ULONG)((*(pOut->Ybuff + 3)) & 0xff)
-						| (((ULONG)(*(pOut->Ybuff + 2)) << 8) & 0x0000ff00)
-						| (((ULONG)(*(pOut->Ybuff + 1)) << 16) & 0x00ff0000)
-						| (((ULONG)(*(pOut->Ybuff + 0)) << 24) & 0xff000000);
+	if (Ctx->DevId == BC_PCI_DEVID_FLEA)
+	{
+		PicInfoLineNum = *(ULONG *)(pOut->Ybuff);		
+	}
+	else if (Ctx->b422Mode == OUTPUT_MODE422_YUY2) 
+	{
+		PicInfoLineNum = (ULONG)(*(pOut->Ybuff + 6)) & 0xff
+						| ((ULONG)(*(pOut->Ybuff + 4)) << 8) & 0x0000ff00
+						| ((ULONG)(*(pOut->Ybuff + 2)) << 16) & 0x00ff0000
+						| ((ULONG)(*(pOut->Ybuff + 0)) << 24) & 0xff000000;		
+	} 
+	else if (Ctx->b422Mode == OUTPUT_MODE422_UYVY) 
+	{
+		PicInfoLineNum = (ULONG)(*(pOut->Ybuff + 7)) & 0xff
+						| ((ULONG)(*(pOut->Ybuff + 5)) << 8) & 0x0000ff00
+						| ((ULONG)(*(pOut->Ybuff + 3)) << 16) & 0x00ff0000
+						| ((ULONG)(*(pOut->Ybuff + 1)) << 24) & 0xff000000;
+	} 
+	else 
+	{
+		PicInfoLineNum = (ULONG)(*(pOut->Ybuff + 3)) & 0xff
+						| ((ULONG)(*(pOut->Ybuff + 2)) << 8) & 0x0000ff00
+						| ((ULONG)(*(pOut->Ybuff + 1)) << 16) & 0x00ff0000
+						| ((ULONG)(*(pOut->Ybuff + 0)) << 24) & 0xff000000;
 	}
 	
-	if( (PicInfoLineNum != Ctx->picHeight) && (PicInfoLineNum != Ctx->picHeight/2))
+	if (PicInfoLineNum == BC_EOS_DETECTED)  // EOS
+	{
+		memcpy((uint32_t*)&pOut->PicInfo,(uint32_t*)(pOut->Ybuff + 4), sizeof(BC_PIC_INFO_BLOCK));
+		if (pOut->PicInfo.flags & VDEC_FLAG_EOS)
+		{
+			Ctx->bEOS = true;
+			Ctx->pOutData->RetSts = BC_STS_NO_DATA;
+			return BC_STS_NO_DATA;
+		}
+	}
+	/*
+	-- To take care of 16 byte alignment the firmware might put extra 
+	-- line so that the PIB starts with a line boundary. We will need to 
+	-- have additional checks for the following condition to take care of 
+	-- extra lines.
+	*/
+
+	if( ( (PicInfoLineNum != Ctx->picHeight) && (PicInfoLineNum != (Ctx->picHeight+1))) && 
+		( (PicInfoLineNum != Ctx->picHeight/2) && (PicInfoLineNum != (Ctx->picHeight+1)/2)) )
 	{	
 		return BC_STS_IO_XFR_ERROR;
 	}
+
 	if (Ctx->b422Mode) {
 		pPicInfoLine = pOut->Ybuff + PicInfoLineNum * Ctx->picWidth * 2;
 	} else {
 		pPicInfoLine = pOut->Ybuff + PicInfoLineNum * Ctx->picWidth;
 	}
 
-	DtsGetPibFrom422(pPicInfoLine, Ctx->b422Mode);
+	if (Ctx->DevId != BC_PCI_DEVID_FLEA)
+	{
+		DtsGetPibFrom422(pPicInfoLine, Ctx->b422Mode);
+		PictureNumber = (ULONG)(*(pPicInfoLine + 3)) & 0xff
+							| ((ULONG)(*(pPicInfoLine + 2)) << 8) & 0x0000ff00
+							| ((ULONG)(*(pPicInfoLine + 1)) << 16) & 0x00ff0000
+							| ((ULONG)(*(pPicInfoLine + 0)) << 24) & 0xff000000;
+	
+	}else{
+		/*The Metadata Is Linear in Flea.*/
+		PictureNumber = (ULONG)(*(pPicInfoLine + 0)) & 0xff
+							| ((ULONG)(*(pPicInfoLine + 1)) << 8) & 0x0000ff00
+							| ((ULONG)(*(pPicInfoLine + 2)) << 16) & 0x00ff0000
+							| ((ULONG)(*(pPicInfoLine + 3)) << 24) & 0xff000000;
+	}
 
-	PictureNumber = (ULONG)((*(pPicInfoLine + 3)) & 0xff)
-							| (((ULONG)(*(pPicInfoLine + 2)) << 8) & 0x0000ff00)
-							| (((ULONG)(*(pPicInfoLine + 1)) << 16) & 0x00ff0000)
-							| (((ULONG)(*(pPicInfoLine + 0)) << 24) & 0xff000000);
-	
-	
 	pOut->PoutFlags |= BC_POUT_FLAGS_PIB_VALID;
 
 	if(PictureNumber & 0x40000000)
@@ -413,42 +516,209 @@ static BC_STATUS DtsGetPictureInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 		PictureNumber &= ~0x80000000;
 		pOut->PoutFlags |= BC_POUT_FLAGS_ENCRYPTED;
 	}
-	dts_swap_buffer((uint32_t*)&pOut->PicInfo,(uint32_t*)(pPicInfoLine + 4), 32);
-
-	//Replace Data Back by 422 Mode
-	if (Ctx->b422Mode == MODE422_YUY2) 
+	if (Ctx->DevId != BC_PCI_DEVID_FLEA)
 	{
-		//For YUY2
-		*(pOut->Ybuff + 6) = ((char *)&pOut->PicInfo.ycom)[3];
-		*(pOut->Ybuff + 4) = ((char *)&pOut->PicInfo.ycom)[2];
-		*(pOut->Ybuff + 2) = ((char *)&pOut->PicInfo.ycom)[1];
-		*(pOut->Ybuff + 0) = ((char *)&pOut->PicInfo.ycom)[0];
-	} 
-	else if (Ctx->b422Mode == MODE422_UYVY) 
+		dts_swap_buffer((uint32_t*)&pOut->PicInfo,(uint32_t*)(pPicInfoLine + 4), 32);
+		//copy ext PIB
+		dts_swap_buffer((uint32_t*)&pOut->PicInfo.other,(uint32_t*)(pPicInfoLine +128), 32);
+	}
+	else
 	{
-		//For UYVY
-		*(pOut->Ybuff + 7) = ((char *)&pOut->PicInfo.ycom)[3];
-		*(pOut->Ybuff + 5) = ((char *)&pOut->PicInfo.ycom)[2];
-		*(pOut->Ybuff + 3) = ((char *)&pOut->PicInfo.ycom)[1];
-		*(pOut->Ybuff + 1) = ((char *)&pOut->PicInfo.ycom)[0];
-	} 
-	else 
-	{
-		//For NV12 or YV12
-		*((uint32_t *)&pOut->Ybuff[0]) = pOut->PicInfo.ycom;
+		memcpy((uint32_t*)&pOut->PicInfo,(uint32_t*)(pPicInfoLine + 4), sizeof(BC_PIC_INFO_BLOCK));
 	}
 
-	/* Retrieve Timestamp */
-	if(pOut->PicInfo.flags & VDEC_FLAG_PICTURE_META_DATA_PRESENT)
-	{ 
-		sNum = (uint16_t) ( ((pOut->PicInfo.picture_meta_payload & 0xFF) << 8) |
-						  ((pOut->PicInfo.picture_meta_payload & 0xFF00) >> 8) );
-		DtsFetchMdata(Ctx,sNum,pOut);
+	/* Replace Y Component data*/
+	if(Ctx->DevId == BC_PCI_DEVID_FLEA)
+	{
+		// In Flea from the HW we are getting Y and UV directly in the y component
+			*((uint32_t *)&pOut->Ybuff[0]) = pOut->PicInfo.ycom;
+	}
+	else
+	{
+		//Replace Data Back by 422 Mode
+		if (Ctx->b422Mode == OUTPUT_MODE422_YUY2) 
+		{
+			//For YUY2
+			*(pOut->Ybuff + 6) = ((char *)&pOut->PicInfo.ycom)[3];
+			*(pOut->Ybuff + 4) = ((char *)&pOut->PicInfo.ycom)[2];
+			*(pOut->Ybuff + 2) = ((char *)&pOut->PicInfo.ycom)[1];
+			*(pOut->Ybuff + 0) = ((char *)&pOut->PicInfo.ycom)[0];
+		} 
+		else if (Ctx->b422Mode == OUTPUT_MODE422_UYVY) 
+		{
+			//For UYVY
+			*(pOut->Ybuff + 7) = ((char *)&pOut->PicInfo.ycom)[3];
+			*(pOut->Ybuff + 5) = ((char *)&pOut->PicInfo.ycom)[2];
+			*(pOut->Ybuff + 3) = ((char *)&pOut->PicInfo.ycom)[1];
+			*(pOut->Ybuff + 1) = ((char *)&pOut->PicInfo.ycom)[0];
+		} 
+		else 
+		{
+			//For NV12 or YV12
+			*((uint32_t*)&pOut->Ybuff[0]) = pOut->PicInfo.ycom;
+		}
+	}
+
+	if(Ctx->DevId == BC_PCI_DEVID_FLEA)
+	{
+		//Flea Mode
+		if(pOut->PicInfo.timeStamp == 0xFFFFFFFF)
+		{
+			//For Pre-Load
+			pOut->PicInfo.timeStamp = 0xFFFFFFFFFFFFFFFFLL;
+		}
+		else
+		{
+			//Normal PTS
+			//Change PTS becuase of Shift PTS Issue in FW and 32-bit (ms) and 64-bit (100 ns) Scaling
+			pOut->PicInfo.timeStamp = pOut->PicInfo.timeStamp * 2 * 10000;
+		}
+	}
+	else
+	{
+		/* Retrieve Timestamp */
+		if(pOut->PicInfo.flags & VDEC_FLAG_PICTURE_META_DATA_PRESENT)
+		{ 
+			sNum = (uint16_t) ( ( (pOut->PicInfo.picture_meta_payload & 0xFF) << 8) |
+                                ((pOut->PicInfo.picture_meta_payload& 0xFF00) >> 8) );
+			DtsFetchMdata(Ctx,sNum,pOut);
+		}
 	}
 	return BC_STS_SUCCESS;
 }
 
+BC_STATUS DtsUpdateVidParams(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
+{
 
+	Ctx->VidParams.WidthInPixels = pOut->PicInfo.width;
+	Ctx->VidParams.HeightInPixels = pOut->PicInfo.height;
+
+	switch(pOut->PicInfo.frame_rate)
+	{
+		case vdecRESOLUTION_480i0:
+		case vdecRESOLUTION_1080i0:
+		case vdecRESOLUTION_1080i29_97:
+		case vdecRESOLUTION_1080i25:
+		case vdecRESOLUTION_1080i:
+		case vdecRESOLUTION_480i:
+		case vdecRESOLUTION_NTSC:
+		case vdecRESOLUTION_PAL1:
+			Ctx->VidParams.Progressive = FALSE;
+			break;
+		default:
+			Ctx->VidParams.Progressive = TRUE;
+			break;
+	}	
+	return BC_STS_SUCCESS;
+
+}
+
+
+BOOL DtsCheckRptPic(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
+{
+	BOOL bRepeat = FALSE;
+	uint8_t nCheckFlag = TOP_FIELD_FLAG;
+
+	if (pOut->PicInfo.picture_number  <3)
+		return FALSE;
+
+	if (Ctx->bEOS == TRUE)
+	{
+		pOut->PicInfo.flags |= VDEC_FLAG_LAST_PICTURE;
+		Ctx->FlushIssued = FALSE;
+		return TRUE;
+	}
+
+	if (Ctx->LastPicNum == pOut->PicInfo.picture_number && Ctx->LastSessNum == pOut->PicInfo.sess_num)
+	{
+		if (Ctx->VidParams.Progressive)
+			nCheckFlag = PROGRESSIVE_FRAME_FLAG;
+		else if (pOut->PoutFlags & BC_POUT_FLAGS_FLD_BOT)
+			nCheckFlag = BOTTOM_FIELD_FLAG;
+		else
+			nCheckFlag = TOP_FIELD_FLAG;
+
+		//Discard for PullDown
+		int nShift = 2;
+		uint8_t nFlag = Ctx->PullDownFlag;
+		bool bFound = false;
+
+		while(nFlag)
+		{
+			if((nFlag & 0x03) == nCheckFlag)
+			{
+				bFound = true;
+				break;
+			}
+			nFlag = nFlag >> 2;
+			nShift += 2;
+		}
+
+		if(!bFound)
+			bRepeat = true;
+
+		Ctx->PullDownFlag = Ctx->PullDownFlag >> nShift;				
+	}
+	else
+	{
+		switch(pOut->PicInfo.pulldown)
+		{
+			case vdecTop:
+				Ctx->PullDownFlag = 0x0001;  //Top ==> 00000001
+				break;
+			case vdecBottom:
+				Ctx->PullDownFlag = 0x0002;  //Bottom ==> 00000010
+				break;
+			case vdecTopBottom:
+				Ctx->PullDownFlag = 0x0009;  //TopBottom ==> 00001001
+				break;
+			case vdecBottomTop:          
+				Ctx->PullDownFlag = 0x0006;  //BottomTop ==> 00000110
+				break;
+			case vdecTopBottomTop:
+				Ctx->PullDownFlag = 0x0019;  //TopBottomTop ==> 00011001
+				break;
+			case vdecBottomTopBottom:
+				Ctx->PullDownFlag = 0x0026;  //BottomTopBottom ==> 00100110
+				break;
+			case vdecFrame_X1:           
+				Ctx->PullDownFlag = 0x0003;  //Frame x 1 ==> 00000011
+				break;
+			case vdecFrame_X2:           
+				Ctx->PullDownFlag = 0x000f;  //Frame x 2 ==> 00001111
+				break;
+			case vdecFrame_X3:           
+				Ctx->PullDownFlag = 0x003f;  //Frame x 3 ==> 00111111
+				break;
+			case vdecFrame_X4:           
+				Ctx->PullDownFlag = 0x00ff;  //Frame x 4 ==> 11111111
+				break;							
+			default:
+				Ctx->PullDownFlag = 0x0003;  //Frame x 1 ==> 00000011
+				break;				
+		}
+		Ctx->eosCnt = 0;
+	}
+
+	
+	if (Ctx->FlushIssued)
+	{
+		if (bRepeat == TRUE)
+			Ctx->eosCnt ++;
+
+		if (Ctx->eosCnt >= BC_EOS_PIC_COUNT) 
+		{
+			Ctx->bEOS = TRUE;
+			pOut->PicInfo.flags |= VDEC_FLAG_LAST_PICTURE;
+			Ctx->FlushIssued = FALSE;
+		}
+	}
+	Ctx->LastPicNum = pOut->PicInfo.picture_number;
+	Ctx->LastSessNum = pOut->PicInfo.sess_num;
+	
+	return bRepeat;
+	
+}
 
 static void DtsSetupProcOutInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, BC_IOCTL_DATA *pIo)
 {
@@ -456,7 +726,7 @@ static void DtsSetupProcOutInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, BC_
 		return; // This is an internal function should never happen..
 
 	if(Ctx->RegCfg.DbgOptions & BC_BIT(6)){
-		/* Decoder PIC_INFO_ON mode, PIB is NOT embedded in frame */
+	/* Decoder PIC_INFO_ON mode, PIB is NOT embedded in frame */
 		if(pIo->u.DecOutData.Flags & COMP_FLAG_PIB_VALID){
 			pOut->PoutFlags |= BC_POUT_FLAGS_PIB_VALID;
 			DtsCopyAppPIB(Ctx, &pIo->u.DecOutData, pOut);
@@ -478,10 +748,12 @@ static void DtsSetupProcOutInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, BC_
 			DebugLog_Trace(LDIL_DBG,"Error: Can't hadle F/C w/o PIB_VALID \n");
 			return;
 		}
+		if(0 == (Ctx->picWidth = DtsGetWidthfromResolution(Ctx, pIo->u.DecOutData.PibInfo.frame_rate)))
+			Ctx->picWidth = pIo->u.DecOutData.PibInfo.width;
+		Ctx->picHeight = pIo->u.DecOutData.PibInfo.height;
 		pOut->PoutFlags |= BC_POUT_FLAGS_FMT_CHANGE;
 		pOut->PicInfo.frame_rate = pIo->u.DecOutData.PibInfo.frame_rate;
-		DebugLog_Trace(LDIL_DBG,"FormatCh: Width: %d Height: %d Res:%x\n",
-				pOut->PicInfo.width,pOut->PicInfo.height,pOut->PicInfo.frame_rate);
+		DebugLog_Trace(LDIL_DBG,"FormatCh:Height:%x Width:%x Res:%x\n",pOut->PicInfo.height,pOut->PicInfo.width,pOut->PicInfo.frame_rate);
 		if(pIo->u.DecOutData.Flags & COMP_FLAG_DATA_VALID){
 			DebugLog_Trace(LDIL_DBG,"Error: Data not expected with F/C \n");
 			return;
@@ -501,11 +773,123 @@ static void DtsSetupProcOutInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, BC_
 					pIo->u.DecOutData.OutPutBuffs.UVbuffOffset);
 
 		pOut->discCnt = pIo->u.DecOutData.BadFrCnt;
-
-		/* Decoder PIC_INFO_OFF mode, PIB is embedded in frame */
-		DtsGetPictureInfo(Ctx, pOut);
+		if(Ctx->FixFlags & DTS_LOAD_FILE_PLAY_FW){
+			/* Decoder PIC_INFO_OFF mode, PIB is embedded in frame */
+			DtsGetPictureInfo(Ctx, pOut);
+		}
 	}
 }
+/*
+static int DtsgetDllFirmwarepath(DTS_LIB_CONTEXT	*Ctx)
+{
+
+	size_t pathLen;
+    int8_t s, s1,s2,s3,s4;
+	
+	uint32_t offset = 0;
+	int8_t dllpath[MAX_PATH+1];
+    int8_t fulldllpath[MAX_PATH+1];
+	int8_t tempdllpath[MAX_PATH+1];
+	uint32_t pos = 0,tpos = 0;
+	
+	bool Done = false;
+	memset(dllpath,'\0',MAX_PATH+1);
+	::GetModuleFileName((HINSTANCE)&__ImageBase, (LPTSTR)fulldllpath, _MAX_PATH);
+	
+    s = fulldllpath[pos]; 
+    s1 = fulldllpath[pos+1];
+    s2 = fulldllpath[pos+2];
+    s3 = fulldllpath[pos+3];
+    s4 = fulldllpath[pos+4];
+	while(!((Done == true) && (s1 == '.') && (s2 == 'd') && (s3 == 'l') && (s4 == 'l')) ){
+
+	             
+			if(fulldllpath[pos] !='\0'){
+				tempdllpath[tpos] = fulldllpath[pos];
+				tpos++;          
+			}
+			if (tpos > 5){
+                s = tempdllpath[tpos-5] ;
+                s1 = tempdllpath[tpos-4] ;
+				s2 = tempdllpath[tpos-3] ;
+				s3 = tempdllpath[tpos-2] ;
+				s4 = tempdllpath[tpos-1] ;  
+			}
+			tempdllpath[tpos] = '\0';
+			struct _finddata_t c_file;
+			if((s1 == '.') && (s2 == 'd') && (s3 == 'l') && (s4 == 'l')) {
+				//BOOL bWorking = finder.FindFile( (LPTSTR)fulldllpath);
+              
+              intptr_t sdone = _findfirst(tempdllpath,&c_file);
+			  if(sdone != -1){
+	             Done = true; 	      
+			  }
+			}
+			pos++;		
+	}
+    tempdllpath[tpos] = '\0';
+	if (tempdllpath != NULL) {
+        pathLen = strlen(tempdllpath);
+		s = tempdllpath[pathLen];
+		for (int pos = (int) pathLen; s!='\\' ; pos--) {
+			 offset++;	  
+            s = tempdllpath[pos];
+		}
+		offset = offset -3;
+		int val = (int )pathLen-offset;
+        strncpy_s(dllpath,(pathLen-offset),tempdllpath,_TRUNCATE);
+        dllpath[val + 1] = '\0';
+
+		// Save DIL runtime path for cert usage.
+		strncpy_s(Ctx->DilPath,sizeof(Ctx->DilPath),dllpath,_TRUNCATE);
+
+		strncpy_s(Ctx->StreamFile,sizeof(Ctx->StreamFile),dllpath,_TRUNCATE);
+		strncat_s(Ctx->StreamFile,sizeof(Ctx->StreamFile),TSHEXFILE,_TRUNCATE);
+
+		strncpy_s(Ctx->VidInner,sizeof(Ctx->VidInner),dllpath,_TRUNCATE);
+		strncat_s(Ctx->VidInner,sizeof(Ctx->VidInner),DECIHEXFILE,_TRUNCATE);
+
+		strncpy_s(Ctx->VidOuter,sizeof(Ctx->VidOuter),dllpath,_TRUNCATE);
+		strncat_s(Ctx->VidOuter,sizeof(Ctx->VidOuter),DECOHEXFILE,_TRUNCATE);
+
+		strncpy_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),dllpath,_TRUNCATE);
+
+		if(Ctx->DevId == BC_PCI_DEVID_LINK || Ctx->DevId == BC_PCI_DEVID_FLEA){
+			if(Ctx->FixFlags & DTS_LOAD_FILE_PLAY_FW){
+				strncat_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBIN_FILE_PLAY_LNK,_TRUNCATE);
+			} else {
+				strncat_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBINFILE_LNK,_TRUNCATE);
+			}
+		}else{
+			strncat_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBINFILE,_TRUNCATE);
+		}
+		return 0;
+
+	} else {
+		  return -1;
+	}
+
+}
+*/
+
+/*
+static void DtsSetDefaultFirmwareFiles(DTS_LIB_CONTEXT	*Ctx)
+{
+	strncpy_s(Ctx->StreamFile,sizeof(Ctx->StreamFile),TSHEXFILE,_TRUNCATE);
+	strncpy_s(Ctx->VidInner,sizeof(Ctx->VidInner),DECIHEXFILE,_TRUNCATE);
+	strncpy_s(Ctx->VidOuter,sizeof(Ctx->VidOuter),DECOHEXFILE,_TRUNCATE);
+
+	if(Ctx->DevId == BC_PCI_DEVID_LINK || Ctx->DevId == BC_PCI_DEVID_FLEA){
+		if(Ctx->FixFlags & DTS_LOAD_FILE_PLAY_FW){
+			strncat_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBIN_FILE_PLAY_LNK,_TRUNCATE);
+		} else {
+			strncat_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBINFILE_LNK,_TRUNCATE);
+		}
+	}else{
+		strncpy_s(Ctx->FwBinFile,sizeof(Ctx->FwBinFile),FWBINFILE,_TRUNCATE);
+	}
+}
+*/
 
 // Input Meta Data related funtions..
 static BC_STATUS	DtsCreateMdataPool(DTS_LIB_CONTEXT *Ctx)
@@ -653,6 +1037,7 @@ BOOL DtsDrvIoctl
 {
 	
 	DTS_LIB_CONTEXT	*	Ctx = DtsGetContext(userHandle);
+	//unused DWORD	dwTimeout = 0;
 
 	if( !Ctx )
 		return FALSE;
@@ -949,6 +1334,8 @@ void DtsReleaseMemPools(DTS_LIB_CONTEXT *Ctx)
 	if(Ctx->MdataPoolPtr)
 		DtsDeleteMdataPool(Ctx);
 
+	if (Ctx->VidParams.pMetaData)
+		free(Ctx->VidParams.pMetaData);
 	DtsDelLock(Ctx);
 }
 void DtsReleaseMemPools_dbg(DTS_LIB_CONTEXT *Ctx)
@@ -979,7 +1366,7 @@ void DtsReleaseMemPools_dbg(DTS_LIB_CONTEXT *Ctx)
 // Name: DtsAddOutBuff
 // Description: Pass on user mode allocated Rx buffs to driver.
 //------------------------------------------------------------------------
-BC_STATUS DtsAddOutBuff(DTS_LIB_CONTEXT *Ctx, uint8_t *buff, uint32_t flags)
+BC_STATUS DtsAddOutBuff(DTS_LIB_CONTEXT *Ctx, uint8_t *buff, uint32_t BuffSz, uint32_t flags)
 {
 	
 	uint32_t YbSz, UVbSz;
@@ -990,7 +1377,8 @@ BC_STATUS DtsAddOutBuff(DTS_LIB_CONTEXT *Ctx, uint8_t *buff, uint32_t flags)
 
 	if(!(pIocData = DtsAllocIoctlData(Ctx)))
 		return BC_STS_INSUFF_RES;
-		DebugLog_Trace(LDIL_INFO,"ADD buffs\n");
+
+    DebugLog_Trace(LDIL_INFO,"ADD buffs\n");
 	DtsGetMaxYUVSize(Ctx, &YbSz, &UVbSz);
 
 	pIocData->u.RxBuffs.YuvBuff = buff;
@@ -1157,20 +1545,22 @@ BC_STATUS DtsMapYUVBuffs(DTS_LIB_CONTEXT *Ctx)
 	BC_STATUS	sts;
 	DTS_MPOOL_TYPE	*mp;
 
+	if (Ctx->bMapOutBufDone)
+		return BC_STS_SUCCESS;
 	if(!Ctx->Mpools || !(Ctx->CfgFlags & BC_MPOOL_INCL_YUV_BUFFS)){
-		DebugLog_Trace(LDIL_INFO,"MapYUVBuffs return 1\n");
 		return BC_STS_SUCCESS;
 	}
 
 	for(i=0; i<Ctx->MpoolCnt; i++){
 		mp = &Ctx->Mpools[i];
 		if(mp->type & BC_MEM_DEC_YUVBUFF){
-			sts = DtsAddOutBuff(Ctx, mp->buff, mp->type);
+			sts = DtsAddOutBuff(Ctx, mp->buff,mp->sz, mp->type);
 			if(sts != BC_STS_SUCCESS)
 				return sts;
 		}
 	}
 
+	Ctx->bMapOutBufDone = true;
 	return BC_STS_SUCCESS;
 }
 //------------------------------------------------------------------------
@@ -1196,8 +1586,12 @@ BC_STATUS DtsInitInterface(int hDevice,HANDLE *RetCtx, uint32_t mode)
 	Ctx->DevHandle  = hDevice;
 	Ctx->OpMode		= mode;
 	Ctx->CfgFlags	= BC_DTS_DEF_CFG;
-	Ctx->b422Mode	= (BC_OUTPUT_FORMAT)0;
+	Ctx->b422Mode	= OUTPUT_MODE420;
 
+	Ctx->VidParams.MediaSubType = BC_MSUBTYPE_INVALID;
+	Ctx->VidParams.StartCodeSz = 0;
+	Ctx->VidParams.StreamType = BC_STREAM_TYPE_ES;
+	Ctx->InSampleCount = 0;
 	/* Set Pixel height & width */
 	if(Ctx->CfgFlags & BC_PIX_WID_1080){
 		Ctx->VidParams.HeightInPixels = 1080;
@@ -1206,6 +1600,7 @@ BC_STATUS DtsInitInterface(int hDevice,HANDLE *RetCtx, uint32_t mode)
 		Ctx->VidParams.HeightInPixels = 720;
 		Ctx->VidParams.WidthInPixels = 1280;
 	}
+	Ctx->VidParams.pMetaData = NULL;
 
 	sts = DtsAllocMemPools(Ctx);
 	if(sts != BC_STS_SUCCESS){
@@ -1213,6 +1608,14 @@ BC_STATUS DtsInitInterface(int hDevice,HANDLE *RetCtx, uint32_t mode)
 		return sts;
 	}
 
+	if(!(Ctx->CfgFlags & BC_ADDBUFF_MOVE)){
+		sts = DtsMapYUVBuffs(Ctx);
+		if(sts != BC_STS_SUCCESS){
+			DebugLog_Trace(LDIL_DBG,"DtsMapYUVBuffs failed Sts:%d\n",sts);
+			return sts;
+		}
+	}
+	
 	*RetCtx = (HANDLE)Ctx;
 
 	return sts;
@@ -1268,6 +1671,30 @@ BC_STATUS DtsSetupConfig(DTS_LIB_CONTEXT *Ctx, uint32_t did, uint32_t rid, uint3
 		Ctx->RegCfg.DbgOptions |= BC_BIT(5);
 	}
 
+
+	Ctx->capInfo.ColorCaps.Count = 0;	
+	if (Ctx->DevId == BC_PCI_DEVID_LINK)
+	{
+		Ctx->capInfo.ColorCaps.Count =3;
+		Ctx->capInfo.ColorCaps.OutFmt[0] = OUTPUT_MODE420;
+		Ctx->capInfo.ColorCaps.OutFmt[1] = OUTPUT_MODE422_YUY2;
+		Ctx->capInfo.ColorCaps.OutFmt[2] = OUTPUT_MODE422_UYVY;
+		Ctx->capInfo.flags = PES_CONV_SUPPORT;
+
+		//Decoder Capability
+		Ctx->capInfo.DecCaps = BC_DEC_FLAGS_H264 | BC_DEC_FLAGS_MPEG2 | BC_DEC_FLAGS_VC1;
+	}	
+	else if(Ctx->DevId == BC_PCI_DEVID_DOZER)
+	{
+		Ctx->capInfo.ColorCaps.Count =1;
+		Ctx->capInfo.ColorCaps.OutFmt[0] = OUTPUT_MODE420;
+		Ctx->capInfo.flags = PES_CONV_SUPPORT;
+
+		//Decoder Capability
+		Ctx->capInfo.DecCaps = BC_DEC_FLAGS_H264 | BC_DEC_FLAGS_MPEG2 | BC_DEC_FLAGS_VC1;
+	}
+	 
+	Ctx->capInfo.Reserved1 = NULL;
 
 	return BC_STS_SUCCESS;
 }
@@ -1370,15 +1797,35 @@ BC_STATUS DtsGetFirmwareFiles(DTS_LIB_CONTEXT *Ctx)
 //------------------------------------------------------------------------ 
 DTS_INPUT_MDATA	*DtsAllocMdata(DTS_LIB_CONTEXT *Ctx)
 {
-	DTS_INPUT_MDATA		*temp=NULL;
+	DTS_INPUT_MDATA *temp = NULL;
 
 	if(!Ctx)
 		return temp;
 	
 	DtsLock(Ctx);
-	if((temp=Ctx->MDFreeHead) != NULL){
+	if((temp=Ctx->MDFreeHead) != NULL)
+	{
 		Ctx->MDFreeHead = Ctx->MDFreeHead->flink;
-		memset(temp,0,sizeof(*temp));
+		memset(temp, 0, sizeof(*temp));
+	}
+	else
+	{
+		//Use the Last Un-Fetched One
+		DTS_INPUT_MDATA *last = NULL;
+		last = Ctx->MDPendHead;
+
+		//Check the Last Fetch Tag
+		if((last) && (Ctx->MDLastFetchTag > (last->IntTag + MAX_DISOEDER_GAP)))
+		{
+			//Remove
+			DtsRemoveMdata(Ctx, last, FALSE);
+
+			if((temp = Ctx->MDFreeHead) != NULL)
+			{
+				Ctx->MDFreeHead = Ctx->MDFreeHead->flink;
+				memset(temp, 0, sizeof(*temp));
+			}
+		}
 	}
 	DtsUnLock(Ctx);
 
@@ -1442,7 +1889,6 @@ BC_STATUS DtsInsertMdata(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA	*Mdata)
 	Mdata->blink = Ctx->MDPendTail;
 	Mdata->flink->blink = Mdata;
 	Mdata->blink->flink = Mdata;
-	Ctx->MDPendCount++;
 	DtsUnLock(Ctx);
 
 	return BC_STS_SUCCESS;
@@ -1460,11 +1906,11 @@ BC_STATUS DtsRemoveMdata(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA	*Mdata, BOOL sync
 	
 	if(sync)
 		DtsLock(Ctx);
-	if(Ctx->MDPendHead != DTS_MDATA_PEND_LINK(Ctx)){
+	if(Ctx->MDPendHead != DTS_MDATA_PEND_LINK(Ctx))
+	{
 		Mdata->flink->blink = Mdata->blink;
 		Mdata->blink->flink = Mdata->flink;
 	}
-	Ctx->MDPendCount--;
 	if(sync)
 		DtsUnLock(Ctx);
 
@@ -1504,7 +1950,10 @@ BC_STATUS DtsFetchMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, BC_DTS_PROC_OUT *po
 			//DebugLog_Trace(LDIL_DBG,"Found entry for %x %x tstamp: %x\n", 
 			//	snum, temp->IntTag, pout->PicInfo.timeStamp);
 			sts = BC_STS_SUCCESS;
-			DtsRemoveMdata(Ctx,temp,FALSE);
+			DtsRemoveMdata(Ctx, temp, FALSE);
+
+			//Reserve the Last Fetch Tag
+			Ctx->MDLastFetchTag = InTag;
 			break;
 		}
 		temp = temp->flink;
@@ -1586,7 +2035,7 @@ BC_STATUS DtsPrepareMdata(DTS_LIB_CONTEXT *Ctx, uint64_t timeStamp, DTS_INPUT_MD
 	temp->Spes.StartCodeEnd = 0x40;
 	temp->Spes.Command = 0x0A;
 
-	//DebugLog_Trace(TEXT("Inserting entry for[%x] (%02x%02x) %x \n"), 
+	//DebugLog_Trace(LDIL_DBG,"Inserting entry for[%x] (%02x%02x) %x \n", 
 	//				Ctx->InMdataTag, temp->Spes.SeqNum[1],temp->Spes.SeqNum[0], temp->IntTag);
 
 	*mData = temp;
@@ -1595,66 +2044,37 @@ BC_STATUS DtsPrepareMdata(DTS_LIB_CONTEXT *Ctx, uint64_t timeStamp, DTS_INPUT_MD
 	return BC_STS_SUCCESS;
 }
 
+
 //------------------------------------------------------------------------
-// Name: DtsPrepareMdata
+// Name: DtsPrepareMdataASFHdr
 // Description: Insert Meta Data..
 //------------------------------------------------------------------------ 
-BC_STATUS OldDtsPrepareMdata(DTS_LIB_CONTEXT *Ctx, uint64_t timeStamp, DTS_INPUT_MDATA **mData)
-{
-	DTS_INPUT_MDATA		*temp=NULL;
-
-	if( !mData || !Ctx)
-		return BC_STS_INV_ARG;
-
-	/* Alloc clears all fields */
-	if( (temp = DtsAllocMdata(Ctx)) == NULL){
-		return BC_STS_BUSY;
-	}
-	/* Store all app data */
-	DtsMdataSetIntTag(Ctx,temp);
-	temp->appTimeStamp = timeStamp;
-
-	/* Fill spes data.. */
-	temp->Spes.StartCode[0] = 0;
-	temp->Spes.StartCode[1] = 0;
-	temp->Spes.StartCode[2] = 01;
-	temp->Spes.StartCode[3] = 0xBD;
-	temp->Spes.PacketLen = 0x07;
-	temp->Spes.StartCodeEnd = 0x40;
-	temp->Spes.Command = 0x0A;
-
-	//DebugLog_Trace(LDIL_DBG,"Inserting entry for[%x] (%02x%02x) %x \n", 
-	//				Ctx->InMdataTag, temp->Spes.SeqNum[1],temp->Spes.SeqNum[0], temp->IntTag);
-
-	*mData = temp;
-
-	return BC_STS_SUCCESS;
-}
-
 BC_STATUS DtsPrepareMdataASFHdr(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA *mData, uint8_t* buf)
 {
-	if(buf==NULL)
-		return BC_STS_INSUFF_RES;
+		
 	
-	buf[0]=0;
-	buf[1] = 0;
-	buf[2] = 01;
-	buf[3] = 0xE0;
-	buf[4] = 0x0;
-	buf[5]=35;
-	buf[6] =0x80;
-	buf[7]=0;
-	buf[8]= 0;
-	buf[9]=0x5a;buf[10]=0x5a;buf[11]=0x5a;buf[12]=0x5a;
-	buf[13]=0x0; buf[14]=0x0;buf[15]=0x0;buf[16]=0x20;
-	buf[17]=0x0; buf[18]=0x0;buf[19]=0x0;buf[20]=0x9;
-	buf[21]=0x5a; buf[22]=0x5a;buf[23]=0x5a;buf[24]=0x5a;
-	buf[25]=0xBD;
-	buf[26]=0x40;
-	buf[27]=mData->Spes.SeqNum[0];buf[28]=mData->Spes.SeqNum[1];
-	buf[29]=mData->Spes.Command;
-	buf[30]=buf[31]=buf[32]=buf[33]=buf[34]=buf[35]=buf[36]=buf[37]=buf[38]=buf[39]=buf[40]=0x0;
-	return BC_STS_SUCCESS;
+		if(buf==NULL)
+			return BC_STS_INSUFF_RES;
+		
+			buf[0]=0;
+			buf[1] = 0;
+			buf[2] = 01;
+			buf[3] = 0xE0;
+			buf[4] = 0x0;
+			buf[5]=35;
+			buf[6] =0x80;
+			buf[7]=0;
+			buf[8]= 0;
+			buf[9]=0x5a;buf[10]=0x5a;buf[11]=0x5a;buf[12]=0x5a;
+			buf[13]=0x0; buf[14]=0x0;buf[15]=0x0;buf[16]=0x20;
+			buf[17]=0x0; buf[18]=0x0;buf[19]=0x0;buf[20]=0x9;
+			buf[21]=0x5a; buf[22]=0x5a;buf[23]=0x5a;buf[24]=0x5a;
+			buf[25]=0xBD;
+			buf[26]=0x40;
+			buf[27]=mData->Spes.SeqNum[0];buf[28]=mData->Spes.SeqNum[1];
+			buf[29]=mData->Spes.Command;
+			buf[30]=buf[31]=buf[32]=buf[33]=buf[34]=buf[35]=buf[36]=buf[37]=buf[38]=buf[39]=buf[40]=0x0;
+			return BC_STS_SUCCESS;
 }
 
 void DtsUpdateInStats(DTS_LIB_CONTEXT	*Ctx, uint32_t	size)
@@ -1663,23 +2083,29 @@ void DtsUpdateInStats(DTS_LIB_CONTEXT	*Ctx, uint32_t	size)
 
 	pDtsStat->ipSampleCnt++;
 	pDtsStat->ipTotalSize += size;
+	pDtsStat->TxFifoBsyCnt = 0;
 
+	Ctx->InSampleCount ++;
+	if (Ctx->InSampleCount > 65530)
+		Ctx->InSampleCount = 1;
+
+	return;
 }
 
 void DtsUpdateOutStats(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *pOut)
 {
 	uint32_t fr23_976 = 0;
 	BOOL	rptFrmCheck = TRUE;
-	
+
 	BC_DTS_STATS *pDtsStat = DtsGetgStats( );
-	
+
 	if(pOut->PicInfo.flags & VDEC_FLAG_LAST_PICTURE)
 	{
 		pDtsStat->eosDetected = 1;
 	}
-	
+
 	if(!Ctx->CapState){
-	/* Capture did not started yet..*/
+		/* Capture did not started yet..*/
 		memset(pDtsStat,0,sizeof(*pDtsStat));
 		if(pOut->PoutFlags & BC_POUT_FLAGS_FMT_CHANGE){
 
