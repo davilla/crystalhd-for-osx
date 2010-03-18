@@ -182,21 +182,6 @@ DtsDevMemWr(
     uint32_t Offset
     );
 
-DRVIFLIB_INT_API BC_STATUS 
-DtsInitDRAM(HANDLE	hDevice, 
-			uint32_t patt, 
-			uint32_t off, 
-			uint32_t dwsize);
-
-DRVIFLIB_INT_API BC_STATUS
-DtsDownloadFW(
-    HANDLE hDevice,
-    char   *StreamFName,
-    char   *VDecOuter,
-    char   *VDecInner
-    );
-
-
 DRVIFLIB_INT_API BC_STATUS
 DtsTxDmaText(
     HANDLE   hDevice ,
@@ -236,30 +221,6 @@ DtsGetCoreTemperature(
 DRVIFLIB_INT_API BC_STATUS 
 DtsRstDrvStat(
     HANDLE		hDevice
-    );
-
-DRVIFLIB_INT_API BC_STATUS 
-DtsEpromRead(
-    HANDLE	hDevice,
-    uint8_t *Buffer,
-    uint32_t BuffSz,
-    uint32_t Offset
-    );
-
-DRVIFLIB_INT_API BC_STATUS 
-DtsEpromWrite(
-    HANDLE	hDevice,
-    uint8_t *Buffer,
-    uint32_t BuffSz,
-    uint32_t Offset
-    );
-
-DRVIFLIB_INT_API BC_STATUS 
-DtsAesEpromWrite(
-    HANDLE	hDevice,
-    uint8_t *Buffer,
-    uint32_t BuffSz,
-    uint32_t Offset
     );
 
 DRVIFLIB_INT_API BC_STATUS 
