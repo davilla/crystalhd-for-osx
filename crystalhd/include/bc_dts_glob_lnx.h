@@ -118,6 +118,7 @@ typedef struct _BC_START_RX_CAP_ {
 	uint32_t		StartDeliveryThsh;
 	uint32_t		PauseThsh;
 	uint32_t		ResumeThsh;
+	DecRspChannelStartVideo	SVidRsp;
 } BC_START_RX_CAP;
 
 typedef struct _BC_FLUSH_RX_CAP_ {
