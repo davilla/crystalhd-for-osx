@@ -141,9 +141,9 @@ typedef struct _BC_DTS_STATS {
 	uint32_t		pauseCount;
 	uint32_t		pibMisses;
 	uint32_t		discCounter;
+	uint32_t		TxFifoBsyCnt;
 
 	/* Stats from Driver */
-	uint32_t		TxFifoBsyCnt;
 	uint32_t		intCount;
 	uint32_t		DrvIgnIntrCnt;
 	uint32_t		DrvTotalFrmDropped;
@@ -160,7 +160,8 @@ typedef struct _BC_DTS_STATS {
 	uint32_t		DrvNextMDataPLD;	
 	uint32_t		DrvcpbEmptySize;
 
-	uint32_t		res1[11];
+	float           Temperature;
+	uint32_t		res1[10];
 	
 } BC_DTS_STATS;
 
@@ -194,7 +195,7 @@ enum _DECOUT_COMPLETION_FLAGS{
 
 typedef struct _BC_DEC_OUT_BUFF{
 	BC_DEC_YUV_BUFFS	OutPutBuffs;
-	BC_PIC_INFO_BLOCK	PibInfo;
+	BC_PIC_INFO_BLOCK   PibInfo;
 	uint32_t		Flags;
 	uint32_t		BadFrCnt;
 }BC_DEC_OUT_BUFF;
