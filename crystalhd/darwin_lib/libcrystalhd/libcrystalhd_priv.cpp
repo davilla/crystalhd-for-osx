@@ -439,24 +439,24 @@ static BC_STATUS DtsGetPictureInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 	}
 	else if (Ctx->b422Mode == OUTPUT_MODE422_YUY2) 
 	{
-		PicInfoLineNum = (ULONG)(*(pOut->Ybuff + 6)) & 0xff
-						| ((ULONG)(*(pOut->Ybuff + 4)) << 8) & 0x0000ff00
-						| ((ULONG)(*(pOut->Ybuff + 2)) << 16) & 0x00ff0000
-						| ((ULONG)(*(pOut->Ybuff + 0)) << 24) & 0xff000000;		
+		PicInfoLineNum = ((ULONG)(*(pOut->Ybuff + 6)) & 0xff)
+						| (((ULONG)(*(pOut->Ybuff + 4)) << 8)  & 0x0000ff00)
+						| (((ULONG)(*(pOut->Ybuff + 2)) << 16) & 0x00ff0000)
+						| (((ULONG)(*(pOut->Ybuff + 0)) << 24) & 0xff000000);		
 	} 
 	else if (Ctx->b422Mode == OUTPUT_MODE422_UYVY) 
 	{
-		PicInfoLineNum = (ULONG)(*(pOut->Ybuff + 7)) & 0xff
-						| ((ULONG)(*(pOut->Ybuff + 5)) << 8) & 0x0000ff00
-						| ((ULONG)(*(pOut->Ybuff + 3)) << 16) & 0x00ff0000
-						| ((ULONG)(*(pOut->Ybuff + 1)) << 24) & 0xff000000;
+		PicInfoLineNum = ((ULONG)(*(pOut->Ybuff + 7)) & 0xff)
+						| (((ULONG)(*(pOut->Ybuff + 5)) << 8)  & 0x0000ff00)
+						| (((ULONG)(*(pOut->Ybuff + 3)) << 16) & 0x00ff0000)
+						| (((ULONG)(*(pOut->Ybuff + 1)) << 24) & 0xff000000);
 	} 
 	else 
 	{
-		PicInfoLineNum = (ULONG)(*(pOut->Ybuff + 3)) & 0xff
-						| ((ULONG)(*(pOut->Ybuff + 2)) << 8) & 0x0000ff00
-						| ((ULONG)(*(pOut->Ybuff + 1)) << 16) & 0x00ff0000
-						| ((ULONG)(*(pOut->Ybuff + 0)) << 24) & 0xff000000;
+		PicInfoLineNum = ((ULONG)(*(pOut->Ybuff + 3)) & 0xff)
+						| (((ULONG)(*(pOut->Ybuff + 2)) << 8)  & 0x0000ff00)
+						| (((ULONG)(*(pOut->Ybuff + 1)) << 16) & 0x00ff0000)
+						| (((ULONG)(*(pOut->Ybuff + 0)) << 24) & 0xff000000);
 	}
 	
 	if (PicInfoLineNum == BC_EOS_DETECTED)  // EOS
