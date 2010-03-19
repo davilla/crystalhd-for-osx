@@ -491,17 +491,17 @@ static BC_STATUS DtsGetPictureInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 	if (Ctx->DevId != BC_PCI_DEVID_FLEA)
 	{
 		DtsGetPibFrom422(pPicInfoLine, Ctx->b422Mode);
-		PictureNumber = (ULONG)(*(pPicInfoLine + 3)) & 0xff
-							| ((ULONG)(*(pPicInfoLine + 2)) << 8) & 0x0000ff00
-							| ((ULONG)(*(pPicInfoLine + 1)) << 16) & 0x00ff0000
-							| ((ULONG)(*(pPicInfoLine + 0)) << 24) & 0xff000000;
+		PictureNumber = ((ULONG)(*(pPicInfoLine + 3)) & 0xff)
+						| (((ULONG)(*(pPicInfoLine + 2)) << 8)  & 0x0000ff00)
+						| (((ULONG)(*(pPicInfoLine + 1)) << 16) & 0x00ff0000)
+						| (((ULONG)(*(pPicInfoLine + 0)) << 24) & 0xff000000);
 	
 	}else{
 		/*The Metadata Is Linear in Flea.*/
-		PictureNumber = (ULONG)(*(pPicInfoLine + 0)) & 0xff
-							| ((ULONG)(*(pPicInfoLine + 1)) << 8) & 0x0000ff00
-							| ((ULONG)(*(pPicInfoLine + 2)) << 16) & 0x00ff0000
-							| ((ULONG)(*(pPicInfoLine + 3)) << 24) & 0xff000000;
+		PictureNumber = ((ULONG)(*(pPicInfoLine + 0)) & 0xff)
+						| (((ULONG)(*(pPicInfoLine + 1)) << 8)  & 0x0000ff00)
+						| (((ULONG)(*(pPicInfoLine + 2)) << 16) & 0x00ff0000)
+						| (((ULONG)(*(pPicInfoLine + 3)) << 24) & 0xff000000);
 	}
 
 	pOut->PoutFlags |= BC_POUT_FLAGS_PIB_VALID;
