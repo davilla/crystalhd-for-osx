@@ -2867,7 +2867,7 @@ DtsSetRateChange(HANDLE  hDevice ,
 //Set FF Rate for Catching Up
 DRVIFLIB_API BC_STATUS 
 DtsSetFFRate(HANDLE  hDevice ,
-				 uint32_t Rate)
+				 uint32_t rate)
 {
 	BC_STATUS			sts = BC_STS_SUCCESS;
 	DTS_LIB_CONTEXT		*Ctx = NULL;
