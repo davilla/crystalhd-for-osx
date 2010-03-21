@@ -247,7 +247,6 @@ BroadcomCrystalHD::stop( IOService * provider )
          m_workloop->removeEventSource(m_interrupt_source);
          SAFE_RELEASE(m_interrupt_source);
     }
-
     if (m_workloop) {
          SAFE_RELEASE(m_workloop);
     }
