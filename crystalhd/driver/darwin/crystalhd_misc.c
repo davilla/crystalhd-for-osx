@@ -686,11 +686,11 @@ out:
 #ifdef __APPLE__
 static bool CustomSegmentFunction(IODMACommand *target, IODMACommand::Segment64 segment, void *sglMem, UInt32 segmentIndex)
 {
-    struct scatterlist *sg = (scatterlist*)sglMem;
-    sg[segmentIndex].dma_address = (uint32_t)segment.fIOVMAddr;
-    sg[segmentIndex].dma_length = (unsigned int)segment.fLength;
-    //MPCLOG(MPCLOG_DBG,"CustomSegmentFunction: 0x%X/%d/%d\n",(unsigned int)segment.fIOVMAddr,(unsigned int)segment.fLength, (unsigned int)segmentIndex);
-    return true;
+	struct scatterlist *sg = (scatterlist*)sglMem;
+	sg[segmentIndex].dma_address = (uint32_t)segment.fIOVMAddr;
+	sg[segmentIndex].dma_length = (unsigned int)segment.fLength;
+	//MPCLOG(MPCLOG_DBG,"CustomSegmentFunction: 0x%X/%d/%d\n",(unsigned int)segment.fIOVMAddr,(unsigned int)segment.fLength, (unsigned int)segmentIndex);
+	return true;
 }
 #endif
 /**
@@ -1059,7 +1059,7 @@ int crystalhd_create_dio_pool(struct crystalhd_adp *adp, uint32_t max_pages)
 	asz =  (sizeof(*dio->pages) * max_pages) +
 	       (sizeof(*dio->sg) * max_pages) + sizeof(*dio);
 #else
-    asz = (sizeof(*dio->sg) * max_pages) + sizeof(*dio);
+	asz = (sizeof(*dio->sg) * max_pages) + sizeof(*dio);
 #endif
 
 	BCMLOG(BCMLOG_DBG,"Initializing Dio pool %d %d %x %p\n",
@@ -1078,7 +1078,7 @@ int crystalhd_create_dio_pool(struct crystalhd_adp *adp, uint32_t max_pages)
 		dio->pages = (struct page**)temp;
 		temp += (sizeof(*dio->pages) * max_pages);
 #else
-        temp += sizeof(*dio);
+		temp += sizeof(*dio);
 #endif
 		dio->sg = (struct scatterlist *)temp;
 		dio->max_pages = max_pages;

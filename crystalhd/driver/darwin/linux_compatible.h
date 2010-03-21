@@ -55,40 +55,40 @@ typedef uint32_t          gfp_t;
 #define printk IOLog
 
 enum dma_data_direction {
-  READ = 1,
-  WRITE = 2,
+	READ = 1,
+	WRITE = 2,
 	DMA_TO_DEVICE = 1,
 	DMA_FROM_DEVICE = 2,
 };
 
 struct scatterlist {
-  unsigned int    length;
-  uint32_t        dma_address;
-  unsigned int    dma_length;
+	unsigned int    length;
+	uint32_t        dma_address;
+	unsigned int    dma_length;
 };
 
 // spinlock defs, note that we don't want to diddle the interrupt under OSX
 // so fake it.
 #define alloc_spin_lock(_lock)  \
 do{                       \
-  _lock = IOLockAlloc();  \
+	_lock = IOLockAlloc();  \
 }while(0)
 
 #define free_spin_lock(_lock)   \
-do{                       \
+do{				\
 	IOLockFree(_lock);      \
 	_lock = NULL;           \
 }while(0)
 
 #define spin_lock_irqsave(_lock,_flags)   \
-do{                       \
+do{				\
 	_flags = 1;             \
 	IOLockLock(*_lock);     \
 }while(0)
 
 #define spin_unlock_irqrestore(_lock,_flags) \
-do{                       \
-  IOLockUnlock(*_lock);   \
+do{				\
+	IOLockUnlock(*_lock);   \
 	_flags = 0;             \
 }while(0)
 
@@ -109,11 +109,11 @@ int pci_write_config_word( void *dev, uint8_t off, u16  val);
 int pci_write_config_dword(void *dev, uint8_t off, u32  val);
 
 struct pci_pool {
-  IOBufferMemoryDescriptor  *memory;
-  void                      *freeStart;
-  uint32_t                  freeBytes;
-  uint32_t                  chunk_size;
-  uint32_t                  chunk_align;
+	IOBufferMemoryDescriptor  *memory;
+	void                      *freeStart;
+	uint32_t                  freeBytes;
+	uint32_t                  chunk_size;
+	uint32_t                  chunk_align;
 };
 struct pci_pool* pci_pool_create(const char *name, void *pdev, size_t size, size_t align, int flags);
 void* pci_pool_alloc(struct pci_pool *pool, int mem_flags, dma_addr_t * handle);

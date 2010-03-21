@@ -52,10 +52,10 @@ void udelay(unsigned int microseconds)
 }
 unsigned long msleep_interruptible(unsigned int msecs)
 {
-  // FIXME, make into interruptable sleep
-  // Sleep the calling thread for a number of milliseconds
+	// FIXME, make into interruptable sleep
+	// Sleep the calling thread for a number of milliseconds
 	IOSleep(msecs);
-  return(0);
+	return(0);
 }
 
 unsigned long readl(IOVirtualAddress addr)
@@ -69,102 +69,102 @@ void writel(unsigned long value, IOVirtualAddress addr)
 
 int pci_read_config_byte(void *dev, uint8_t off, u8 *val)
 {
-  *val = BroadcomCrystalHD::getPciNub()->configRead8(off);
-  return(0);
+	*val = BroadcomCrystalHD::getPciNub()->configRead8(off);
+	return(0);
 }
 int pci_read_config_word(void *dev, uint8_t off, u16 *val)
 {
-  *val = BroadcomCrystalHD::getPciNub()->configRead16(off);
-  return(0);
+	*val = BroadcomCrystalHD::getPciNub()->configRead16(off);
+	return(0);
 }
 int pci_read_config_dword(void *dev, uint8_t off, u32 *val)
 {
-  *val = BroadcomCrystalHD::getPciNub()->configRead32(off);
-  return(0);
+	*val = BroadcomCrystalHD::getPciNub()->configRead32(off);
+	return(0);
 }
 
 int pci_write_config_byte(void *dev, uint8_t off, u8 val)
 {
-  BroadcomCrystalHD::getPciNub()->configWrite8(off, val);
-  return(0);
+	BroadcomCrystalHD::getPciNub()->configWrite8(off, val);
+	return(0);
 }
 int pci_write_config_word(void *dev, uint8_t off, u16 val)
 {
-  BroadcomCrystalHD::getPciNub()->configWrite16(off, val);
-  return(0);
+	BroadcomCrystalHD::getPciNub()->configWrite16(off, val);
+	return(0);
 }
 int pci_write_config_dword(void *dev, uint8_t off, u32 val)
 {
-  BroadcomCrystalHD::getPciNub()->configWrite32(off, val);
-  return(0);
+	BroadcomCrystalHD::getPciNub()->configWrite32(off, val);
+	return(0);
 }
 
 struct pci_pool* pci_pool_create(const char *name, void *pdev, size_t size, size_t align, int flags)
 {
-  // big fake out here, we alloc a page and hand out from that page.
-  uint32_t pool_size = PAGE_SIZE;
-  struct pci_pool *page_block;
+	// big fake out here, we alloc a page and hand out from that page.
+	uint32_t pool_size = PAGE_SIZE;
+	struct pci_pool *page_block;
 
-  page_block = (pci_pool*)kern_os_malloc(sizeof(struct pci_pool));
+	page_block = (pci_pool*)kern_os_malloc(sizeof(struct pci_pool));
 
-  page_block->chunk_size = size;
-  page_block->chunk_align = align * 2;
-  page_block->memory = IOBufferMemoryDescriptor::withOptions(
-    kIOMemoryPhysicallyContiguous, pool_size, PAGE_SIZE);
+	page_block->chunk_size = size;
+	page_block->chunk_align = align * 2;
+	page_block->memory = IOBufferMemoryDescriptor::withOptions(
+		kIOMemoryPhysicallyContiguous, pool_size, PAGE_SIZE);
 
-  if (page_block->memory == 0) {
-    return false;
-  }
-  if (page_block->memory->prepare() != kIOReturnSuccess) {
-    SAFE_RELEASE(page_block->memory);
-    return false;
-  }
+	if (page_block->memory == 0) {
+		return false;
+	}
+	if (page_block->memory->prepare() != kIOReturnSuccess) {
+		SAFE_RELEASE(page_block->memory);
+		return false;
+	}
 
-  page_block->freeStart = page_block->memory->getBytesNoCopy();
-  page_block->freeBytes = page_block->memory->getCapacity();
-  bzero(page_block->freeStart, page_block->freeBytes);
+	page_block->freeStart = page_block->memory->getBytesNoCopy();
+	page_block->freeBytes = page_block->memory->getCapacity();
+	bzero(page_block->freeStart, page_block->freeBytes);
 
-  return page_block;
+	return page_block;
 }
 void* pci_pool_alloc(struct pci_pool *pool, int mem_flags, dma_addr_t *handle)
 {
-  uint32_t    size;
-  void        *vaddr;
-  IOByteCount segLength;
+	uint32_t    size;
+	void        *vaddr;
+	IOByteCount segLength;
 
-  if (pool->chunk_align == 0)
-      return 0;
+	if (pool->chunk_align == 0)
+		return 0;
       
-  size = pool->chunk_size;
-  // Locate next alignment boundary.
-  vaddr = (void *)(((uint32_t)pool->freeStart + (pool->chunk_align - 1)) & ~(pool->chunk_align - 1));
+	size = pool->chunk_size;
+	// Locate next alignment boundary.
+	vaddr = (void *)(((uint32_t)pool->freeStart + (pool->chunk_align - 1)) & ~(pool->chunk_align - 1));
 
-  // Add alignment padding to the allocation size.
-  size += (uint32_t)vaddr - (uint32_t)pool->freeStart;
-  if (size > pool->freeBytes)
-      return 0;
+	// Add alignment padding to the allocation size.
+	size += (uint32_t)vaddr - (uint32_t)pool->freeStart;
+	if (size > pool->freeBytes)
+		return 0;
 
-  pool->freeStart  = (void *)((uint32_t)pool->freeStart + size);
-  pool->freeBytes -= size;
+	pool->freeStart  = (void *)((uint32_t)pool->freeStart + size);
+	pool->freeBytes -= size;
 
-  if (handle) {
-      *handle = pool->memory->getPhysicalSegment(
-          (uint32_t)vaddr - (uint32_t)pool->memory->getBytesNoCopy(), &segLength);
-  }
+	if (handle) {
+		*handle = pool->memory->getPhysicalSegment(
+		(uint32_t)vaddr - (uint32_t)pool->memory->getBytesNoCopy(), &segLength);
+	}
 
-  return vaddr;
+	return vaddr;
 }
 void pci_pool_free(struct pci_pool *pool, void *vaddr, dma_addr_t dma)
 {
-  // FIXME :)
+	// FIXME :)
 }
 void pci_pool_destroy(struct pci_pool *pool)
 {
-  if (pool->memory) {
-      pool->memory->complete();
-      SAFE_RELEASE(pool->memory);
-  }
-  kern_os_free(pool);
+	if (pool->memory) {
+		pool->memory->complete();
+		SAFE_RELEASE(pool->memory);
+	}
+	kern_os_free(pool);
 }
 
 void *pci_alloc_consistent(void *pdev, size_t size, dma_addr_t *dma_handle)
@@ -187,8 +187,8 @@ void *pci_alloc_consistent(void *pdev, size_t size, dma_addr_t *dma_handle)
 
 		g_bcm_dma_info->setObject(memDesc);
 	} else {
-    virt_address = NULL;
-    phys_address = NULL;
+		virt_address = NULL;
+		phys_address = NULL;
 		IOLog("pci_alloc_consistent:IOBufferMemoryDescriptor::inTaskWithOptions failed\n");
 	}
 
@@ -227,26 +227,26 @@ void pci_free_consistent(void *pdev, size_t size, void *vaddr, dma_addr_t dma_ha
 void* kzalloc(size_t size, gfp_t flags)
 {
 	void *mem = kern_os_malloc(size);
-  if (mem)
-    bzero(mem, size);
-  return(mem);
+	if (mem)
+		bzero(mem, size);
+	return(mem);
 }
 void* kalloc(size_t size, gfp_t flags)
 {
-  return( kern_os_malloc(size) );
+	return( kern_os_malloc(size) );
 }
 void kfree(void *addr)
 {
-  kern_os_free(addr);
+	kern_os_free(addr);
 }
 
 void* vmalloc(size_t size)
 {
-  return( kern_os_malloc(size) );
+	return( kern_os_malloc(size) );
 }
 void vfree(void *addr)
 {
-  kern_os_free(addr);
+	kern_os_free(addr);
 }
 
 

@@ -33,9 +33,9 @@
 
 /* User Data Header */
 typedef struct user_data {
-   struct user_data	*next;
-   uint32_t		type;
-   uint32_t		size;
+	struct user_data	*next;
+	uint32_t		type;
+	uint32_t		size;
 } UD_HDR;
 
 

@@ -402,26 +402,26 @@ static
 uint32_t 
 GetMetaDataFromPib(crystalhd_dio_req *dio, PBC_PIC_INFO_BLOCK pPicInfoLine)
 {
-  int i;
+	int i;
 	uint32_t picture_meta_payload=0, swapped_picture_meta_payload=0, offset;
 
-  if (dio->uinfo.b422mode) {
-      offset = OFFSETOF(BC_PIC_INFO_BLOCK, picture_meta_payload);
+	if (dio->uinfo.b422mode) {
+		offset = OFFSETOF(BC_PIC_INFO_BLOCK, picture_meta_payload);
 
-      if (dio->uinfo.b422mode == MODE422_YUY2) {
-          for (i = 0; i < 4; i++) {
-              ((uint8_t*)picture_meta_payload)[i] = ((uint8_t*)pPicInfoLine)[(offset+i)*2];
-          }
-      } else if(dio->uinfo.b422mode == MODE422_UYVY) {
-          for (i = 0; i < 4; i++) {
-              ((uint8_t*)picture_meta_payload)[i] = ((uint8_t*)pPicInfoLine)[(offset+i)*2+1];
-          }
-      }
-  } else {
-      picture_meta_payload = pPicInfoLine->picture_meta_payload;
-  }
+		if (dio->uinfo.b422mode == MODE422_YUY2) {
+			for (i = 0; i < 4; i++) {
+				((uint8_t*)picture_meta_payload)[i] = ((uint8_t*)pPicInfoLine)[(offset+i)*2];
+			}
+		} else if(dio->uinfo.b422mode == MODE422_UYVY) {
+			for (i = 0; i < 4; i++) {
+				((uint8_t*)picture_meta_payload)[i] = ((uint8_t*)pPicInfoLine)[(offset+i)*2+1];
+			}
+		}
+	} else {
+		picture_meta_payload = pPicInfoLine->picture_meta_payload;
+	}
 
-  swapped_picture_meta_payload = BC_SWAP32(picture_meta_payload);
+	swapped_picture_meta_payload = BC_SWAP32(picture_meta_payload);
 	return swapped_picture_meta_payload;
 }
 
@@ -429,20 +429,20 @@ static
 uint32_t 
 GetHeightFromPib(crystalhd_dio_req *dio, PBC_PIC_INFO_BLOCK pPicInfoLine)
 {
-  int i;
+	int i;
 	uint32_t height = 0, swapped_height = 0, offset;
 
 	if (dio->uinfo.b422mode) {	
 		offset = OFFSETOF(BC_PIC_INFO_BLOCK, height);
     
-    if (dio->uinfo.b422mode == MODE422_YUY2) {
+		if (dio->uinfo.b422mode == MODE422_YUY2) {
 			for (i = 0; i < 4; i++) {
-        ((uint8_t*)height)[i] = ((uint8_t*)pPicInfoLine)[(offset+i)*2];
-      }
-    } else if (dio->uinfo.b422mode == MODE422_UYVY) {
+				((uint8_t*)height)[i] = ((uint8_t*)pPicInfoLine)[(offset+i)*2];
+			}
+		} else if (dio->uinfo.b422mode == MODE422_UYVY) {
 			for (i = 0; i < 4; i++) {
-        ((uint8_t*)height)[i] = ((uint8_t*)pPicInfoLine)[(offset+i)*2+1];
-      }
+				((uint8_t*)height)[i] = ((uint8_t*)pPicInfoLine)[(offset+i)*2+1];
+			}
 		}
 	} else {
 		height = pPicInfoLine->height;
@@ -594,7 +594,7 @@ GetRptDropParam(struct crystalhd_hw *hw, crystalhd_rx_dma_pkt *pRxDMAReq)
 {
 	uint32_t PicNumber = 0, PicMetaData = 0, Result = 0;
 
-  Result = GetPictureInfo(hw, pRxDMAReq->dio_req, hw->PICWidth, &PicNumber, &PicMetaData);
+	Result = GetPictureInfo(hw, pRxDMAReq->dio_req, hw->PICWidth, &PicNumber, &PicMetaData);
 
 	return Result;
 }
@@ -797,7 +797,7 @@ bool crystalhd_hw_check_input_full(struct crystalhd_adp *adp, uint32_t needed_sz
 
 	fifoSize = cpbSize - cpbFullness;
 
-  *empty_sz = fifoSize;
+	*empty_sz = fifoSize;
 	if (fifoSize < BC_INFIFO_THRESHOLD)
 		return true;
 
@@ -966,10 +966,10 @@ static void crystalhd_hw_dump_desc(pdma_descriptor p_dma_desc,
 }
 
 static BC_STATUS crystalhd_hw_fill_desc(crystalhd_dio_req *ioreq,
-				      dma_descriptor *desc,
-				      dma_addr_t desc_paddr_base,
-				      uint32_t sg_cnt, uint32_t sg_st_ix,
-				      uint32_t sg_st_off, uint32_t xfr_sz)
+					dma_descriptor *desc,
+					dma_addr_t desc_paddr_base,
+					uint32_t sg_cnt, uint32_t sg_st_ix,
+					uint32_t sg_st_off, uint32_t xfr_sz)
 {
 	uint32_t count = 0, ix = 0, sg_ix = 0, len = 0, last_desc_ix = 0;
 	dma_addr_t desc_phy_addr = desc_paddr_base;
@@ -1057,8 +1057,8 @@ static BC_STATUS crystalhd_hw_fill_desc(crystalhd_dio_req *ioreq,
 }
 
 static BC_STATUS crystalhd_xlat_sgl_to_dma_desc(crystalhd_dio_req *ioreq,
-					      pdma_desc_mem pdesc_mem,
-					      uint32_t *uv_desc_index)
+						pdma_desc_mem pdesc_mem,
+						uint32_t *uv_desc_index)
 {
 	dma_descriptor *desc = NULL;
 	dma_addr_t desc_paddr_base = 0;
@@ -1257,7 +1257,7 @@ static uint32_t crystalhd_get_addr_from_pib_Q(struct crystalhd_hw *hw)
 
 	/* Get the Actual Address of the PIB */
 	crystalhd_mem_rd(hw->adp, Q_addr + (r_offset * sizeof(uint32_t)),
-		       1, &addr_entry);
+			1, &addr_entry);
 
 	/* Increment the Read Pointer */
 	r_offset++;
@@ -1580,7 +1580,7 @@ static void crystalhd_hw_finalize_pause(struct crystalhd_hw *hw)
 
 	aspm = crystalhd_reg_rd(hw->adp, PCIE_DLL_DATA_LINK_CONTROL);
 	aspm |= ASPM_L1_ENABLE;
-// NAREN BCMLOG(BCMLOG_INFO, "aspm on\n");
+	// NAREN BCMLOG(BCMLOG_INFO, "aspm on\n");
 	crystalhd_reg_wr(hw->adp, PCIE_DLL_DATA_LINK_CONTROL, aspm);
 }
 

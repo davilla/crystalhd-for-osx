@@ -409,14 +409,14 @@ int chd_dec_init_chdev(struct crystalhd_adp *adp)
 		return adp->chd_dec_major;
 	}
 
-  /* register crystalhd class */
-  crystalhd_class = class_create(THIS_MODULE, "crystalhd");
-  if (IS_ERR(crystalhd_class))
-    BCMLOG_ERR("failed to create class\n");
+	/* register crystalhd class */
+	crystalhd_class = class_create(THIS_MODULE, "crystalhd");
+	if (IS_ERR(crystalhd_class))
+		BCMLOG_ERR("failed to create class\n");
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26)
-  device_create(crystalhd_class, NULL, MKDEV(adp->chd_dec_major, 0), "crystalhd");
+	device_create(crystalhd_class, NULL, MKDEV(adp->chd_dec_major, 0), "crystalhd");
 #else
-  device_create(crystalhd_class, NULL, MKDEV(adp->chd_dec_major, 0), NULL, "crystalhd");
+	device_create(crystalhd_class, NULL, MKDEV(adp->chd_dec_major, 0), NULL, "crystalhd");
 #endif
 #endif
 
@@ -456,12 +456,12 @@ void chd_dec_release_chdev(struct crystalhd_adp *adp)
 
 #ifndef __APPLE__
 	if (adp->chd_dec_major > 0) {
-    /* unregister crystalhd class */
-    device_destroy(crystalhd_class, MKDEV(adp->chd_dec_major, 0));
-		unregister_chrdev(adp->chd_dec_major, CRYSTALHD_API_NAME);
-		BCMLOG(BCMLOG_INFO, "released api device - %d\n",
-		       adp->chd_dec_major);
-    class_destroy(crystalhd_class);
+		/* unregister crystalhd class */
+		device_destroy(crystalhd_class, MKDEV(adp->chd_dec_major, 0));
+			unregister_chrdev(adp->chd_dec_major, CRYSTALHD_API_NAME);
+			BCMLOG(BCMLOG_INFO, "released api device - %d\n",
+				adp->chd_dec_major);
+		class_destroy(crystalhd_class);
 	}
 #endif
 	adp->chd_dec_major = 0;

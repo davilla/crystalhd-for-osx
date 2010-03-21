@@ -75,12 +75,12 @@ struct crystalhd_adp {
 	unsigned int		present;
 	unsigned int		msi;
 #else
-    void                *pdev;
+	void			*pdev;
 
-    IOByteCount         pci_mem_len;
-    IOVirtualAddress    addr;
-    IOByteCount         pci_i2o_len;
-    IOVirtualAddress    i2o_addr;
+	IOByteCount		pci_mem_len;
+	IOVirtualAddress	addr;
+	IOByteCount		pci_i2o_len;
+	IOVirtualAddress	i2o_addr;
 #endif
 
 	spinlock_t		lock;
@@ -90,11 +90,11 @@ struct crystalhd_adp {
 	unsigned int		cfg_users;
 
 	crystalhd_ioctl_data	*idata_free_head;	/* ioctl data pool */
-	crystalhd_elem_t		*elem_pool_head;	/* Queue element pool */
+	crystalhd_elem_t	*elem_pool_head;	/* Queue element pool */
 
 	struct crystalhd_cmd	cmds;
 
-	crystalhd_dio_req		*ua_map_free_head;
+	crystalhd_dio_req	*ua_map_free_head;
 	struct pci_pool		*fill_byte_pool;
 };
 

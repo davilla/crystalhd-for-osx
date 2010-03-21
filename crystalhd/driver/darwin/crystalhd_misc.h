@@ -101,7 +101,7 @@ typedef struct _crystalhd_dio_req {
 	void				*fb_va;
 	uint32_t			fb_size;
 	dma_addr_t			fb_pa;
-	struct _crystalhd_dio_req		*next;
+	struct _crystalhd_dio_req	*next;
 } crystalhd_dio_req;
 
 #define BC_LINK_DIOQ_SIG	(0x09223280)
@@ -109,8 +109,8 @@ typedef struct _crystalhd_dio_req {
 typedef struct _crystalhd_elem_s {
 	struct _crystalhd_elem_s	*flink;
 	struct _crystalhd_elem_s	*blink;
-	void			*data;
-	uint32_t		tag;
+	void				*data;
+	uint32_t			tag;
 } crystalhd_elem_t;
 
 typedef void (*crystalhd_data_free_cb)(void *context, void *data);
@@ -118,8 +118,8 @@ typedef void (*crystalhd_data_free_cb)(void *context, void *data);
 typedef struct _crystalhd_dioq_s {
 	uint32_t		sig;
 	struct crystalhd_adp	*adp;
-	crystalhd_elem_t		*head;
-	crystalhd_elem_t		*tail;
+	crystalhd_elem_t	*head;
+	crystalhd_elem_t	*tail;
 	uint32_t		count;
 	spinlock_t		lock;
 	wait_queue_head_t	event;
@@ -191,29 +191,29 @@ do{ \
 
 #define crystalhd_wait_on_event(ev, condition, timeout, ret, nosig) \
 do { \
-  wait_result_t result; \
-  uint32_t timeout_tick = 0; \
-  for (;;) { \
-    if (condition) { \
-      ret = 0; \
-      break; \
-    } \
-    if (timeout_tick > timeout) { \
-      ret = -EBUSY; \
-      break; \
-    } \
-    result = assert_wait_timeout((event_t)ev, THREAD_ABORTSAFE, 1, 1000*NSEC_PER_USEC); \
-    if (result == THREAD_WAITING) { \
-      result = thread_block(THREAD_CONTINUE_NULL); \
-    } \
-    if (result == THREAD_TIMED_OUT) { \
-      timeout_tick++; \
-    } \
-    if (!nosig && result == THREAD_INTERRUPTED) { \
-      ret = -EINTR; \
-      break; \
-    } \
-  } \
+	wait_result_t result; \
+	uint32_t timeout_tick = 0; \
+	for (;;) { \
+		if (condition) { \
+			ret = 0; \
+			break; \
+		} \
+		if (timeout_tick > timeout) { \
+			ret = -EBUSY; \
+			break; \
+		} \
+		result = assert_wait_timeout((event_t)ev, THREAD_ABORTSAFE, 1, 1000*NSEC_PER_USEC); \
+		if (result == THREAD_WAITING) { \
+			result = thread_block(THREAD_CONTINUE_NULL); \
+		} \
+		if (result == THREAD_TIMED_OUT) { \
+			timeout_tick++; \
+		} \
+		if (!nosig && result == THREAD_INTERRUPTED) { \
+			ret = -EINTR; \
+			break; \
+		} \
+	} \
 } while(0)
 #endif
 
