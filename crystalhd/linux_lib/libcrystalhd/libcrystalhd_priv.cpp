@@ -1611,10 +1611,10 @@ BC_STATUS DtsGetFirmwareFiles(DTS_LIB_CONTEXT *Ctx)
 
 	if(Ctx->DevId == BC_PCI_DEVID_FLEA) {
         fwfile_len = strlen(FWBINFILE_70015);
-        strcpy(fwfile, FWBINFILE_70015, fwfile_len);
+        strncpy(fwfile, FWBINFILE_70015, fwfile_len);
     } else {
         fwfile_len = strlen(FWBINFILE_70012);
-        strcpy(fwfile, FWBINFILE_70012, fwfile_len);
+        strncpy(fwfile, FWBINFILE_70012, fwfile_len);
     }
 
 	if ((strlen(fwdir) + fwfile_len) > (MAX_PATH + 1)) {
