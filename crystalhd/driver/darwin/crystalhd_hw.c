@@ -309,7 +309,6 @@ static bool crystalhd_start_device(struct crystalhd_adp *adp)
 
 	reg_pwrmgmt = crystalhd_reg_rd(adp, PCIE_DLL_DATA_LINK_CONTROL);
 	reg_pwrmgmt &= ~ASPM_L1_ENABLE;
-
 	crystalhd_reg_wr(adp, PCIE_DLL_DATA_LINK_CONTROL, reg_pwrmgmt);
 
 	if (!crystalhd_bring_out_of_rst(adp)) {
