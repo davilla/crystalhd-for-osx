@@ -27,6 +27,7 @@
 		F59D702F10419DFA00AD752F /* bc_dts_glob_osx.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D702D10419DFA00AD752F /* bc_dts_glob_osx.h */; };
 		F59D703410419E0800AD752F /* bc_defines.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D703210419E0800AD752F /* bc_defines.h */; };
 		F59D703510419E0800AD752F /* bcm_70012_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D703310419E0800AD752F /* bcm_70012_regs.h */; };
+		F5AED77C11931CC20056ABEA /* BroadcomCrystalHDPower.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5AED77A11931CC20056ABEA /* BroadcomCrystalHDPower.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +53,7 @@
 		F59D702D10419DFA00AD752F /* bc_dts_glob_osx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_glob_osx.h; path = ../../include/bc_dts_glob_osx.h; sourceTree = "<group>"; };
 		F59D703210419E0800AD752F /* bc_defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bc_defines.h; sourceTree = "<group>"; };
 		F59D703310419E0800AD752F /* bcm_70012_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bcm_70012_regs.h; sourceTree = "<group>"; };
+		F5AED77A11931CC20056ABEA /* BroadcomCrystalHDPower.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BroadcomCrystalHDPower.cpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +99,7 @@
 			children = (
 				F5959CA510F03F66004B58B3 /* BroadcomCrystalHD.cpp */,
 				F5959CA810F03F75004B58B3 /* BroadcomCrystalHD.h */,
+				F5AED77A11931CC20056ABEA /* BroadcomCrystalHDPower.cpp */,
 				F5959DA910F052EE004B58B3 /* linux_compatible.c */,
 				F5959DAA10F052EE004B58B3 /* linux_compatible.h */,
 				F5959CAD10F03F8D004B58B3 /* crystalhd_cmds.c */,
@@ -253,6 +256,7 @@
 				F5959CB710F03F8D004B58B3 /* crystalhd_hw.c in Sources */,
 				F5959CBB10F03F8D004B58B3 /* crystalhd_misc.c in Sources */,
 				F5959DAB10F052EE004B58B3 /* linux_compatible.c in Sources */,
+				F5AED77C11931CC20056ABEA /* BroadcomCrystalHDPower.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

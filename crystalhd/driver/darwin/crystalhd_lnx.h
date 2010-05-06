@@ -105,6 +105,9 @@ struct crystalhd_adp *chd_get_adp(void);
 int  chd_dec_api_cmd(struct crystalhd_adp *adp, user_addr_t ua, uint32_t uid, uint32_t cmd, crystalhd_cmd_proc func);
 int  chd_dec_init_chdev(struct crystalhd_adp *adp);
 void chd_dec_release_chdev(struct crystalhd_adp *adp);
+crystalhd_ioctl_data *chd_dec_alloc_iodata(struct crystalhd_adp *adp, bool isr);
+void chd_dec_free_iodata(struct crystalhd_adp *adp, crystalhd_ioctl_data *iodata, bool isr);
+
 #endif
 void chd_set_log_level(struct crystalhd_adp *adp, char *arg);
 

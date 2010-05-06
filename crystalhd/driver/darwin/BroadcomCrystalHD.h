@@ -42,11 +42,15 @@
     #include <IOKit/IODMACommand.h>
 #endif
 #include <IOKit/IOInterruptEventSource.h>
+#include <IOKit/IOCommandGate.h>
+
+class IOCommandGate;
 
 #define SAFE_RELEASE(x) do { if (x) x->release(); x = 0; } while(0)
 
 // Icky, globals (fix later)
 extern OSArray* g_bcm_dma_info;
+
 
 class BroadcomCrystalHD : public IOService
 {
@@ -57,6 +61,7 @@ private:
     IOMemoryMap                 *m_pci_bar0;
     IOMemoryMap                 *m_pci_bar2;
     IOWorkLoop                  *m_workloop;
+    IOCommandGate               *m_commandgate;
     IOInterruptEventSource      *m_interrupt_source;
 
     // BSD ioctl interface
@@ -81,13 +86,23 @@ private:
 protected:
     dev_t                       m_base_dev;			// BSD ioctl interface
     void                        *m_cdev_node;		// (character device's devfs node)
+    IOService                   *_pmPolicyMaker;
+    UInt32                      _pmPowerState;
+    thread_call_t               _powerOffThreadCall;
+    thread_call_t               _powerOnThreadCall;
     
 public:
     // IOService overrides
     virtual bool                start(IOService* provider);
     virtual void                stop( IOService* provider);
     virtual IOWorkLoop*         getWorkLoop(void);
+    virtual IOCommandGate       *getCommandGate(void);
 	
+    virtual IOReturn registerWithPolicyMaker(IOService * policyMaker);
+    virtual IOReturn setPowerState(unsigned long powerStateOrdinal, IOService *policyMaker);
+    virtual void setPowerStateOff(void);
+    virtual void setPowerStateOn(void);
+
     // Public functions
     static IOPCIDevice*         getPciNub(void);
 };

@@ -67,8 +67,9 @@ __END_DECLS
 
 // Icky, globals (fix this later)
 OSArray* g_bcm_dma_info = NULL;
-struct crystalhd_adp* g_bcm_adapter = NULL;
 struct crystalhd_user* g_bcm_USER = NULL;
+struct crystalhd_adp* g_bcm_adapter = NULL;
+
 IOPCIDevice* BroadcomCrystalHD::m_pciNub = NULL;
 
 // BSD ioctl API
@@ -119,6 +120,8 @@ BroadcomCrystalHD::start( IOService * provider )
     if( !super::start( provider ))
         return( false );
 
+    PMinit();
+	
     // create BSD dev and make device node
     if (bsd_create_device() != kIOReturnSuccess) {
         goto abortOpen;
@@ -148,6 +151,12 @@ BroadcomCrystalHD::start( IOService * provider )
     // migrate from CPU to CPU on a SMP box.
     m_workloop = IOWorkLoop::workLoop();
     if (!m_workloop) {
+        goto abortOpen;
+    }
+	
+    m_commandgate = IOCommandGate::commandGate(this);
+    if (!m_commandgate || (m_workloop->addEventSource(m_commandgate) != kIOReturnSuccess)) {
+        IOLog("BroadcomCrystalHD::Cannot create command gate\n");
         goto abortOpen;
     }
     
@@ -213,9 +222,11 @@ BroadcomCrystalHD::start( IOService * provider )
 
     // Enable bus-mastering from the card
     m_pciNub->setBusMasterEnable(true);
-    // Disable PCI Power Management.
-    m_pciNub->enablePCIPowerManagement(kPCIPMCSPowerStateD0);
-
+    
+    // setup power handling
+    registerWithPolicyMaker(this);
+    provider->joinPMtree(this);
+	
     m_workloop->enableAllEventSources();
     m_interrupt_source->enable();
 
@@ -225,7 +236,7 @@ BroadcomCrystalHD::start( IOService * provider )
     result = true;
     
     IOLog("BroadcomCrystalHD: Found HW and started driver SW.\n");
-
+	
 abortOpen:
     return(result);
 }
@@ -238,7 +249,7 @@ abortOpen:
 void
 BroadcomCrystalHD::stop( IOService * provider )
 {
-	BC_STATUS           sts = BC_STS_SUCCESS;
+    BC_STATUS           sts = BC_STS_SUCCESS;
     
     IOLog("BroadcomCrystalHD::stop\n");
     
@@ -270,6 +281,7 @@ BroadcomCrystalHD::stop( IOService * provider )
     g_bcm_dma_info->flushCollection();
     SAFE_RELEASE(g_bcm_dma_info);
     
+	PMstop();
     super::stop( provider );
 }
 
@@ -279,7 +291,7 @@ BroadcomCrystalHD::stop( IOService * provider )
 IOWorkLoop*
 BroadcomCrystalHD::getWorkLoop(void)
 {
-     return m_workloop;
+    return m_workloop;
 }
 
 //-------------------------------------------------------------------------------
@@ -287,6 +299,12 @@ IOPCIDevice*
 BroadcomCrystalHD::getPciNub(void)
 {
     return(m_pciNub);
+}
+//-------------------------------------------------------------------------------
+IOCommandGate*
+BroadcomCrystalHD::getCommandGate(void)
+{
+    return(m_commandgate);
 }
 //-------------------------------------------------------------------------------
 void
