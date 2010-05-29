@@ -41,26 +41,26 @@
 #include <linux/init.h>
 #include <linux/interrupt.h>
 #include <linux/pagemap.h>
+#include <linux/vmalloc.h>
 
-#include <asm/io.h>
+#include <linux/io.h>
 #include <asm/irq.h>
 #include <asm/pgtable.h>
 #include <asm/system.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 #endif
 
 #include "crystalhd_cmds.h"
 
-#define CRYSTAL_HD_NAME		"Broadcom Crystal HD Decoder (BCM70012) Driver"
-
+#define CRYSTAL_HD_NAME		"Broadcom Crystal HD Decoder Driver"
 
 /* OS specific PCI information structure and adapter information. */
 struct crystalhd_adp {
-	/* Hardware borad/PCI specifics */
+	/* Hardware board/PCI specifics */
 	char			name[32];
-#ifndef __APPLE__
 	struct pci_dev		*pdev;
 
+#ifndef __APPLE__
 	unsigned long		pci_mem_start;
 	uint32_t		pci_mem_len;
 	void			*addr;
@@ -75,12 +75,12 @@ struct crystalhd_adp {
 	unsigned int		present;
 	unsigned int		msi;
 #else
-	void			*pdev;
-
 	IOByteCount		pci_mem_len;
-	IOVirtualAddress	addr;
+	uint8_t       *addr;
+	//IOVirtualAddress	addr;
 	IOByteCount		pci_i2o_len;
-	IOVirtualAddress	i2o_addr;
+	//IOVirtualAddress	i2o_addr;
+	uint8_t       *i2o_addr;
 #endif
 
 	spinlock_t		lock;
@@ -109,6 +109,7 @@ crystalhd_ioctl_data *chd_dec_alloc_iodata(struct crystalhd_adp *adp, bool isr);
 void chd_dec_free_iodata(struct crystalhd_adp *adp, crystalhd_ioctl_data *iodata, bool isr);
 
 #endif
+struct device * chd_get_device(void);
 void chd_set_log_level(struct crystalhd_adp *adp, char *arg);
 
 #endif

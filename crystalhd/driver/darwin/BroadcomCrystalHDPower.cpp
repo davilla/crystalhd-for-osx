@@ -269,7 +269,7 @@ void BroadcomCrystalHD::setPowerStateOff(void)
     // function is called.
     temp = chd_dec_alloc_iodata(g_bcm_adapter, false);
     if (!temp) {
-        BCMLOG_ERR("BroadcomCrystalHD: could not get ioctl data\n");
+        IOLog("BroadcomCrystalHD: could not get ioctl data\n");
     }
 
     crystalhd_suspend(&g_bcm_adapter->cmds, temp);

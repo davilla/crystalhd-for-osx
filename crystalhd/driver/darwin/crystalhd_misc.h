@@ -45,9 +45,6 @@
 #include "crystalhd_fw_if.h"
 #include "bc_dts_glob_osx.h"
 #endif
-/* Global log level variable defined in crystal_misc.c file */
-extern uint32_t g_linklog_level;
-
 /* Global element pool for all Queue management.
  * TX: Active = BC_TX_LIST_CNT, Free = BC_TX_LIST_CNT.
  * RX: Free = BC_RX_LIST_CNT, Active = 2
@@ -84,24 +81,25 @@ struct crystalhd_dio_user_info {
 };
 
 typedef struct _crystalhd_dio_req {
-	uint32_t			sig;
-	uint32_t			max_pages;
+	uint32_t						sig;
+	uint32_t						max_pages;
 #ifndef __APPLE__
-	struct page			**pages;
+	struct page						**pages;
 #else
-    void				*io_class; //opaque dma/mem class
+    void							*io_class; //opaque dma/mem class
 #endif
-	struct scatterlist		*sg;
-	int				sg_cnt;
+	struct scatterlist				*sg;
+	int								sg_cnt;
 #ifndef __APPLE__
-	int				page_cnt;
+	int								page_cnt;
 #endif
-	int				direction;
+	int								direction;
 	struct crystalhd_dio_user_info	uinfo;
-	void				*fb_va;
-	uint32_t			fb_size;
-	dma_addr_t			fb_pa;
-	struct _crystalhd_dio_req	*next;
+	void							*fb_va;
+	uint32_t						fb_size;
+	dma_addr_t						fb_pa;
+	void							*pib_va; // pointer to temporary buffer to extract metadata
+	struct _crystalhd_dio_req		*next;
 } crystalhd_dio_req;
 
 #define BC_LINK_DIOQ_SIG	(0x09223280)
@@ -130,37 +128,25 @@ typedef struct _crystalhd_dioq_s {
 typedef void (*hw_comp_callback)(crystalhd_dio_req *,
 				 wait_queue_head_t *event, BC_STATUS sts);
 
-/*========= Decoder (7412) register access routines.================= */
-uint32_t bc_dec_reg_rd(struct crystalhd_adp *, uint32_t);
-void bc_dec_reg_wr(struct crystalhd_adp *, uint32_t, uint32_t);
-
-/*========= Link (70012) register access routines.. =================*/
-uint32_t crystalhd_reg_rd(struct crystalhd_adp *, uint32_t);
-void crystalhd_reg_wr(struct crystalhd_adp *, uint32_t, uint32_t);
-
-/*========= Decoder (7412) memory access routines..=================*/
-BC_STATUS crystalhd_mem_rd(struct crystalhd_adp *, uint32_t, uint32_t, uint32_t *);
-BC_STATUS crystalhd_mem_wr(struct crystalhd_adp *, uint32_t, uint32_t, uint32_t *);
-
-/*==========Link (70012) PCIe Config access routines.================*/
+/*========== PCIe Config access routines.================*/
 BC_STATUS crystalhd_pci_cfg_rd(struct crystalhd_adp *, uint32_t, uint32_t, uint32_t *);
-BC_STATUS crystalhd_pci_cfg_wr(struct crystalhd_adp *, uint32_t, uint32_t, uint32_t );
+BC_STATUS crystalhd_pci_cfg_wr(struct crystalhd_adp *, uint32_t, uint32_t, uint32_t);
 
 /*========= Linux Kernel Interface routines. ======================= */
 void *bc_kern_dma_alloc(struct crystalhd_adp *, uint32_t, dma_addr_t *);
 void bc_kern_dma_free(struct crystalhd_adp *, uint32_t,
 		      void *, dma_addr_t);
 #ifndef __APPLE__
-#define crystalhd_create_event(_ev)	init_waitqueue_head( _ev)
-#define crystalhd_set_event(_ev)		wake_up_interruptible( _ev)
+#define crystalhd_create_event(_ev)	init_waitqueue_head(_ev)
+#define crystalhd_set_event(_ev)		wake_up_interruptible(_ev)
 #define crystalhd_wait_on_event(ev, condition, timeout, ret, nosig)	\
 do {									\
 	DECLARE_WAITQUEUE(entry, current);				\
-	unsigned long end = jiffies + ((timeout * HZ) / 1000);		\
-		ret=0;							\
+	unsigned long end = jiffies + msecs_to_jiffies(timeout);		\
+		ret = 0;						\
 	add_wait_queue(ev, &entry);					\
-	for (;;) {							\
-		__set_current_state(TASK_INTERRUPTIBLE);		\
+	for (;;) {									\
+		set_current_state(TASK_INTERRUPTIBLE);		\
 		if (condition) {					\
 			break;						\
 		}							\
@@ -174,9 +160,9 @@ do {									\
 			break;						\
 		}							\
 	}								\
-	__set_current_state(TASK_RUNNING);				\
+	set_current_state(TASK_RUNNING);				\
 	remove_wait_queue(ev, &entry);					\
-} while(0)
+} while (0)
 #else
 // Rewrite to match better linux behavior, you can have an event get set (DMA done) 
 // event get set before calling crystalhd_wait_on_event (classic interrupt race) and
@@ -218,11 +204,12 @@ do { \
 #endif
 
 /*================ Direct IO mapping routines ==================*/
-extern int crystalhd_create_dio_pool(struct crystalhd_adp *, uint32_t );
+extern int crystalhd_create_dio_pool(struct crystalhd_adp *, uint32_t);
 extern void crystalhd_destroy_dio_pool(struct crystalhd_adp *);
-extern BC_STATUS crystalhd_map_dio(struct crystalhd_adp *,void *, uint32_t, uint32_t, 
-				bool, bool,crystalhd_dio_req** );
-extern BC_STATUS crystalhd_unmap_dio(struct crystalhd_adp *,crystalhd_dio_req*);
+extern BC_STATUS crystalhd_map_dio(struct crystalhd_adp *, void *, uint32_t,
+				   uint32_t, bool, bool, crystalhd_dio_req**);
+
+extern BC_STATUS crystalhd_unmap_dio(struct crystalhd_adp *, crystalhd_dio_req*);
 #ifndef __APPLE__
 #define crystalhd_get_sgle_paddr(_dio, _ix) (cpu_to_le64(sg_dma_address(&_dio->sg[_ix])))
 #define crystalhd_get_sgle_len(_dio, _ix) (cpu_to_le32(sg_dma_len(&_dio->sg[_ix])))
@@ -236,50 +223,17 @@ extern BC_STATUS crystalhd_create_dioq(struct crystalhd_adp *, crystalhd_dioq_t 
 extern void crystalhd_delete_dioq(struct crystalhd_adp *, crystalhd_dioq_t *);
 extern BC_STATUS crystalhd_dioq_add(crystalhd_dioq_t *ioq, void *data, bool wake, uint32_t tag);
 extern void *crystalhd_dioq_fetch(crystalhd_dioq_t *ioq);
-extern void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq,uint32_t tag);
-extern void *crystalhd_dioq_fetch_wait(crystalhd_dioq_t *ioq, uint32_t to_secs, uint32_t *sig_pend);
+extern void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq, uint32_t tag);
+extern void *crystalhd_dioq_fetch_wait(void *, uint32_t , uint32_t *);
 
 #define crystalhd_dioq_count(_ioq)	((_ioq) ? _ioq->count : 0)
 
-extern int crystalhd_create_elem_pool(struct crystalhd_adp *, uint32_t );
+extern int crystalhd_create_elem_pool(struct crystalhd_adp *, uint32_t);
 extern void crystalhd_delete_elem_pool(struct crystalhd_adp *);
-
+// Some HW specific code defines
+extern uint32_t link_GetRptDropParam(uint32_t picHeight, uint32_t picWidth, void *);
 
 /*================ Debug routines/macros .. ================================*/
 extern void crystalhd_show_buffer(uint32_t off, uint8_t *buff, uint32_t dwcount);
-
-enum _chd_log_levels {
-	BCMLOG_ERROR		= 0x80000000,	/* Don't disable this option */
-	BCMLOG_DATA		= 0x40000000,	/* Data, enable by default */
-	BCMLOG_SPINLOCK		= 0x20000000,	/* Spcial case for Spin locks*/
-
-	/* Following are allowed only in debug mode */
-	BCMLOG_INFO		= 0x00000001,	/* Generic informational */
-	BCMLOG_DBG		= 0x00000002,	/* First level Debug info */
-	BCMLOG_SSTEP		= 0x00000004,	/* Stepping information */
-	BCMLOG_ENTER_LEAVE	= 0x00000008,	/* stack tracking */
-};
-
-#define BCMLOG_ENTER				\
-if (g_linklog_level & BCMLOG_ENTER_LEAVE) {	\
-	printk("Entered %s\n", __func__);	\
-}
-
-#define BCMLOG_LEAVE				\
-if (g_linklog_level & BCMLOG_ENTER_LEAVE) {	\
-	printk("Leaving %s\n", __func__);	\
-}
-
-#define BCMLOG(trace, fmt, args...)		\
-if (g_linklog_level & trace) {			\
-	printk(fmt, ##args);			\
-}
-
-#define BCMLOG_ERR(fmt, args...)					\
-do {									\
-	if(g_linklog_level & BCMLOG_ERROR){				\
-	  printk("*ERR*:%s:%d: "fmt,__FILE__,__LINE__, ##args);		\
-	}								\
-} while(0);
 
 #endif

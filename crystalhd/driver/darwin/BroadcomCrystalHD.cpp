@@ -207,16 +207,21 @@ BroadcomCrystalHD::start( IOService * provider )
 
     // Setup crystalhd adapter
     chd_set_log_level(NULL, "debug");
+    g_bcm_adapter->pdev->vendor = m_pciNub->configRead16(kIOPCIConfigVendorID);
+    g_bcm_adapter->pdev->device = m_pciNub->configRead16(kIOPCIConfigDeviceID);
+    g_bcm_adapter->pdev->subsystem_vendor = m_pciNub->configRead16(kIOPCIConfigSubSystemVendorID);
+    g_bcm_adapter->pdev->subsystem_device = m_pciNub->configRead16(kIOPCIConfigSubSystemID);
+
     g_bcm_adapter->pci_i2o_len  = m_pci_bar0->getLength();
-    g_bcm_adapter->i2o_addr = m_pci_bar0->getVirtualAddress();
+    g_bcm_adapter->i2o_addr = (uint8_t*)m_pci_bar0->getVirtualAddress();
     g_bcm_adapter->pci_mem_len  = m_pci_bar2->getLength();
-    g_bcm_adapter->addr = m_pci_bar2->getVirtualAddress();
-    alloc_spin_lock(g_bcm_adapter->lock);
+    g_bcm_adapter->addr = (uint8_t*)m_pci_bar2->getVirtualAddress();
+    spin_lock_init(&g_bcm_adapter->lock);
     // Setup crystalhd ioctl handler
     chd_dec_init_chdev(g_bcm_adapter);
     
     if ( (sts = crystalhd_setup_cmd_context(&g_bcm_adapter->cmds, g_bcm_adapter)) != BC_STS_SUCCESS){
-        BCMLOG_ERR("cmd setup :%d \n", sts);
+        IOLog("cmd setup :%d \n", sts);
         goto abortOpen;
     }
 
@@ -270,7 +275,7 @@ BroadcomCrystalHD::stop( IOService * provider )
 
     // shutdown BSD API handler
     if ( (sts = crystalhd_delete_cmd_context(&g_bcm_adapter->cmds)) != BC_STS_SUCCESS){
-        BCMLOG_ERR("crystalhd_delete_cmd_context :%d \n",sts);
+        IOLog("crystalhd_delete_cmd_context :%d \n",sts);
     }
     chd_dec_release_chdev(g_bcm_adapter);
     // chd_dec_release_chdev uses adp->lock so free lock after.
@@ -343,7 +348,16 @@ BroadcomCrystalHD::bsd_create_device(void)
             break;
         }
 
+        g_bcm_adapter->pdev = (struct pci_dev*)IOMalloc(sizeof(struct pci_dev));
+        if (!g_bcm_adapter->pdev) {
+          IOFree(g_bcm_adapter, sizeof(*g_bcm_adapter));
+          IOLog("BroadcomCrystalHD::chd_create_device didn't initialize\n");
+          io_return = kIOReturnNoMemory;
+          break;
+        }
+
         bzero(g_bcm_adapter,sizeof(*g_bcm_adapter));
+        bzero(g_bcm_adapter->pdev, sizeof(struct pci_dev));
         bzero(m_DEVs, m_LastMinor * sizeof(m_DEVs[0]));
         IOLockInit(m_bds_lock);
         m_Major = cdevsw_add(-1, &m_devsw);
@@ -401,8 +415,12 @@ BroadcomCrystalHD::bsd_destroy_device(void)
         //IOLog("BroadcomCrystalHD::IOFree m_DEVs\n");
         IOFree(m_DEVs, m_LastMinor * sizeof(m_DEVs[0]));
     }
+    if (g_bcm_adapter->pdev) {
+        //IOLog("BroadcomCrystalHD::IOFree g_bcm_adapter->pdev\n");
+        IOFree(g_bcm_adapter->pdev, sizeof(*g_bcm_adapter->pdev));
+    }
     if (g_bcm_adapter) {
-        //IOLog("BroadcomCrystalHD::IOFree m_adapter\n");
+        //IOLog("BroadcomCrystalHD::IOFree g_bcm_adapter\n");
         IOFree(g_bcm_adapter, sizeof(*g_bcm_adapter));
     }
     if (m_bds_lock) {
@@ -488,18 +506,18 @@ bsd_open(dev_t dev, int flags, int devtype, struct proc *p)
     int                   rc = 0;
 
     if(!adp) {
-        BCMLOG_ERR("Invalid adp \n");
+        IOLog("Invalid adp \n");
         rc = -1;
         goto exitOpen;
     }
     if (adp->cfg_users >= BC_LINK_MAX_OPENS) {
-        BCMLOG(BCMLOG_INFO,"Already in use.%d\n", adp->cfg_users);
+        IOLog("Already in use.%d\n", adp->cfg_users);
         rc = -EBUSY;
         goto exitOpen;
     }
 
     if ( (sts = crystalhd_user_open(&adp->cmds, &uc)) != BC_STS_SUCCESS) {
-        BCMLOG_ERR("cmd_user_open - %d \n", sts);
+        IOLog("cmd_user_open - %d \n", sts);
         rc = -EBUSY;
         goto exitOpen;
     }
@@ -520,12 +538,12 @@ bsd_close(dev_t dev, int flags, int devtype, struct proc *p)
     struct crystalhd_user *uc=NULL;
 
     if (!adp) {
-        BCMLOG_ERR("Invalid adp \n");
+        IOLog("Invalid adp \n");
         return -1;
     }
 
     if ( !(uc = bsd_get_user(dev, proc_pid(p) )) ) {
-        BCMLOG_ERR("Failed to get uc\n");
+        IOLog("Failed to get uc\n");
         return -1;
     }
 
@@ -554,17 +572,17 @@ bsd_ioctl(dev_t dev, u_long cmd, caddr_t data, int fflag, struct proc *p)
     int                   error = -1;
     
     if (!adp) {
-        BCMLOG_ERR("Invalid adp \n");
+        IOLog("Invalid adp \n");
         error = EINVAL;
         goto exitIoctl;
     }
     if ( !(uc = (struct crystalhd_user*)bsd_get_user( dev, proc_pid(p) )) ) {
-        BCMLOG_ERR("Failed to get uc\n");
+        IOLog("Failed to get uc\n");
         error = -1;
         goto exitIoctl;
     }
     if (!(cproc = crystalhd_get_cmd_proc(&adp->cmds, cmd, uc))) {
-        BCMLOG_ERR("Unhandled command: %d \n", (int)cmd);
+        IOLog("Unhandled command: %d \n", (int)cmd);
         error = EINVAL;
         goto exitIoctl;
     }

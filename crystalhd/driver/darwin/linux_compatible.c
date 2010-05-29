@@ -45,6 +45,18 @@ extern void *kern_os_malloc(size_t size);
 extern void  kern_os_free(void * addr);
 __END_DECLS
 
+uint64_t mach_jiffies(void)
+{
+  uint64_t nanoseconds;
+  absolutetime_to_nanoseconds(mach_absolute_time(), &nanoseconds);
+  return(nanoseconds);
+}
+
+uint64_t msecs_to_jiffies(uint32_t msecs)
+{
+  return( (uint64_t)(msecs * 1000000));
+}
+
 void udelay(unsigned int microseconds)
 {
   // Spin delay for a number of microseconds
@@ -58,11 +70,11 @@ unsigned long msleep_interruptible(unsigned int msecs)
 	return(0);
 }
 
-unsigned long readl(IOVirtualAddress addr)
+unsigned long readl(void *addr)
 {
 	return OSReadLittleInt32((volatile void*)addr, 0);
 }
-void writel(unsigned long value, IOVirtualAddress addr)
+void writel(unsigned long value, void *addr)
 {
 	OSWriteLittleInt32((volatile void*)addr, 0, value);
 }
@@ -230,6 +242,10 @@ void* kzalloc(size_t size, gfp_t flags)
 	if (mem)
 		bzero(mem, size);
 	return(mem);
+}
+void* kmalloc(size_t size, gfp_t flags)
+{
+	return( kern_os_malloc(size) );
 }
 void* kalloc(size_t size, gfp_t flags)
 {

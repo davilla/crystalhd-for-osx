@@ -42,6 +42,8 @@
 #include <IOKit/IOLib.h>
 #include <IOKit/IOBufferMemoryDescriptor.h>
 
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
 typedef unsigned char      u8;
 typedef unsigned short    u16;
 typedef unsigned int      u32;
@@ -52,7 +54,38 @@ typedef IOLock            *spinlock_t;
 typedef uint32_t          gfp_t;
 #define GFP_KERNEL 1
 #define GFP_ATOMIC 1
-#define printk IOLog
+#define __devinit
+#define __devexit
+
+#define KERN_EMERG      "<0>"   /* system is unusable                   */
+#define KERN_ALERT      "<1>"   /* action must be taken immediately     */
+#define KERN_CRIT       "<2>"   /* critical conditions                  */
+#define KERN_ERR        "<3>"   /* error conditions                     */
+#define KERN_WARNING    "<4>"   /* warning conditions                   */
+#define KERN_NOTICE     "<5>"   /* normal but significant condition     */
+#define KERN_INFO       "<6>"   /* informational                        */
+#define KERN_DEBUG      "<7>"   /* debug-level messages                 */
+#define KERN_DEFAULT    "<d>"   /* Use the default kernel loglevel      */
+
+#define printk(format, arg...) \
+  IOLog(format, ## arg)
+
+#define dev_err(dev, format, arg...) \
+  if (dev) IOLog(format, ## arg)
+
+#define dev_dbg(dev, format, arg...) \
+  if (dev) IOLog(format, ## arg)
+
+#define dev_info(dev, format, arg...) \
+  if (dev) IOLog(format, ## arg)
+
+struct pci_dev {
+  void *dev;
+  uint16_t vendor;
+  uint16_t device;
+  uint16_t subsystem_vendor;
+  uint16_t subsystem_device;
+};
 
 enum dma_data_direction {
 	READ = 1,
@@ -67,11 +100,15 @@ struct scatterlist {
 	unsigned int    dma_length;
 };
 
+#define copy_to_user(to,from,n) copyout(from, CAST_USER_ADDR_T(to), n)
+#define copy_from_user(to,from,n) copyin(CAST_USER_ADDR_T(from), to, n)
+
 // spinlock defs, note that we don't want to diddle the interrupt under OSX
 // so fake it.
-#define alloc_spin_lock(_lock)  \
+
+#define spin_lock_init(_lock)  \
 do{                       \
-	_lock = IOLockAlloc();  \
+	*_lock = IOLockAlloc(); \
 }while(0)
 
 #define free_spin_lock(_lock)   \
@@ -96,9 +133,14 @@ do{				\
 void udelay(unsigned int microseconds);
 unsigned long msleep_interruptible(unsigned int msecs);
 
+#define jiffies mach_jiffies()
+#define time_after_eq(a,b) ( (a) - (b) >= 0 )
+uint64_t mach_jiffies(void);
+uint64_t msecs_to_jiffies(uint32_t msecs);
+
 // FIXME: convert to inlines or defines later
-unsigned long readl(IOVirtualAddress addr);
-void writel(unsigned long value, IOVirtualAddress addr);
+unsigned long readl(void *addr);
+void writel(unsigned long value, void *addr);
 
 // FIXME: convert to inlines or defines later
 int pci_read_config_byte(  void *dev, uint8_t off,  u8 *val);
@@ -125,6 +167,7 @@ void pci_free_consistent(void *pdev, size_t size, void *vaddr, dma_addr_t dma_ha
 
 // FIXME: convert to inlines or defines later
 void* kzalloc(size_t size, gfp_t flags);
+void* kmalloc(size_t size, gfp_t flags);
 void* kalloc(size_t size, gfp_t flags);
 void kfree(void *addr);
 

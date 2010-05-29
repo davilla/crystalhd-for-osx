@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F50FE3F511B1931600C8B8CD /* crystalhd_linkfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = F50FE3F311B1931600C8B8CD /* crystalhd_linkfuncs.h */; };
+		F50FE3F611B1931600C8B8CD /* crystalhd_linkfuncs.c in Sources */ = {isa = PBXBuildFile; fileRef = F50FE3F411B1931600C8B8CD /* crystalhd_linkfuncs.c */; };
 		F5959CA610F03F66004B58B3 /* BroadcomCrystalHD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5959CA510F03F66004B58B3 /* BroadcomCrystalHD.cpp */; };
 		F5959CA910F03F75004B58B3 /* BroadcomCrystalHD.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CA810F03F75004B58B3 /* BroadcomCrystalHD.h */; };
 		F5959CB310F03F8D004B58B3 /* crystalhd_lnx.c in Sources */ = {isa = PBXBuildFile; fileRef = F5959CAA10F03F8D004B58B3 /* crystalhd_lnx.c */; };
@@ -32,6 +34,8 @@
 
 /* Begin PBXFileReference section */
 		A6AB003D0AA3B2AC00401E96 /* BroadcomCrystalHD.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BroadcomCrystalHD.kext; sourceTree = BUILT_PRODUCTS_DIR; };
+		F50FE3F311B1931600C8B8CD /* crystalhd_linkfuncs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crystalhd_linkfuncs.h; sourceTree = "<group>"; };
+		F50FE3F411B1931600C8B8CD /* crystalhd_linkfuncs.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = crystalhd_linkfuncs.c; sourceTree = "<group>"; };
 		F5959CA510F03F66004B58B3 /* BroadcomCrystalHD.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BroadcomCrystalHD.cpp; sourceTree = "<group>"; };
 		F5959CA810F03F75004B58B3 /* BroadcomCrystalHD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BroadcomCrystalHD.h; sourceTree = "<group>"; };
 		F5959CAA10F03F8D004B58B3 /* crystalhd_lnx.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = crystalhd_lnx.c; sourceTree = "<group>"; };
@@ -107,6 +111,8 @@
 				F5959CAF10F03F8D004B58B3 /* crystalhd_fw_if.h */,
 				F5959CAE10F03F8D004B58B3 /* crystalhd_hw.c */,
 				F5959CAB10F03F8D004B58B3 /* crystalhd_hw.h */,
+				F50FE3F411B1931600C8B8CD /* crystalhd_linkfuncs.c */,
+				F50FE3F311B1931600C8B8CD /* crystalhd_linkfuncs.h */,
 				F5959CAA10F03F8D004B58B3 /* crystalhd_lnx.c */,
 				F5959CB010F03F8D004B58B3 /* crystalhd_lnx.h */,
 				F5959CB210F03F8D004B58B3 /* crystalhd_misc.c */,
@@ -159,6 +165,7 @@
 				F5959CBA10F03F8D004B58B3 /* crystalhd_misc.h in Headers */,
 				F5959CEB10F042CA004B58B3 /* version_lnx.h in Headers */,
 				F5959DAC10F052EE004B58B3 /* linux_compatible.h in Headers */,
+				F50FE3F511B1931600C8B8CD /* crystalhd_linkfuncs.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,6 +264,7 @@
 				F5959CBB10F03F8D004B58B3 /* crystalhd_misc.c in Sources */,
 				F5959DAB10F052EE004B58B3 /* linux_compatible.c in Sources */,
 				F5AED77C11931CC20056ABEA /* BroadcomCrystalHDPower.cpp in Sources */,
+				F50FE3F611B1931600C8B8CD /* crystalhd_linkfuncs.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
