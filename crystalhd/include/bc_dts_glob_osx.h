@@ -51,6 +51,14 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#define UNUSED(expr) do { (void)(expr); } while (0)
+inline int posix_memalign(void **memptr, size_t alignment, size_t size)
+{
+  // darwin always aligns on 16 byte boundaries.
+  UNUSED(alignment);
+  *memptr = malloc(size);
+  return 0;
+}
 #endif
 
 #define DRVIFLIB_INT_API

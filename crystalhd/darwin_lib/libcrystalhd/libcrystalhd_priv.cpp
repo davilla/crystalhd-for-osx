@@ -47,11 +47,11 @@
 
 /*============== Global shared area usage ======================*/
 /* Global mode settings */
-/*	
-	Bit 0 (LSB)	- Play Back mode 
+/*
+	Bit 0 (LSB)	- Play Back mode
 	Bit 1		- Diag mode
-	Bit 2		- Monitor mode 
-	Bit 3		- HwInit mode 
+	Bit 2		- Monitor mode
+	Bit 3		- HwInit mode
 	bit 5       - Hwsetup in progress
 */
 
@@ -102,7 +102,7 @@ BC_STATUS DtsCreateShMem(int *shmem_id)
 						DebugLog_Trace(LDIL_DBG,"DtsCreateShMem:deleted shmem segment and creating a new one ...\n");
 						//return BC_STS_ERROR;
 
-				} 
+				}
 				//create a new shmem
 				if((shmid= shmget(shmkey, 1024, 0644|IPC_CREAT|IPC_EXCL))== -1 ) {
 					DebugLog_Trace(LDIL_DBG,"DtsCreateShMem:unable to get shmid :%d\n",errno);
@@ -112,7 +112,7 @@ BC_STATUS DtsCreateShMem(int *shmem_id)
 				DtsGetDilShMem(shmid);
 
 		   }
-			
+
 			else{ //someone is attached to it
 
 					DtsGetDilShMem(shmid);
@@ -121,11 +121,11 @@ BC_STATUS DtsCreateShMem(int *shmem_id)
 						glob_mode_valid=FALSE;
 						DebugLog_Trace(LDIL_DBG,"DtsCreateShMem:globmode %d is invalid\n",mode);
 					}
-				
+
 			    }
-			
+
 		   }else{
-  
+
 			DebugLog_Trace(LDIL_DBG,"shmcreate failed with err %d",errno);
 			return BC_STS_ERROR;
 		   }
@@ -133,21 +133,21 @@ BC_STATUS DtsCreateShMem(int *shmem_id)
 		//we created just attach to it
 		DtsGetDilShMem(shmid);
 	}
-			
+
 		*shmem_id =shmid;
-		
+
 		return BC_STS_SUCCESS;
 }
 
 BC_STATUS DtsGetDilShMem(uint32_t shmid)
 {
-	
+
 	bc_dil_glob_ptr=(bc_dil_glob_s *)shmat(shmid,(void *)0,0);
 	if((int)bc_dil_glob_ptr==-1) {
 		DebugLog_Trace(LDIL_DBG,"Unable to open shared memory ...\n");
 		return BC_STS_ERROR;
 	}
-	
+
 	return BC_STS_SUCCESS;
 }
 BC_STATUS DtsDelDilShMem()
@@ -157,7 +157,7 @@ BC_STATUS DtsDelDilShMem()
 	//First dettach the shared mem segment
 
 	if(shmdt(bc_dil_glob_ptr)==-1) {
-	
+
 		DebugLog_Trace(LDIL_DBG,"Unable to detach from Dil shared memory ...\n");
 		//return BC_STS_ERROR;
 	}
@@ -172,14 +172,14 @@ BC_STATUS DtsDelDilShMem()
 		DebugLog_Trace(LDIL_DBG,"DtsDelDilShMem:shmctl failed ...\n");
 		return BC_STS_ERROR;
 	}
-	
+
 
 	if(buf.shm_nattch ==0) {
 		//No process is currently attached to the shmem seg. go ahead and delete it
 		if(-1!=shmctl(shmid,IPC_RMID,NULL)){
 				DebugLog_Trace(LDIL_DBG,"DtsDelDilShMem:deleted shmem segment ...\n");
 				return BC_STS_ERROR;
-			
+
 		} else{
 			DebugLog_Trace(LDIL_DBG,"DtsDelDilShMem:unable to delete shmem segment ...\n");
 		}
@@ -235,7 +235,7 @@ void DtsSetHwInitSts( uint32_t value )
 	bc_dil_glob.gHwInitSts = value;
 #endif
 }
-void DtsRstStats( void ) 
+void DtsRstStats( void )
 {
 #ifdef _USE_SHMEM_
 	memset(&bc_dil_glob_ptr->stats, 0, sizeof(bc_dil_glob_ptr->stats));
@@ -271,19 +271,19 @@ static void DtsGetMaxYUVSize(DTS_LIB_CONTEXT *Ctx, uint32_t *YbSz, uint32_t *UVb
 	}
 }
 static void DtsGetMaxSize(DTS_LIB_CONTEXT *Ctx, uint32_t *Sz)
-{	
+{
 	*Sz = (1920*1090)*2;
 }
 static void DtsInitLock(DTS_LIB_CONTEXT	*Ctx)
 {
-	//Create mutex 
+	//Create mutex
 	pthread_mutex_init(&Ctx->thLock, NULL);
 
 }
 static void DtsDelLock(DTS_LIB_CONTEXT	*Ctx)
 {
 	pthread_mutex_destroy(&Ctx->thLock);
-	
+
 }
 static void DtsLock(DTS_LIB_CONTEXT	*Ctx)
 {
@@ -311,7 +311,7 @@ static void DtsDecPend(DTS_LIB_CONTEXT	*Ctx)
 uint32_t DtsGetWidthfromResolution(DTS_LIB_CONTEXT *Ctx, uint32_t Resolution)
 {
 	uint32_t Width;
-	
+
 	/* For Flea source width is always equal to video width */
 	/* For Link translate from format container to actual source width */
 	if(Ctx->DevId == BC_PCI_DEVID_FLEA)
@@ -341,7 +341,7 @@ uint32_t DtsGetWidthfromResolution(DTS_LIB_CONTEXT *Ctx, uint32_t Resolution)
 	case vdecRESOLUTION_720p:
     case vdecRESOLUTION_720p50:
 	case vdecRESOLUTION_720p59_94:
-    case vdecRESOLUTION_720p24:	
+    case vdecRESOLUTION_720p24:
 	case vdecRESOLUTION_720p29_97:
 	case vdecRESOLUTION_720p0:
 	case vdecRESOLUTION_720p23_976:
@@ -378,11 +378,11 @@ static void DtsCopyAppPIB(DTS_LIB_CONTEXT *Ctx, BC_DEC_OUT_BUFF *decOut, BC_DTS_
 	memcpy(dstPib, srcPib,sizeof(*dstPib));
 
 	/* Calculate the appropriate source width */
-	if(dstPib->width > 1280) 	
-		Ctx->picWidth = 1920;			
-	else if(dstPib->width > 720) 	
-		Ctx->picWidth = 1280;			
-	else 
+	if(dstPib->width > 1280)
+		Ctx->picWidth = 1920;
+	else if(dstPib->width > 720)
+		Ctx->picWidth = 1280;
+	else
 		Ctx->picWidth = 720;
 
 	Ctx->picHeight = dstPib->height;
@@ -392,7 +392,7 @@ static void DtsCopyAppPIB(DTS_LIB_CONTEXT *Ctx, BC_DEC_OUT_BUFF *decOut, BC_DTS_
 	/* FIX_ME:: Add extensions part.. */
 
 	/* Retrieve Timestamp */
-	if(srcPib->flags & VDEC_FLAG_PICTURE_META_DATA_PRESENT){ 
+	if(srcPib->flags & VDEC_FLAG_PICTURE_META_DATA_PRESENT){
 		sNum = (uint16_t) ( ((srcPib->picture_meta_payload & 0xFF) << 8) |
 						    ((srcPib->picture_meta_payload& 0xFF00) >> 8) );
 		DtsFetchMdata(Ctx,sNum,pOut);
@@ -425,40 +425,40 @@ static void DtsGetPibFrom422(uint8_t *pibBuff, uint8_t mode422)
 }
 
 static BC_STATUS DtsGetPictureInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
-{	
+{
 
-	uint16_t			sNum = 0;	
+	uint16_t			sNum = 0;
 	//unused BC_STATUS			sts = BC_STS_SUCCESS;
 	uint8_t*			pPicInfoLine = NULL;
 	uint32_t			PictureNumber = 0;
-	uint32_t			PicInfoLineNum; 
-	
+	uint32_t			PicInfoLineNum;
+
 	if (Ctx->DevId == BC_PCI_DEVID_FLEA)
 	{
-		PicInfoLineNum = *(ULONG *)(pOut->Ybuff);		
+		PicInfoLineNum = *(ULONG *)(pOut->Ybuff);
 	}
-	else if (Ctx->b422Mode == OUTPUT_MODE422_YUY2) 
+	else if (Ctx->b422Mode == OUTPUT_MODE422_YUY2)
 	{
 		PicInfoLineNum = ((ULONG)(*(pOut->Ybuff + 6)) & 0xff)
 						| (((ULONG)(*(pOut->Ybuff + 4)) << 8)  & 0x0000ff00)
 						| (((ULONG)(*(pOut->Ybuff + 2)) << 16) & 0x00ff0000)
-						| (((ULONG)(*(pOut->Ybuff + 0)) << 24) & 0xff000000);		
-	} 
-	else if (Ctx->b422Mode == OUTPUT_MODE422_UYVY) 
+						| (((ULONG)(*(pOut->Ybuff + 0)) << 24) & 0xff000000);
+	}
+	else if (Ctx->b422Mode == OUTPUT_MODE422_UYVY)
 	{
 		PicInfoLineNum = ((ULONG)(*(pOut->Ybuff + 7)) & 0xff)
 						| (((ULONG)(*(pOut->Ybuff + 5)) << 8)  & 0x0000ff00)
 						| (((ULONG)(*(pOut->Ybuff + 3)) << 16) & 0x00ff0000)
 						| (((ULONG)(*(pOut->Ybuff + 1)) << 24) & 0xff000000);
-	} 
-	else 
+	}
+	else
 	{
 		PicInfoLineNum = ((ULONG)(*(pOut->Ybuff + 3)) & 0xff)
 						| (((ULONG)(*(pOut->Ybuff + 2)) << 8)  & 0x0000ff00)
 						| (((ULONG)(*(pOut->Ybuff + 1)) << 16) & 0x00ff0000)
 						| (((ULONG)(*(pOut->Ybuff + 0)) << 24) & 0xff000000);
 	}
-	
+
 	if (PicInfoLineNum == BC_EOS_DETECTED)  // EOS
 	{
 		memcpy((uint32_t*)&pOut->PicInfo,(uint32_t*)(pOut->Ybuff + 4), sizeof(BC_PIC_INFO_BLOCK));
@@ -466,19 +466,20 @@ static BC_STATUS DtsGetPictureInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 		{
 			Ctx->bEOS = true;
 			Ctx->pOutData->RetSts = BC_STS_NO_DATA;
+			DebugLog_Trace(LDIL_DBG, "Found EOS \n");
 			return BC_STS_NO_DATA;
 		}
 	}
 	/*
-	-- To take care of 16 byte alignment the firmware might put extra 
-	-- line so that the PIB starts with a line boundary. We will need to 
-	-- have additional checks for the following condition to take care of 
+	-- To take care of 16 byte alignment the firmware might put extra
+	-- line so that the PIB starts with a line boundary. We will need to
+	-- have additional checks for the following condition to take care of
 	-- extra lines.
 	*/
 
-	if( ( (PicInfoLineNum != Ctx->picHeight) && (PicInfoLineNum != (Ctx->picHeight+1))) && 
+	if( ( (PicInfoLineNum != Ctx->picHeight) && (PicInfoLineNum != (Ctx->picHeight+1))) &&
 		( (PicInfoLineNum != Ctx->picHeight/2) && (PicInfoLineNum != (Ctx->picHeight+1)/2)) )
-	{	
+	{
 		return BC_STS_IO_XFR_ERROR;
 	}
 
@@ -495,7 +496,7 @@ static BC_STATUS DtsGetPictureInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 						| (((ULONG)(*(pPicInfoLine + 2)) << 8)  & 0x0000ff00)
 						| (((ULONG)(*(pPicInfoLine + 1)) << 16) & 0x00ff0000)
 						| (((ULONG)(*(pPicInfoLine + 0)) << 24) & 0xff000000);
-	
+
 	}else{
 		/*The Metadata Is Linear in Flea.*/
 		PictureNumber = ((ULONG)(*(pPicInfoLine + 0)) & 0xff)
@@ -536,23 +537,23 @@ static BC_STATUS DtsGetPictureInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 	else
 	{
 		//Replace Data Back by 422 Mode
-		if (Ctx->b422Mode == OUTPUT_MODE422_YUY2) 
+		if (Ctx->b422Mode == OUTPUT_MODE422_YUY2)
 		{
 			//For YUY2
 			*(pOut->Ybuff + 6) = ((char *)&pOut->PicInfo.ycom)[3];
 			*(pOut->Ybuff + 4) = ((char *)&pOut->PicInfo.ycom)[2];
 			*(pOut->Ybuff + 2) = ((char *)&pOut->PicInfo.ycom)[1];
 			*(pOut->Ybuff + 0) = ((char *)&pOut->PicInfo.ycom)[0];
-		} 
-		else if (Ctx->b422Mode == OUTPUT_MODE422_UYVY) 
+		}
+		else if (Ctx->b422Mode == OUTPUT_MODE422_UYVY)
 		{
 			//For UYVY
 			*(pOut->Ybuff + 7) = ((char *)&pOut->PicInfo.ycom)[3];
 			*(pOut->Ybuff + 5) = ((char *)&pOut->PicInfo.ycom)[2];
 			*(pOut->Ybuff + 3) = ((char *)&pOut->PicInfo.ycom)[1];
 			*(pOut->Ybuff + 1) = ((char *)&pOut->PicInfo.ycom)[0];
-		} 
-		else 
+		}
+		else
 		{
 			//For NV12 or YV12
 			*((uint32_t*)&pOut->Ybuff[0]) = pOut->PicInfo.ycom;
@@ -578,7 +579,7 @@ static BC_STATUS DtsGetPictureInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 	{
 		/* Retrieve Timestamp */
 		if(pOut->PicInfo.flags & VDEC_FLAG_PICTURE_META_DATA_PRESENT)
-		{ 
+		{
 			sNum = (uint16_t) ( ( (pOut->PicInfo.picture_meta_payload & 0xFF) << 8) |
                                 ((pOut->PicInfo.picture_meta_payload& 0xFF00) >> 8) );
 			DtsFetchMdata(Ctx,sNum,pOut);
@@ -608,7 +609,7 @@ BC_STATUS DtsUpdateVidParams(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 		default:
 			Ctx->VidParams.Progressive = TRUE;
 			break;
-	}	
+	}
 	return BC_STS_SUCCESS;
 
 }
@@ -618,17 +619,16 @@ BOOL DtsCheckRptPic(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 {
 	BOOL bRepeat = FALSE;
 	uint8_t nCheckFlag = TOP_FIELD_FLAG;
-
+	
 	if (pOut->PicInfo.picture_number  <3)
 		return FALSE;
-
+	
 	if (Ctx->bEOS == TRUE)
 	{
 		pOut->PicInfo.flags |= VDEC_FLAG_LAST_PICTURE;
-		Ctx->FlushIssued = FALSE;
 		return TRUE;
 	}
-
+	
 	if (Ctx->LastPicNum == pOut->PicInfo.picture_number && Ctx->LastSessNum == pOut->PicInfo.sess_num)
 	{
 		if (Ctx->VidParams.Progressive)
@@ -637,12 +637,12 @@ BOOL DtsCheckRptPic(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 			nCheckFlag = BOTTOM_FIELD_FLAG;
 		else
 			nCheckFlag = TOP_FIELD_FLAG;
-
+		
 		//Discard for PullDown
 		int nShift = 2;
 		uint8_t nFlag = Ctx->PullDownFlag;
 		bool bFound = false;
-
+		
 		while(nFlag)
 		{
 			if((nFlag & 0x03) == nCheckFlag)
@@ -653,71 +653,81 @@ BOOL DtsCheckRptPic(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut)
 			nFlag = nFlag >> 2;
 			nShift += 2;
 		}
-
+		
 		if(!bFound)
 			bRepeat = true;
-
-		Ctx->PullDownFlag = Ctx->PullDownFlag >> nShift;				
+		
+		Ctx->PullDownFlag = Ctx->PullDownFlag >> nShift;
 	}
 	else
 	{
-		switch(pOut->PicInfo.pulldown)
+		if (Ctx->VidParams.Progressive)
 		{
-			case vdecTop:
-				Ctx->PullDownFlag = 0x0001;  //Top ==> 00000001
-				break;
-			case vdecBottom:
-				Ctx->PullDownFlag = 0x0002;  //Bottom ==> 00000010
-				break;
-			case vdecTopBottom:
-				Ctx->PullDownFlag = 0x0009;  //TopBottom ==> 00001001
-				break;
-			case vdecBottomTop:          
-				Ctx->PullDownFlag = 0x0006;  //BottomTop ==> 00000110
-				break;
-			case vdecTopBottomTop:
-				Ctx->PullDownFlag = 0x0019;  //TopBottomTop ==> 00011001
-				break;
-			case vdecBottomTopBottom:
-				Ctx->PullDownFlag = 0x0026;  //BottomTopBottom ==> 00100110
-				break;
-			case vdecFrame_X1:           
-				Ctx->PullDownFlag = 0x0003;  //Frame x 1 ==> 00000011
-				break;
-			case vdecFrame_X2:           
-				Ctx->PullDownFlag = 0x000f;  //Frame x 2 ==> 00001111
-				break;
-			case vdecFrame_X3:           
-				Ctx->PullDownFlag = 0x003f;  //Frame x 3 ==> 00111111
-				break;
-			case vdecFrame_X4:           
-				Ctx->PullDownFlag = 0x00ff;  //Frame x 4 ==> 11111111
-				break;							
-			default:
-				Ctx->PullDownFlag = 0x0003;  //Frame x 1 ==> 00000011
-				break;				
+			switch(pOut->PicInfo.pulldown)
+			{
+				case vdecFrame_X1:
+					Ctx->PullDownFlag = 0x0003;  //Frame x 1 ==> 00000011
+					break;
+				case vdecFrame_X2:
+					Ctx->PullDownFlag = 0x000f;  //Frame x 2 ==> 00001111
+					break;
+				case vdecFrame_X3:
+					Ctx->PullDownFlag = 0x003f;  //Frame x 3 ==> 00111111
+					break;
+				case vdecFrame_X4:
+					Ctx->PullDownFlag = 0x00ff;  //Frame x 4 ==> 11111111
+					break;
+				default:
+					Ctx->PullDownFlag = 0x0003;  //Frame x 1 ==> 00000011
+					break;
+			}
 		}
-		Ctx->eosCnt = 0;
+		else
+		{
+			switch(pOut->PicInfo.pulldown)
+			{
+				case vdecTop:
+					Ctx->PullDownFlag = 0x0001;  //Top ==> 00000001
+					break;
+				case vdecBottom:
+					Ctx->PullDownFlag = 0x0002;  //Bottom ==> 00000010
+					break;
+				case vdecTopBottom:
+					Ctx->PullDownFlag = 0x0009;  //TopBottom ==> 00001001
+					break;
+				case vdecBottomTop:
+					Ctx->PullDownFlag = 0x0006;  //BottomTop ==> 00000110
+					break;
+				case vdecTopBottomTop:
+					Ctx->PullDownFlag = 0x0019;  //TopBottomTop ==> 00011001
+					break;
+				case vdecBottomTopBottom:
+					Ctx->PullDownFlag = 0x0026;  //BottomTopBottom ==> 00100110
+					break;
+				default:
+					Ctx->PullDownFlag = 0x0009;  //TopBottom ==> 00001001
+					break;
+			}
+		}
+		Ctx->EOSCnt = 0;
 	}
-
 	
-	if (Ctx->FlushIssued)
+	
+	if (Ctx->bEOSCheck && Ctx->bEOS == FALSE)
 	{
 		if (bRepeat == TRUE)
-			Ctx->eosCnt ++;
-
-		if (Ctx->eosCnt >= BC_EOS_PIC_COUNT) 
+			Ctx->EOSCnt ++;
+		
+		if (Ctx->EOSCnt >= BC_EOS_PIC_COUNT)
 		{
 			Ctx->bEOS = TRUE;
 			pOut->PicInfo.flags |= VDEC_FLAG_LAST_PICTURE;
-			Ctx->FlushIssued = FALSE;
 		}
 	}
 	Ctx->LastPicNum = pOut->PicInfo.picture_number;
 	Ctx->LastSessNum = pOut->PicInfo.sess_num;
 	
 	return bRepeat;
-	
 }
 
 static void DtsSetupProcOutInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, BC_IOCTL_DATA *pIo)
@@ -759,17 +769,17 @@ static void DtsSetupProcOutInfo(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, BC_
 			return;
 		}
 	}
-	
+
 	if(pIo->u.DecOutData.Flags & COMP_FLAG_DATA_VALID){
-		
+
 		pOut->Ybuff = pIo->u.DecOutData.OutPutBuffs.YuvBuff;
 		pOut->YBuffDoneSz = pIo->u.DecOutData.OutPutBuffs.YBuffDoneSz;
 		pOut->YbuffSz = pIo->u.DecOutData.OutPutBuffs.UVbuffOffset;
 
-		pOut->UVbuff = pIo->u.DecOutData.OutPutBuffs.YuvBuff + 
+		pOut->UVbuff = pIo->u.DecOutData.OutPutBuffs.YuvBuff +
 					pIo->u.DecOutData.OutPutBuffs.UVbuffOffset;
 		pOut->UVBuffDoneSz = pIo->u.DecOutData.OutPutBuffs.UVBuffDoneSz;
-		pOut->UVbuffSz = (pIo->u.DecOutData.OutPutBuffs.YuvBuffSz - 
+		pOut->UVbuffSz = (pIo->u.DecOutData.OutPutBuffs.YuvBuffSz -
 					pIo->u.DecOutData.OutPutBuffs.UVbuffOffset);
 
 		pOut->discCnt = pIo->u.DecOutData.BadFrCnt;
@@ -794,7 +804,7 @@ static BC_STATUS	DtsCreateMdataPool(DTS_LIB_CONTEXT *Ctx)
 	}
 
 	memset(Ctx->MdataPoolPtr,0,mpSz);
-	
+
 	temp = (DTS_INPUT_MDATA*)Ctx->MdataPoolPtr;
 
 	Ctx->MDFreeHead = Ctx->MDPendHead = Ctx->MDPendTail = NULL;
@@ -809,7 +819,7 @@ static BC_STATUS	DtsCreateMdataPool(DTS_LIB_CONTEXT *Ctx)
 	Ctx->MDPendHead = DTS_MDATA_PEND_LINK(Ctx);
 	Ctx->MDPendTail = DTS_MDATA_PEND_LINK(Ctx);
 	Ctx->InMdataTag = 0;
-	
+
 	DebugLog_Trace(LDIL_DBG,"Mdata Pool Created...\n");
 
 	return BC_STS_SUCCESS;
@@ -819,7 +829,7 @@ static void DtsMdataSetIntTag(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA	*temp)
 {
 	uint16_t stemp=0;
 	DtsLock(Ctx);
-	
+
 	if(Ctx->InMdataTag == 0xFFFF){
 		// Skip zero seqNum
 		Ctx->InMdataTag = 0;
@@ -859,7 +869,7 @@ static BC_STATUS DtsDeleteMdataPool(DTS_LIB_CONTEXT *Ctx)
 		DtsRemoveMdata(Ctx,temp,FALSE);
 		temp = Ctx->MDPendHead;
 	}
-	
+
 	/* Delete Free Pool */
 	Ctx->MDFreeHead = NULL;
 
@@ -867,11 +877,11 @@ static BC_STATUS DtsDeleteMdataPool(DTS_LIB_CONTEXT *Ctx)
 		free(Ctx->MdataPoolPtr);
 		Ctx->MdataPoolPtr = NULL;
 	}
-	
+
 	DtsUnLock(Ctx);
-	
+
 	DebugLog_Trace(LDIL_DBG,"Deleted Mdata Pool...\n");
-	
+
 	return BC_STS_SUCCESS;
 }
 
@@ -924,13 +934,13 @@ BOOL DtsDrvIoctl
 	  BOOL		Async
 )
 {
-	
+
 	DTS_LIB_CONTEXT	*	Ctx = DtsGetContext(userHandle);
 	//unused DWORD	dwTimeout = 0;
 
 	if( !Ctx )
 		return FALSE;
-	
+
 	if(Ctx->Sig != LIB_CTX_SIG)
 		return FALSE;
 
@@ -942,19 +952,19 @@ BOOL DtsDrvIoctl
 	if(BC_STS_SUCCESS != DtsDrvCmd(Ctx,dwIoControlCode,Async,(BC_IOCTL_DATA *)lpInBuffer,FALSE))
 		return FALSE;
 
-	return TRUE;	
+	return TRUE;
 }
-	
+
 //------------------------------------------------------------------------
 // Name: DtsDrvCmd
 // Description: Wrapper for windows IOCTL using the internal pre-allocated
-//              IOCTL_DATA structure. And waits for the completion incase 
+//              IOCTL_DATA structure. And waits for the completion incase
 //				Async path.
 //------------------------------------------------------------------------
-BC_STATUS DtsDrvCmd(DTS_LIB_CONTEXT	*Ctx, 
-					DWORD Code, 
-					BOOL Async, 
-					BC_IOCTL_DATA *pIoData, 
+BC_STATUS DtsDrvCmd(DTS_LIB_CONTEXT	*Ctx,
+					DWORD Code,
+					BOOL Async,
+					BC_IOCTL_DATA *pIoData,
 					BOOL Rel)
 {
 	int rc;
@@ -991,19 +1001,14 @@ BC_STATUS DtsDrvCmd(DTS_LIB_CONTEXT	*Ctx,
 	//DebugLog_Trace(LDIL_DBG,"DtsDrvCmd:ioctl 0x%x 0x%llX, %p\n", Code, tmp.user_address, pIo);
 	rc = ioctl(Ctx->DevHandle, Code, &tmp);
 #endif
-	if (rc < 0) {
-		DebugLog_Trace(LDIL_DBG,"IOCTL Command Failed %d %d\n",rc,Code);
-#if 0
-		/* FIXME: jarod: should we add an ioctl data release check/call here? */
-		if (locRel || Rel)
-			DtsRelIoctlData(Ctx, pIo);
-#endif
-		return BC_STS_ERROR;
-	}
-
 	Sts = pIo->RetSts;
 	if (locRel || Rel)
 		DtsRelIoctlData(Ctx, pIo);
+	
+	if (rc < 0) {
+		DebugLog_Trace(LDIL_DBG,"IOCTL Command Failed %d cmd %x sts %d\n", rc, Code, Sts);
+		return BC_STS_ERROR;
+	}
 
 	return Sts;
 }
@@ -1058,7 +1063,7 @@ BC_STATUS DtsAllocMemPools(DTS_LIB_CONTEXT *Ctx)
 	}
 
 	DtsInitLock(Ctx);
-	
+
 	for(i=0; i< BC_IOCTL_DATA_POOL_SIZE; i++){
 		pIoData = (BC_IOCTL_DATA *) malloc(sizeof(BC_IOCTL_DATA));
 		if(!pIoData){
@@ -1095,7 +1100,7 @@ BC_STATUS DtsAllocMemPools(DTS_LIB_CONTEXT *Ctx)
 	}
 
 	if((Ctx->OpMode != DTS_PLAYBACK_MODE) && (Ctx->OpMode != DTS_DIAG_MODE))
-		return BC_STS_SUCCESS; 
+		return BC_STS_SUCCESS;
 
 	sts = DtsCreateMdataPool(Ctx);
 	if(sts != BC_STS_SUCCESS){
@@ -1107,7 +1112,7 @@ BC_STATUS DtsAllocMemPools(DTS_LIB_CONTEXT *Ctx)
 		return BC_STS_SUCCESS;
 	}
 	Ctx->MpoolCnt	= BC_MAX_SW_VOUT_BUFFS;
-		
+
 	Ctx->Mpools = (DTS_MPOOL_TYPE*)malloc(Ctx->MpoolCnt * sizeof(DTS_MPOOL_TYPE));
 	if(!Ctx->Mpools){
 		DebugLog_Trace(LDIL_DBG,"DtsInitMemPools: Mpool alloc failed\n");
@@ -1117,7 +1122,7 @@ BC_STATUS DtsAllocMemPools(DTS_LIB_CONTEXT *Ctx)
 	memset(Ctx->Mpools,0,(Ctx->MpoolCnt * sizeof(DTS_MPOOL_TYPE)));
 
 	DtsGetMaxSize(Ctx,&Sz);
-	
+
 	for(i=0; i<BC_MAX_SW_VOUT_BUFFS; i++){
 		mp = &Ctx->Mpools[i];
 		mp->type = BC_MEM_DEC_YUVBUFF |BC_MEM_USER_MODE_ALLOC;
@@ -1131,7 +1136,7 @@ BC_STATUS DtsAllocMemPools(DTS_LIB_CONTEXT *Ctx)
 
 		memset(mp->buff,0,mp->sz);
 	}
-	
+
 	return BC_STS_SUCCESS;
 }
 BC_STATUS DtsAllocMemPools_dbg(DTS_LIB_CONTEXT *Ctx)
@@ -1144,7 +1149,7 @@ BC_STATUS DtsAllocMemPools_dbg(DTS_LIB_CONTEXT *Ctx)
 	}
 
 	DtsInitLock(Ctx);
-	
+
 	for(i=0; i< BC_IOCTL_DATA_POOL_SIZE; i++){
 		pIoData = (BC_IOCTL_DATA *) malloc(sizeof(BC_IOCTL_DATA));
 		if(!pIoData){
@@ -1193,7 +1198,7 @@ void DtsReleaseMemPools(DTS_LIB_CONTEXT *Ctx)
 		}
 		free(Ctx->Mpools);
 	}
-	/* Release IOCTL_DATA pool */ 
+	/* Release IOCTL_DATA pool */
     while((pIoData=DtsAllocIoctlData(Ctx))!=NULL){
 		free(pIoData);
 		cnt++;
@@ -1237,7 +1242,7 @@ void DtsReleaseMemPools_dbg(DTS_LIB_CONTEXT *Ctx)
 		return;
 	}
 
-	/* Release IOCTL_DATA pool */ 
+	/* Release IOCTL_DATA pool */
     while((pIoData=DtsAllocIoctlData(Ctx))!=NULL){
 		free(pIoData);
 		cnt++;
@@ -1257,23 +1262,24 @@ void DtsReleaseMemPools_dbg(DTS_LIB_CONTEXT *Ctx)
 //------------------------------------------------------------------------
 BC_STATUS DtsAddOutBuff(DTS_LIB_CONTEXT *Ctx, uint8_t *buff, uint32_t BuffSz, uint32_t flags)
 {
-	
+
 	uint32_t YbSz, UVbSz;
 	BC_IOCTL_DATA	*pIocData = NULL;
 
 	if(!Ctx || !buff)
 		return BC_STS_INV_ARG;
 
-	if(!(pIocData = DtsAllocIoctlData(Ctx)))
+	if(!(pIocData = DtsAllocIoctlData(Ctx))) {
+		DebugLog_Trace(LDIL_DBG,"Cannot Allocate IOCTL data\n");
 		return BC_STS_INSUFF_RES;
+	}
 
-    DebugLog_Trace(LDIL_INFO,"ADD buffs\n");
 	DtsGetMaxYUVSize(Ctx, &YbSz, &UVbSz);
 
 	pIocData->u.RxBuffs.YuvBuff = buff;
 	pIocData->u.RxBuffs.YuvBuffSz = YbSz + UVbSz;
 
-	if(Ctx->b422Mode) 
+	if(Ctx->b422Mode)
 	{
 		pIocData->u.RxBuffs.b422Mode = Ctx->b422Mode;
 		pIocData->u.RxBuffs.UVbuffOffset = 0;
@@ -1286,12 +1292,12 @@ BC_STATUS DtsAddOutBuff(DTS_LIB_CONTEXT *Ctx, uint8_t *buff, uint32_t BuffSz, ui
 }
 //------------------------------------------------------------------------
 // Name: DtsRelRxBuff
-// Description: Release Rx buffers back to driver. 
+// Description: Release Rx buffers back to driver.
 //------------------------------------------------------------------------
 BC_STATUS DtsRelRxBuff(DTS_LIB_CONTEXT *Ctx, BC_DEC_YUV_BUFFS *buff, BOOL SkipAddBuff)
 {
 	BC_STATUS	sts;
-	
+
 	if(!Ctx || !buff)
 	{
 		DebugLog_Trace(LDIL_DBG,"DtsRelRxBuff: Invalid Arguments\n");
@@ -1302,7 +1308,7 @@ BC_STATUS DtsRelRxBuff(DTS_LIB_CONTEXT *Ctx, BC_DEC_YUV_BUFFS *buff, BOOL SkipAd
 		DtsDecPend(Ctx);
 		return BC_STS_SUCCESS;
 	}
-	
+
 	Ctx->pOutData->u.RxBuffs.b422Mode = Ctx->b422Mode;
 	Ctx->pOutData->u.RxBuffs.UVBuffDoneSz =0;
 	Ctx->pOutData->u.RxBuffs.YBuffDoneSz=0;
@@ -1316,7 +1322,7 @@ BC_STATUS DtsRelRxBuff(DTS_LIB_CONTEXT *Ctx, BC_DEC_YUV_BUFFS *buff, BOOL SkipAd
 
 	if(sts == BC_STS_SUCCESS)
 		DtsDecPend(Ctx);
-	
+
 	return sts;
 }
 
@@ -1326,7 +1332,7 @@ BC_STATUS DtsRelRxBuff(DTS_LIB_CONTEXT *Ctx, BC_DEC_YUV_BUFFS *buff, BOOL SkipAd
 //              This function is interruptable procOut for
 //              multi-threaded scenerios ONLY..
 //------------------------------------------------------------------------
-BC_STATUS DtsFetchOutInterruptible(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, uint32_t dwTimeout)	
+BC_STATUS DtsFetchOutInterruptible(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, uint32_t dwTimeout)
 {
 	BC_STATUS sts = BC_STS_SUCCESS;
 
@@ -1361,8 +1367,8 @@ BC_STATUS DtsFetchOutInterruptible(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, 
 	if(!Ctx->CancelWaiting)
 		return sts;
 
-	/* Cancel request waiting.. Release Buffer back 
-	 * to driver and trigger Cancel wait. 
+	/* Cancel request waiting.. Release Buffer back
+	 * to driver and trigger Cancel wait.
 	 */
 	if(sts == BC_STS_SUCCESS){
 		sts = BC_STS_IO_USER_ABORT;
@@ -1386,7 +1392,7 @@ BC_STATUS DtsCancelFetchOutInt(DTS_LIB_CONTEXT *Ctx)
 	struct timespec ts;
 
 	DebugLog_Trace(LDIL_DBG,"DtsCancelFetchOutInt: Called\n");
-		
+
 	if(!(DtsIsPend(Ctx))){
 		DebugLog_Trace(LDIL_DBG,"DtsCancelFetchOutInt: No Pending Req\n");
 		return BC_STS_SUCCESS;
@@ -1444,8 +1450,10 @@ BC_STATUS DtsMapYUVBuffs(DTS_LIB_CONTEXT *Ctx)
 		mp = &Ctx->Mpools[i];
 		if(mp->type & BC_MEM_DEC_YUVBUFF){
 			sts = DtsAddOutBuff(Ctx, mp->buff,mp->sz, mp->type);
-			if(sts != BC_STS_SUCCESS)
+			if(sts != BC_STS_SUCCESS) {
+				DebugLog_Trace(LDIL_DBG,"Map YUV buffs Failed [%x]\n",sts);
 				return sts;
+			}
 		}
 	}
 
@@ -1469,7 +1477,7 @@ BC_STATUS DtsInitInterface(int hDevice,HANDLE *RetCtx, uint32_t mode)
 	}
 
 	memset(Ctx,0,sizeof(*Ctx));
-	
+
 	/* Initialize Application specific params. */
 	Ctx->Sig		= LIB_CTX_SIG;
 	Ctx->DevHandle  = hDevice;
@@ -1504,7 +1512,7 @@ BC_STATUS DtsInitInterface(int hDevice,HANDLE *RetCtx, uint32_t mode)
 			return sts;
 		}
 	}
-	
+
 	*RetCtx = (HANDLE)Ctx;
 
 	return sts;
@@ -1521,15 +1529,15 @@ BC_STATUS DtsNotifyOperatingMode(HANDLE hDevice,uint32_t Mode)
 	BC_STATUS				sts = BC_STS_SUCCESS;
 
 	DTS_GET_CTX(hDevice,Ctx);
-	
+
 	if(!(pIocData = DtsAllocIoctlData(Ctx)))
 		return BC_STS_INSUFF_RES;
-	
+
 	pIocData->u.NotifyMode.Mode = Mode ; /* Setting the 31st bit to indicate that this is not the timeout value */
 
 	if( (sts=DtsDrvCmd(Ctx,BCM_IOC_NOTIFY_MODE,0,pIocData,FALSE)) != BC_STS_SUCCESS){
 		DtsRelIoctlData(Ctx,pIocData);
-		DebugLog_Trace(LDIL_DBG,"DtsGetVersion: Ioctl failed: %d\n",sts);
+		DebugLog_Trace(LDIL_DBG,"DtsNotifyMode: Ioctl failed: %d\n",sts);
 		return sts;
 	}
 
@@ -1552,16 +1560,16 @@ BC_STATUS DtsSetupConfig(DTS_LIB_CONTEXT *Ctx, uint32_t did, uint32_t rid, uint3
 		Ctx->RegCfg.DbgOptions = BC_DTS_DEF_OPTIONS;
 	}
 	DtsGetBCRegConfig(Ctx);
-	
+
 	//Forcing the use of certificate in case of Link.
 
 	if( (Ctx->DevId == BC_PCI_DEVID_LINK)&& (!(Ctx->RegCfg.DbgOptions & BC_BIT(5))) ){
-		
+
 		Ctx->RegCfg.DbgOptions |= BC_BIT(5);
 	}
 
 
-	Ctx->capInfo.ColorCaps.Count = 0;	
+	Ctx->capInfo.ColorCaps.Count = 0;
 	if (Ctx->DevId == BC_PCI_DEVID_LINK)
 	{
 		Ctx->capInfo.ColorCaps.Count =3;
@@ -1572,7 +1580,7 @@ BC_STATUS DtsSetupConfig(DTS_LIB_CONTEXT *Ctx, uint32_t did, uint32_t rid, uint3
 
 		//Decoder Capability
 		Ctx->capInfo.DecCaps = BC_DEC_FLAGS_H264 | BC_DEC_FLAGS_MPEG2 | BC_DEC_FLAGS_VC1;
-	}	
+	}
 	else if(Ctx->DevId == BC_PCI_DEVID_DOZER)
 	{
 		Ctx->capInfo.ColorCaps.Count =1;
@@ -1582,7 +1590,7 @@ BC_STATUS DtsSetupConfig(DTS_LIB_CONTEXT *Ctx, uint32_t did, uint32_t rid, uint3
 		//Decoder Capability
 		Ctx->capInfo.DecCaps = BC_DEC_FLAGS_H264 | BC_DEC_FLAGS_MPEG2 | BC_DEC_FLAGS_VC1;
 	}
-	 
+
 	Ctx->capInfo.Reserved1 = NULL;
 
 	return BC_STS_SUCCESS;
@@ -1594,7 +1602,7 @@ BC_STATUS DtsSetupConfig(DTS_LIB_CONTEXT *Ctx, uint32_t did, uint32_t rid, uint3
 //------------------------------------------------------------------------
 BC_STATUS DtsReleaseInterface(DTS_LIB_CONTEXT *Ctx)
 {
-	
+
 	if(!Ctx)
 		return BC_STS_INV_ARG;
 
@@ -1619,7 +1627,7 @@ BC_STATUS DtsReleaseInterface(DTS_LIB_CONTEXT *Ctx)
 //------------------------------------------------------------------------
 // Name: DtsGetBCRegConfig
 // Description: Setup Register Sub-Key values.
-//------------------------------------------------------------------------ 
+//------------------------------------------------------------------------
 BC_STATUS DtsGetBCRegConfig(DTS_LIB_CONTEXT	*Ctx)
 {
 
@@ -1637,16 +1645,16 @@ int dtscallback(struct dl_phdr_info *info, size_t size, void *data)
 	if(NULL != (temp= (char *)strstr(info->dlpi_name,(const char *)"/libcrystal.so"))){
 		/*we found the loaded dil, set teh return value to non-zero so that
 		 the callback won't be called anymore*/
-		ret = 1; 
-			
+		ret = 1;
+
 	}
-	
+
 	if(ret!=0){
-		dilpath_len = (temp-info->dlpi_name)+1; //we want the slash also to be copied 
+		dilpath_len = (temp-info->dlpi_name)+1; //we want the slash also to be copied
 		strncpy((char*)data, info->dlpi_name,dilpath_len);
 
 	}
-    
+
     return dilpath_len;
 }
 #endif
@@ -1654,7 +1662,7 @@ int dtscallback(struct dl_phdr_info *info, size_t size, void *data)
 //------------------------------------------------------------------------
 // Name: DtsGetFirmwareFiles
 // Description: Setup Firmware Filenames.
-//------------------------------------------------------------------------ 
+//------------------------------------------------------------------------
 BC_STATUS DtsGetFirmwareFiles(DTS_LIB_CONTEXT *Ctx)
 {
     int fwfile_len;
@@ -1684,22 +1692,22 @@ BC_STATUS DtsGetFirmwareFiles(DTS_LIB_CONTEXT *Ctx)
     fwfilepath[strlen(fwdir) + fwfile_len] = '\0';
     strncpy(Ctx->FwBinFile, fwfilepath, strlen(fwdir) + fwfile_len);
 	DebugLog_Trace(LDIL_DATA,"DtsGetFirmwareFiles:Ctx->FwBinFile is %s\n", Ctx->FwBinFile);
-	
+
 	return BC_STS_SUCCESS;
-	
+
 }
 
 //------------------------------------------------------------------------
 // Name: DtsAllocMdata
 // Description: Get Mdata from free pool.
-//------------------------------------------------------------------------ 
+//------------------------------------------------------------------------
 DTS_INPUT_MDATA	*DtsAllocMdata(DTS_LIB_CONTEXT *Ctx)
 {
 	DTS_INPUT_MDATA *temp = NULL;
 
 	if(!Ctx)
 		return temp;
-	
+
 	DtsLock(Ctx);
 	if((temp=Ctx->MDFreeHead) != NULL)
 	{
@@ -1713,7 +1721,7 @@ DTS_INPUT_MDATA	*DtsAllocMdata(DTS_LIB_CONTEXT *Ctx)
 		last = Ctx->MDPendHead;
 
 		//Check the Last Fetch Tag
-		if((last) && (Ctx->MDLastFetchTag > (last->IntTag + MAX_DISOEDER_GAP)))
+		if((last) && (Ctx->MDLastFetchTag > (last->IntTag + MAX_DISORDER_GAP)))
 		{
 			//Remove
 			DtsRemoveMdata(Ctx, last, FALSE);
@@ -1732,7 +1740,7 @@ DTS_INPUT_MDATA	*DtsAllocMdata(DTS_LIB_CONTEXT *Ctx)
 //------------------------------------------------------------------------
 // Name: DtsFreeMdata
 // Description: Free Mdata from to pool.
-//------------------------------------------------------------------------ 
+//------------------------------------------------------------------------
 BC_STATUS DtsFreeMdata(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA	*Mdata, BOOL sync)
 {
 	if(!Ctx || !Mdata){
@@ -1750,7 +1758,7 @@ BC_STATUS DtsFreeMdata(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA	*Mdata, BOOL sync)
 //------------------------------------------------------------------------
 // Name: DtsClrPendMdataList
 // Description: Release all pending list back to free pool.
-//------------------------------------------------------------------------ 
+//------------------------------------------------------------------------
 BC_STATUS DtsClrPendMdataList(DTS_LIB_CONTEXT *Ctx)
 {
 	DTS_INPUT_MDATA		*temp=NULL;
@@ -1770,13 +1778,13 @@ BC_STATUS DtsClrPendMdataList(DTS_LIB_CONTEXT *Ctx)
 	}
 
 	DtsUnLock(Ctx);
-			
+
 	return BC_STS_SUCCESS;
 }
 //------------------------------------------------------------------------
 // Name: DtsInsertMdata
 // Description: Insert Meta Data into list.
-//------------------------------------------------------------------------ 
+//------------------------------------------------------------------------
 BC_STATUS DtsInsertMdata(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA	*Mdata)
 {
 	if(!Ctx || !Mdata){
@@ -1795,13 +1803,13 @@ BC_STATUS DtsInsertMdata(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA	*Mdata)
 //------------------------------------------------------------------------
 // Name: DtsRemoveMdata
 // Description: Remove Meta Data From List.
-//------------------------------------------------------------------------ 
+//------------------------------------------------------------------------
 BC_STATUS DtsRemoveMdata(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA	*Mdata, BOOL sync)
 {
 	if(!Ctx || !Mdata){
 		return BC_STS_INV_ARG;
 	}
-	
+
 	if(sync)
 		DtsLock(Ctx);
 	if(Ctx->MDPendHead != DTS_MDATA_PEND_LINK(Ctx))
@@ -1820,12 +1828,14 @@ BC_STATUS DtsRemoveMdata(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA	*Mdata, BOOL sync
 // Description: Get Input Meta Data.
 //
 // FIX_ME:: Fill the pout part after FW upgrade with SeqNum feature..
-//------------------------------------------------------------------------ 
+//------------------------------------------------------------------------
 BC_STATUS DtsFetchMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, BC_DTS_PROC_OUT *pout)
 {
 	uint32_t		InTag;
 	DTS_INPUT_MDATA		*temp=NULL;
 	BC_STATUS	sts = BC_STS_NO_DATA;
+	int16_t tsnum = 0;
+	uint32_t i = 0;
 	
 	if(!Ctx || !pout){
 		return BC_STS_INV_ARG;
@@ -1845,8 +1855,6 @@ BC_STATUS DtsFetchMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, BC_DTS_PROC_OUT *po
 	while(temp != DTS_MDATA_PEND_LINK(Ctx)){
 		if(temp->IntTag == InTag){
 			pout->PicInfo.timeStamp = temp->appTimeStamp;
-			//DebugLog_Trace(LDIL_DBG,"Found entry for %x %x tstamp: %x\n", 
-			//	snum, temp->IntTag, pout->PicInfo.timeStamp);
 			sts = BC_STS_SUCCESS;
 			DtsRemoveMdata(Ctx, temp, FALSE);
 
@@ -1857,6 +1865,26 @@ BC_STATUS DtsFetchMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, BC_DTS_PROC_OUT *po
 		temp = temp->flink;
 	}
 	DtsUnLock(Ctx);
+	// If we found a tag, clear out all the old entries - from (tag - 10) to (tag-20)
+	// This is to work around the issue of lost pictures for which tags will never get freed
+	if(sts == BC_STS_SUCCESS) {
+		for(i = 0; i < 10; i++) {
+			tsnum = snum - (10 + i);
+			if(tsnum < 0)
+				break;
+			InTag = DtsMdataGetIntTag(Ctx, tsnum);
+			temp = Ctx->MDPendHead;
+			DtsLock(Ctx);
+			while(temp != DTS_MDATA_PEND_LINK(Ctx)){
+				if(temp->IntTag == InTag){
+					DtsRemoveMdata(Ctx, temp, FALSE);
+					break;
+				}
+				temp = temp->flink;
+			}
+			DtsUnLock(Ctx);
+		}
+	}
 
 	return sts;
 }
@@ -1866,13 +1894,13 @@ BC_STATUS DtsFetchMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, BC_DTS_PROC_OUT *po
 // Description: Get the Timestamp from the Meta Data field with the specifc picture number.
 //				Do not change the mdata list in any way.
 //
-//------------------------------------------------------------------------ 
+//------------------------------------------------------------------------
 BC_STATUS DtsFetchTimeStampMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, uint64_t *TimeStamp)
 {
 	uint32_t InTag;
 	DTS_INPUT_MDATA *temp=NULL;
 	BC_STATUS	sts = BC_STS_NO_DATA;
-	
+
 	if(!Ctx) {
 		return BC_STS_INV_ARG;
 	}
@@ -1890,7 +1918,7 @@ BC_STATUS DtsFetchTimeStampMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, uint64_t *
 	DtsLock(Ctx);
 	while(temp != DTS_MDATA_PEND_LINK(Ctx)) {
 		if(temp->IntTag == InTag) {
-			
+
 			*TimeStamp = temp->appTimeStamp;
 			/* DebugLog_Trace(LDIL_DBG, "Found entry for %x %x tstamp: %x\n", */
 			/*	snum, temp->IntTag, pout->PicInfo.timeStamp); */
@@ -1907,7 +1935,7 @@ BC_STATUS DtsFetchTimeStampMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, uint64_t *
 //------------------------------------------------------------------------
 // Name: DtsPrepareMdata
 // Description: Insert Meta Data..
-//------------------------------------------------------------------------ 
+//------------------------------------------------------------------------
 BC_STATUS DtsPrepareMdata(DTS_LIB_CONTEXT *Ctx, uint64_t timeStamp, DTS_INPUT_MDATA **mData, uint8_t** ppData, uint32_t *pSize)
 {
 	DTS_INPUT_MDATA		*temp=NULL;
@@ -1918,12 +1946,13 @@ BC_STATUS DtsPrepareMdata(DTS_LIB_CONTEXT *Ctx, uint64_t timeStamp, DTS_INPUT_MD
 	/* Alloc clears all fields */
 	if( (temp = DtsAllocMdata(Ctx)) == NULL)
 	{
+		DebugLog_Trace(LDIL_DBG,"COULD not find free MDATA");
 		return BC_STS_BUSY;
 	}
 	/* Store all app data */
 	DtsMdataSetIntTag(Ctx,temp);
 	temp->appTimeStamp = timeStamp;
-	
+
 	/* Fill spes data.. */
 	temp->Spes.StartCode[0] = 0;
 	temp->Spes.StartCode[1] = 0;
@@ -1932,9 +1961,6 @@ BC_STATUS DtsPrepareMdata(DTS_LIB_CONTEXT *Ctx, uint64_t timeStamp, DTS_INPUT_MD
 	temp->Spes.PacketLen = 0x07;
 	temp->Spes.StartCodeEnd = 0x40;
 	temp->Spes.Command = 0x0A;
-
-	//DebugLog_Trace(LDIL_DBG,"Inserting entry for[%x] (%02x%02x) %x \n", 
-	//				Ctx->InMdataTag, temp->Spes.SeqNum[1],temp->Spes.SeqNum[0], temp->IntTag);
 
 	*mData = temp;
 	*ppData = (uint8_t*)(&temp->Spes);
@@ -1946,14 +1972,14 @@ BC_STATUS DtsPrepareMdata(DTS_LIB_CONTEXT *Ctx, uint64_t timeStamp, DTS_INPUT_MD
 //------------------------------------------------------------------------
 // Name: DtsPrepareMdataASFHdr
 // Description: Insert Meta Data..
-//------------------------------------------------------------------------ 
+//------------------------------------------------------------------------
 BC_STATUS DtsPrepareMdataASFHdr(DTS_LIB_CONTEXT *Ctx, DTS_INPUT_MDATA *mData, uint8_t* buf)
 {
-		
-	
+
+
 		if(buf==NULL)
 			return BC_STS_INSUFF_RES;
-		
+
 			buf[0]=0;
 			buf[1] = 0;
 			buf[2] = 01;
@@ -2043,7 +2069,7 @@ void DtsUpdateOutStats(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *pOut)
 			case vdecRESOLUTION_720p23_976:
 				fr23_976 = 1;
 				break;
-			case vdecRESOLUTION_CUSTOM ://no change in frame rate		
+			case vdecRESOLUTION_CUSTOM ://no change in frame rate
 				fr23_976 = Ctx->prevFrameRate;
 				break;
 			default:
@@ -2069,7 +2095,7 @@ void DtsUpdateOutStats(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *pOut)
 	if((!pOut->UVBuffDoneSz && !pOut->b422Mode) || (!pOut->YBuffDoneSz)) {
 		pDtsStat->opFrameDropped++;
 	}else{
-		pDtsStat->opFrameCaptured++; 
+		pDtsStat->opFrameCaptured++;
 	}
 
 	if(pOut->discCnt){
@@ -2079,7 +2105,7 @@ void DtsUpdateOutStats(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *pOut)
 #ifdef _ENABLE_CODE_INSTRUMENTATION_
 
 	/*
-	 * For code instrumentation to be enabled 
+	 * For code instrumentation to be enabled
 	 * we have to have unencripted PIBs.
 	 */
 
@@ -2095,22 +2121,22 @@ void DtsUpdateOutStats(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *pOut)
 #endif
 
 	/* PIB is not valid.. */
-	if(!(pOut->PoutFlags & BC_POUT_FLAGS_PIB_VALID))	
-	{			
+	if(!(pOut->PoutFlags & BC_POUT_FLAGS_PIB_VALID))
+	{
 		pDtsStat->pibMisses++;
 		return;
 	}
-     
+
   	/* detect Even Odd field consistancy for interlaced..*/
 	if(Ctx->CapState == 1){
 		if( !Ctx->PibIntToggle && !(pOut->PoutFlags & BC_POUT_FLAGS_FLD_BOT))	{
-			// Previous ODD & Current Even --- OK 
+			// Previous ODD & Current Even --- OK
 			Ctx->PibIntToggle = 1;
 		} else if (Ctx->PibIntToggle && (pOut->PoutFlags & BC_POUT_FLAGS_FLD_BOT)){
 			//Previous Even and Current ODD --- OK
 			rptFrmCheck = FALSE;
-			Ctx->PibIntToggle = 0;        
-		} else if(!Ctx->PibIntToggle && (pOut->PoutFlags & BC_POUT_FLAGS_FLD_BOT)) {    
+			Ctx->PibIntToggle = 0;
+		} else if(!Ctx->PibIntToggle && (pOut->PoutFlags & BC_POUT_FLAGS_FLD_BOT)) {
             // Successive ODD
 			if(!pOut->discCnt){
 				if(Ctx->prevPicNum == pOut->PicInfo.picture_number)	{
@@ -2118,9 +2144,9 @@ void DtsUpdateOutStats(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *pOut)
 					pDtsStat->reptdFrames++;
 					rptFrmCheck = FALSE;
 				}
-			}   
-		} else if(Ctx->PibIntToggle && !(pOut->PoutFlags & BC_POUT_FLAGS_FLD_BOT)) { 
-			//Successive EVEN.. 
+			}
+		} else if(Ctx->PibIntToggle && !(pOut->PoutFlags & BC_POUT_FLAGS_FLD_BOT)) {
+			//Successive EVEN..
 			 if(!pOut->discCnt){
 				if(Ctx->prevPicNum == pOut->PicInfo.picture_number)	{
 					DebugLog_Trace(LDIL_DBG,"Succesive Even=%d\n", pOut->PicInfo.picture_number);
@@ -2131,9 +2157,9 @@ void DtsUpdateOutStats(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *pOut)
 			}
 		}
 	}
-    
+
 	if(!rptFrmCheck){
-		Ctx->prevPicNum = pOut->PicInfo.picture_number;	 
+		Ctx->prevPicNum = pOut->PicInfo.picture_number;
 		return;
 	}
 
@@ -2147,9 +2173,9 @@ void DtsUpdateOutStats(DTS_LIB_CONTEXT	*Ctx, BC_DTS_PROC_OUT *pOut)
 			/* Discontguous Picture Numbers Frames/PIBs got dropped..*/
 			pDtsStat->discCounter = pOut->PicInfo.picture_number - Ctx->prevPicNum ;
 	}
-		
-	Ctx->prevPicNum = pOut->PicInfo.picture_number;	 
-	
+
+	Ctx->prevPicNum = pOut->PicInfo.picture_number;
+
 	return;
 }
 
