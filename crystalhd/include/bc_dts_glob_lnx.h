@@ -40,7 +40,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <arpa/inet.h>
-#include <asm/param.h>
+#include <linux/param.h>
 #include <linux/ioctl.h>
 #include <sys/select.h>
 
@@ -54,6 +54,17 @@
 #define CRYSTALHD_API_NAME	"crystalhd"
 #define CRYSTALHD_API_DEV_NAME	"/dev/crystalhd"
 
+enum _BC_PCI_DEV_IDS{
+	BC_PCI_DEVID_INVALID = 0,
+	BC_PCI_DEVID_DOZER   = 0x1610,
+	BC_PCI_DEVID_TANK    = 0x1620,
+	BC_PCI_DEVID_LINK	 = 0x1612,
+	BC_PCI_DEVID_LOCKE	 = 0x1613,
+	BC_PCI_DEVID_DEMOBRD = 0x7411,
+	BC_PCI_DEVID_MORPHEUS = 0x7412,
+	BC_PCI_DEVID_FLEA	= 0x1615,
+};
+
 /*
  * These are SW stack tunable parameters shared
  * between the driver and the application.
@@ -65,10 +76,23 @@ enum _BC_DTS_GLOBALS {
 	BC_LINK_MAX_OPENS	= 3,		/* Maximum simultaneous opens*/
 	BC_LINK_MAX_SGLS	= 1024,		/* Maximum SG elements 4M/4K */
 	BC_TX_LIST_CNT		= 2,		/* Max Tx DMA Rings */
-	BC_RX_LIST_CNT		= 8,		/* Max Rx DMA Rings*/
+	BC_RX_LIST_CNT		= 16,		/* Max Rx DMA Rings*/
 	BC_PROC_OUTPUT_TIMEOUT	= 3000,		/* Milliseconds */
 	BC_INFIFO_THRESHOLD	= 0x10000,
 };
+
+/* definitions for HW Pause */
+// NAREN FIXME temporarily disable HW PAUSE
+#define HW_PAUSE_THRESHOLD (BC_RX_LIST_CNT)
+#define HW_RESUME_THRESHOLD (BC_RX_LIST_CNT/2)
+
+typedef union _addr_64_ {
+	struct {
+		uint32_t	low_part;
+		uint32_t	high_part;
+	};
+	uint64_t	full_addr;	
+} addr_64;
 
 typedef struct _BC_CMD_REG_ACC {
 	uint32_t		Offset;
@@ -118,7 +142,6 @@ typedef struct _BC_START_RX_CAP_ {
 	uint32_t		StartDeliveryThsh;
 	uint32_t		PauseThsh;
 	uint32_t		ResumeThsh;
-	DecRspChannelStartVideo	SVidRsp;
 } BC_START_RX_CAP;
 
 typedef struct _BC_FLUSH_RX_CAP_ {
@@ -141,9 +164,9 @@ typedef struct _BC_DTS_STATS {
 	uint32_t		pauseCount;
 	uint32_t		pibMisses;
 	uint32_t		discCounter;
-	uint32_t		TxFifoBsyCnt;
 
 	/* Stats from Driver */
+	uint32_t		TxFifoBsyCnt;
 	uint32_t		intCount;
 	uint32_t		DrvIgnIntrCnt;
 	uint32_t		DrvTotalFrmDropped;
@@ -153,16 +176,16 @@ typedef struct _BC_DTS_STATS {
 	uint32_t		DrvPIBMisses;
 	uint32_t		DrvPauseTime;
 	uint32_t		DrvRepeatedFrms;
-	/* 
+	/*
 	 * BIT-31 MEANS READ Next PIB Info.
 	 * Width will be in bit 0-16.
 	 */
-	uint32_t		DrvNextMDataPLD;	
+	uint32_t		DrvNextMDataPLD;
 	uint32_t		DrvcpbEmptySize;
 
-	float           Temperature;
+	float			Temperature;
 	uint32_t		res1[10];
-	
+
 } BC_DTS_STATS;
 
 typedef struct _BC_PROC_INPUT_ {
@@ -195,20 +218,15 @@ enum _DECOUT_COMPLETION_FLAGS{
 
 typedef struct _BC_DEC_OUT_BUFF{
 	BC_DEC_YUV_BUFFS	OutPutBuffs;
-	BC_PIC_INFO_BLOCK   PibInfo;
+	BC_PIC_INFO_BLOCK	PibInfo;
 	uint32_t		Flags;
 	uint32_t		BadFrCnt;
-}BC_DEC_OUT_BUFF;
+} BC_DEC_OUT_BUFF;
 
 typedef struct _BC_NOTIFY_MODE {
 	uint32_t		Mode;
 	uint32_t		Rsvr[3];
-}BC_NOTIFY_MODE;
-
-typedef struct _BC_CLOCK {
-	uint32_t		clk;
-	uint32_t		Rsvr[3];
-} BC_CLOCK;
+} BC_NOTIFY_MODE;
 
 typedef struct _BC_IOCTL_DATA {
 	BC_STATUS		RetSts;
@@ -228,8 +246,7 @@ typedef struct _BC_IOCTL_DATA {
 		BC_FLUSH_RX_CAP		FlushRxCap;
 		BC_DTS_STATS		drvStat;
 		BC_NOTIFY_MODE		NotifyMode;
-		BC_CLOCK			clockValue;
-	}u;
+	} u;
 	struct _BC_IOCTL_DATA	*next;
 } BC_IOCTL_DATA;
 
@@ -254,39 +271,37 @@ typedef enum _BC_DRV_CMD{
 	DRV_CMD_GET_DRV_STAT,	/* Get Driver Internal Statistics */
 	DRV_CMD_RST_DRV_STAT,	/* Reset Driver Internal Statistics */
 	DRV_CMD_NOTIFY_MODE,	/* Notify the Mode to driver in which the application is Operating*/
-	DRV_CMD_CHANGE_CLOCK,	/* Change the core clock to either save power or improve performance */
 
 	/* MUST be the last one.. */
 	DRV_CMD_END,			/* End of the List.. */
-}BC_DRV_CMD;
+} BC_DRV_CMD;
 
 #define BC_IOC_BASE		'b'
 #define BC_IOC_VOID		_IOC_NONE
-#define BC_IOC_IOWR(nr,type)	_IOWR(BC_IOC_BASE,nr,type)
+#define BC_IOC_IOWR(nr, type)	_IOWR(BC_IOC_BASE, nr, type)
 #define BC_IOCTL_MB		BC_IOCTL_DATA
 
-#define	BCM_IOC_GET_VERSION	BC_IOC_IOWR(DRV_CMD_VERSION, BC_IOCTL_MB)
-#define	BCM_IOC_GET_HWTYPE	BC_IOC_IOWR(DRV_CMD_GET_HWTYPE, BC_IOCTL_MB)
-#define	BCM_IOC_REG_RD		BC_IOC_IOWR(DRV_CMD_REG_RD, BC_IOCTL_MB)
-#define	BCM_IOC_REG_WR		BC_IOC_IOWR(DRV_CMD_REG_WR, BC_IOCTL_MB)
-#define	BCM_IOC_MEM_RD		BC_IOC_IOWR(DRV_CMD_MEM_RD, BC_IOCTL_MB)
-#define	BCM_IOC_MEM_WR		BC_IOC_IOWR(DRV_CMD_MEM_WR, BC_IOCTL_MB)
-#define BCM_IOC_FPGA_RD		BC_IOC_IOWR(DRV_CMD_FPGA_RD, BC_IOCTL_MB)
-#define BCM_IOC_FPGA_WR		BC_IOC_IOWR(DRV_CMD_FPGA_WR, BC_IOCTL_MB)
-#define	BCM_IOC_RD_PCI_CFG	BC_IOC_IOWR(DRV_CMD_RD_PCI_CFG, BC_IOCTL_MB)
-#define	BCM_IOC_WR_PCI_CFG	BC_IOC_IOWR(DRV_CMD_WR_PCI_CFG, BC_IOCTL_MB)
-#define BCM_IOC_PROC_INPUT	BC_IOC_IOWR(DRV_CMD_PROC_INPUT, BC_IOCTL_MB)
-#define BCM_IOC_ADD_RXBUFFS	BC_IOC_IOWR(DRV_CMD_ADD_RXBUFFS, BC_IOCTL_MB)
+#define	BCM_IOC_GET_VERSION		BC_IOC_IOWR(DRV_CMD_VERSION, BC_IOCTL_MB)
+#define	BCM_IOC_GET_HWTYPE		BC_IOC_IOWR(DRV_CMD_GET_HWTYPE, BC_IOCTL_MB)
+#define	BCM_IOC_REG_RD			BC_IOC_IOWR(DRV_CMD_REG_RD, BC_IOCTL_MB)
+#define	BCM_IOC_REG_WR			BC_IOC_IOWR(DRV_CMD_REG_WR, BC_IOCTL_MB)
+#define	BCM_IOC_MEM_RD			BC_IOC_IOWR(DRV_CMD_MEM_RD, BC_IOCTL_MB)
+#define	BCM_IOC_MEM_WR			BC_IOC_IOWR(DRV_CMD_MEM_WR, BC_IOCTL_MB)
+#define BCM_IOC_FPGA_RD			BC_IOC_IOWR(DRV_CMD_FPGA_RD, BC_IOCTL_MB)
+#define BCM_IOC_FPGA_WR			BC_IOC_IOWR(DRV_CMD_FPGA_WR, BC_IOCTL_MB)
+#define	BCM_IOC_RD_PCI_CFG		BC_IOC_IOWR(DRV_CMD_RD_PCI_CFG, BC_IOCTL_MB)
+#define	BCM_IOC_WR_PCI_CFG		BC_IOC_IOWR(DRV_CMD_WR_PCI_CFG, BC_IOCTL_MB)
+#define BCM_IOC_PROC_INPUT		BC_IOC_IOWR(DRV_CMD_PROC_INPUT, BC_IOCTL_MB)
+#define BCM_IOC_ADD_RXBUFFS		BC_IOC_IOWR(DRV_CMD_ADD_RXBUFFS, BC_IOCTL_MB)
 #define BCM_IOC_FETCH_RXBUFF	BC_IOC_IOWR(DRV_CMD_FETCH_RXBUFF, BC_IOCTL_MB)
-#define	BCM_IOC_FW_CMD		BC_IOC_IOWR(DRV_ISSUE_FW_CMD, BC_IOCTL_MB)
+#define	BCM_IOC_FW_CMD			BC_IOC_IOWR(DRV_ISSUE_FW_CMD, BC_IOCTL_MB)
 #define	BCM_IOC_START_RX_CAP	BC_IOC_IOWR(DRV_CMD_START_RX_CAP, BC_IOCTL_MB)
 #define BCM_IOC_FLUSH_RX_CAP	BC_IOC_IOWR(DRV_CMD_FLUSH_RX_CAP, BC_IOCTL_MB)
 #define BCM_IOC_GET_DRV_STAT	BC_IOC_IOWR(DRV_CMD_GET_DRV_STAT, BC_IOCTL_MB)
 #define BCM_IOC_RST_DRV_STAT	BC_IOC_IOWR(DRV_CMD_RST_DRV_STAT, BC_IOCTL_MB)
-#define BCM_IOC_NOTIFY_MODE	BC_IOC_IOWR(DRV_CMD_NOTIFY_MODE, BC_IOCTL_MB)
-#define	BCM_IOC_FW_DOWNLOAD	BC_IOC_IOWR(DRV_CMD_FW_DOWNLOAD, BC_IOCTL_MB)
-#define BCM_IOC_CHG_CLK		BC_IOC_IOWR(DRV_CMD_CHANGE_CLOCK, BC_IOCTL_MB)
-#define	BCM_IOC_END		BC_IOC_VOID
+#define BCM_IOC_NOTIFY_MODE		BC_IOC_IOWR(DRV_CMD_NOTIFY_MODE, BC_IOCTL_MB)
+#define	BCM_IOC_FW_DOWNLOAD		BC_IOC_IOWR(DRV_CMD_FW_DOWNLOAD, BC_IOCTL_MB)
+#define	BCM_IOC_END				BC_IOC_VOID
 
 /* Wrapper for main IOCTL data */
 typedef struct _crystalhd_ioctl_data {
@@ -298,11 +313,12 @@ typedef struct _crystalhd_ioctl_data {
 	struct _crystalhd_ioctl_data *next;	/* List/Fifo management */
 } crystalhd_ioctl_data;
 
-
 enum _crystalhd_kmod_ver{
-	crystalhd_kmod_major	= 0,
-	crystalhd_kmod_minor	= 9,
-	crystalhd_kmod_rev	= 27,
+	crystalhd_kmod_major	= 3,
+	crystalhd_kmod_minor	= 1,
+	crystalhd_kmod_rev	= 0,
 };
+
+
 
 #endif

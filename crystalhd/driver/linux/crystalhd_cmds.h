@@ -37,6 +37,8 @@
 #include "crystalhd_hw.h"
 #include "crystalhd_misc.h"
 
+extern struct device * chd_get_device(void);
+
 enum _crystalhd_state{
 	BC_LINK_INVALID		= 0x00,
 	BC_LINK_INIT		= 0x01,
@@ -64,7 +66,7 @@ struct crystalhd_cmd {
 	uint32_t		tx_list_id;
 	uint32_t		cin_wait_exit;
 	uint32_t		pwr_state_change;
-	struct crystalhd_hw	hw_ctx;
+	struct crystalhd_hw		*hw_ctx;
 };
 
 typedef BC_STATUS (*crystalhd_cmd_proc)(struct crystalhd_cmd *, crystalhd_ioctl_data *);
@@ -80,9 +82,9 @@ BC_STATUS crystalhd_suspend(struct crystalhd_cmd *ctx, crystalhd_ioctl_data *ida
 BC_STATUS crystalhd_resume(struct crystalhd_cmd *ctx);
 crystalhd_cmd_proc crystalhd_get_cmd_proc(struct crystalhd_cmd *ctx, uint32_t cmd,
 				      struct crystalhd_user *uc);
-BC_STATUS crystalhd_user_open(struct crystalhd_cmd *ctx, struct crystalhd_user**user_ctx);
-BC_STATUS crystalhd_user_close(struct crystalhd_cmd *ctx,struct crystalhd_user *uc);
-BC_STATUS crystalhd_setup_cmd_context(struct crystalhd_cmd *ctx,struct crystalhd_adp *adp);
+BC_STATUS crystalhd_user_open(struct crystalhd_cmd *ctx, struct crystalhd_user **user_ctx);
+BC_STATUS crystalhd_user_close(struct crystalhd_cmd *ctx, struct crystalhd_user *uc);
+BC_STATUS crystalhd_setup_cmd_context(struct crystalhd_cmd *ctx, struct crystalhd_adp *adp);
 BC_STATUS crystalhd_delete_cmd_context(struct crystalhd_cmd *ctx);
 bool crystalhd_cmd_interrupt(struct crystalhd_cmd *ctx);
 

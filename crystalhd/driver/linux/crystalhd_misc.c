@@ -24,29 +24,10 @@
  * along with this driver.  If not, see <http://www.gnu.org/licenses/>.
  **********************************************************************/
 
+#include <linux/device.h>
+
 #include "crystalhd_lnx.h"
 #include "crystalhd_misc.h"
-
-uint32_t g_linklog_level;
-
-static inline uint32_t crystalhd_dram_rd(struct crystalhd_adp *adp, uint32_t mem_off)
-{
-	crystalhd_reg_wr(adp, DCI_DRAM_BASE_ADDR, (mem_off >> 19));
-	return bc_dec_reg_rd(adp, (0x00380000 | (mem_off & 0x0007FFFF)));
-}
-
-static inline void crystalhd_dram_wr(struct crystalhd_adp*adp,
-				   uint32_t mem_off, uint32_t val)
-{
-	crystalhd_reg_wr(adp, DCI_DRAM_BASE_ADDR, (mem_off >> 19));
-	bc_dec_reg_wr(adp, (0x00380000 | (mem_off & 0x0007FFFF)),val);
-}
-
-static inline BC_STATUS bc_chk_dram_range(struct crystalhd_adp *adp,
-					  uint32_t start_off, uint32_t cnt)
-{
-	return BC_STS_SUCCESS;
-}
 
 static crystalhd_dio_req *crystalhd_alloc_dio(struct crystalhd_adp *adp)
 {
@@ -54,15 +35,15 @@ static crystalhd_dio_req *crystalhd_alloc_dio(struct crystalhd_adp *adp)
 	crystalhd_dio_req *temp = NULL;
 
 	if (!adp) {
-		BCMLOG_ERR("Invalid Arg!!\n");
+		printk(KERN_ERR "%s: Invalid arg\n", __func__);
 		return temp;
 	}
 
-	spin_lock_irqsave(&adp->lock,flags);
+	spin_lock_irqsave(&adp->lock, flags);
 	temp = adp->ua_map_free_head;
 	if (temp)
 		adp->ua_map_free_head = adp->ua_map_free_head->next;
-	spin_unlock_irqrestore(&adp->lock,flags);
+	spin_unlock_irqrestore(&adp->lock, flags);
 
 	return temp;
 }
@@ -73,30 +54,36 @@ static void crystalhd_free_dio(struct crystalhd_adp *adp, crystalhd_dio_req *dio
 
 	if (!adp || !dio)
 		return;
-	spin_lock_irqsave(&adp->lock,flags);
+	spin_lock_irqsave(&adp->lock, flags);
 	dio->sig = crystalhd_dio_inv;
 	dio->page_cnt = 0;
 	dio->fb_size = 0;
-	memset(&dio->uinfo,0,sizeof(dio->uinfo));
+	memset(&dio->uinfo, 0, sizeof(dio->uinfo));
 	dio->next = adp->ua_map_free_head;
 	adp->ua_map_free_head = dio;
-	spin_unlock_irqrestore(&adp->lock,flags);
+	spin_unlock_irqrestore(&adp->lock, flags);
 }
 
 static crystalhd_elem_t *crystalhd_alloc_elem(struct crystalhd_adp *adp)
 {
-	unsigned long flags=0;
-	crystalhd_elem_t *temp=NULL;
+	unsigned long flags = 0;
+	crystalhd_elem_t *temp = NULL;
 
 	if (!adp)
+	{
+		printk(KERN_ERR "%s: Invalid args\n", __func__);
 		return temp;
-	spin_lock_irqsave(&adp->lock,flags);
+	}
+	spin_lock_irqsave(&adp->lock, flags);
 	temp = adp->elem_pool_head;
 	if (temp) {
 		adp->elem_pool_head = adp->elem_pool_head->flink;
 		memset(temp, 0, sizeof(*temp));
 	}
-	spin_unlock_irqrestore(&adp->lock,flags);
+	else
+		printk(KERN_ERR "no element found\n");
+
+	spin_unlock_irqrestore(&adp->lock, flags);
 
 	return temp;
 }
@@ -106,182 +93,36 @@ static void crystalhd_free_elem(struct crystalhd_adp *adp, crystalhd_elem_t *ele
 
 	if (!adp || !elem)
 		return;
-	spin_lock_irqsave(&adp->lock,flags);
+	spin_lock_irqsave(&adp->lock, flags);
 	elem->flink = adp->elem_pool_head;
 	adp->elem_pool_head = elem;
-	spin_unlock_irqrestore(&adp->lock,flags);
+	spin_unlock_irqrestore(&adp->lock, flags);
 }
 
 static inline void crystalhd_set_sg(struct scatterlist *sg, struct page *page,
 				  unsigned int len, unsigned int offset)
 {
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,23)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 23)
 	sg_set_page(sg, page, len, offset);
 #else
 	sg->page       = page;
 	sg->offset     = offset;
 	sg->length     = len;
+#endif
 #ifdef CONFIG_X86_64
 	sg->dma_length = len;
-#endif
 #endif
 }
 
 static inline void crystalhd_init_sg(struct scatterlist *sg, unsigned int entries)
 {
-// http://lkml.org/lkml/2007/11/27/68
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,23)
+	/* http://lkml.org/lkml/2007/11/27/68 */
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 23)
 	sg_init_table(sg, entries);
 #endif
 }
 
 /*========================== Extern ========================================*/
-/**
- * bc_dec_reg_rd - Read 7412's device register.
- * @adp: Adapter instance
- * @reg_off: Register offset.
- *
- * Return:
- *	32bit value read
- *
- * 7412's device register read routine. This interface use
- * 7412's device access range mapped from BAR-2 (4M) of PCIe
- * configuration space.
- */
-uint32_t bc_dec_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
-{
-	if (!adp || (reg_off > adp->pci_mem_len)) {
-		BCMLOG_ERR("dec_rd_reg_off outof range: 0x%08x\n",reg_off);
-		return 0;
-	}
-
-	return readl(adp->addr + reg_off);
-}
-
-/**
- * bc_dec_reg_wr - Write 7412's device register
- * @adp: Adapter instance
- * @reg_off: Register offset.
- * @val: Dword value to be written.
- *
- * Return:
- *	none.
- *
- * 7412's device register write routine. This interface use
- * 7412's device access range mapped from BAR-2 (4M) of PCIe
- * configuration space.
- */
-void bc_dec_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t val)
-{
-	if (!adp || (reg_off > adp->pci_mem_len)) {
-		BCMLOG_ERR("dec_wr_reg_off outof range: 0x%08x\n",reg_off);
-		return;
-	}
-	writel(val, adp->addr + reg_off);
-	udelay(8);
-}
-
-/**
- * crystalhd_reg_rd - Read Link's device register.
- * @adp: Adapter instance
- * @reg_off: Register offset.
- *
- * Return:
- *	32bit value read
- *
- * Link device register  read routine. This interface use
- * Link's device access range mapped from BAR-1 (64K) of PCIe
- * configuration space.
- *
- */
-uint32_t crystalhd_reg_rd(struct crystalhd_adp *adp,uint32_t reg_off)
-{
-	if (!adp || (reg_off > adp->pci_i2o_len)) {
-		BCMLOG_ERR("link_rd_reg_off outof range: 0x%08x\n",reg_off);
-		return 0;
-	}
-	return readl(adp->i2o_addr + reg_off);
-}
-
-/**
- * crystalhd_reg_wr - Write Link's device register
- * @adp: Adapter instance
- * @reg_off: Register offset.
- * @val: Dword value to be written.
- *
- * Return:
- *	none.
- *
- * Link device register  write routine. This interface use
- * Link's device access range mapped from BAR-1 (64K) of PCIe
- * configuration space.
- *
- */
-void crystalhd_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t val)
-{
-	if (!adp || (reg_off > adp->pci_i2o_len)) {
-		BCMLOG_ERR("link_wr_reg_off outof range: 0x%08x\n",reg_off);
-		return;
-	}
-	writel(val, adp->i2o_addr + reg_off);
-}
-
-/**
- * crystalhd_mem_rd - Read data from 7412's DRAM area.
- * @adp: Adapter instance
- * @start_off: Start offset.
- * @dw_cnt: Count in dwords.
- * @rd_buff: Buffer to copy the data from dram.
- *
- * Return:
- *	Status.
- *
- * 7412's Dram read routine.
- */
-BC_STATUS crystalhd_mem_rd(struct crystalhd_adp *adp, uint32_t start_off,
-			 uint32_t dw_cnt, uint32_t *rd_buff)
-{
-	uint32_t ix = 0;
-
-	if (!adp || !rd_buff ||
-	    (bc_chk_dram_range(adp, start_off, dw_cnt) != BC_STS_SUCCESS)) {
-		BCMLOG_ERR("Invalid arg \n");
-		return BC_STS_INV_ARG;
-	}
-	for (ix = 0; ix < dw_cnt; ix++)
-		rd_buff[ix] = crystalhd_dram_rd(adp, (start_off + (ix * 4)));
-
-	return BC_STS_SUCCESS;
-}
-
-/**
- * crystalhd_mem_wr - Write data to 7412's DRAM area.
- * @adp: Adapter instance
- * @start_off: Start offset.
- * @dw_cnt: Count in dwords.
- * @wr_buff: Data Buffer to be written.
- *
- * Return:
- *	Status.
- *
- * 7412's Dram write routine.
- */
-BC_STATUS crystalhd_mem_wr(struct crystalhd_adp *adp, uint32_t start_off,
-			 uint32_t dw_cnt, uint32_t *wr_buff)
-{
-	uint32_t ix = 0;
-
-	if (!adp || !wr_buff ||
-	    (bc_chk_dram_range(adp, start_off, dw_cnt) != BC_STS_SUCCESS)) {
-		BCMLOG_ERR("Invalid arg \n");
-		return BC_STS_INV_ARG;
-	}
-
-	for (ix = 0; ix < dw_cnt; ix++)
-		crystalhd_dram_wr(adp, (start_off + (ix * 4)), wr_buff[ix]);
-
-	return BC_STS_SUCCESS;
-}
 /**
  * crystalhd_pci_cfg_rd - PCIe config read
  * @adp: Adapter instance
@@ -301,24 +142,24 @@ BC_STATUS crystalhd_pci_cfg_rd(struct crystalhd_adp *adp, uint32_t off,
 	int rc = 0;
 
 	if (!adp || !val) {
-		BCMLOG_ERR("Invalid arg \n");
+		printk(KERN_ERR "%s: Invalid arg\n", __func__);
 		return BC_STS_INV_ARG;
 	}
 
 	switch (len) {
 	case 1:
-		rc = pci_read_config_byte(adp->pdev, off, (u8*)val);
+		rc = pci_read_config_byte(adp->pdev, off, (u8 *)val);
 		break;
 	case 2:
-		rc = pci_read_config_word(adp->pdev, off, (u16*)val);
+		rc = pci_read_config_word(adp->pdev, off, (u16 *)val);
 		break;
 	case 4:
-		rc = pci_read_config_dword(adp->pdev, off, (u32*)val);
+		rc = pci_read_config_dword(adp->pdev, off, (u32 *)val);
 		break;
 	default:
 		rc = -EINVAL;
 		sts = BC_STS_INV_ARG;
-		BCMLOG_ERR("Invalid len:%d\n",len);
+		dev_err(&adp->pdev->dev, "Invalid len:%d\n", len);
 	};
 
 	if (rc && (sts == BC_STS_SUCCESS))
@@ -346,7 +187,7 @@ BC_STATUS crystalhd_pci_cfg_wr(struct crystalhd_adp *adp, uint32_t off,
 	int rc = 0;
 
 	if (!adp || !val) {
-		BCMLOG_ERR("Invalid arg \n");
+		printk(KERN_ERR "%s: Invalid arg\n", __func__);
 		return BC_STS_INV_ARG;
 	}
 
@@ -363,7 +204,7 @@ BC_STATUS crystalhd_pci_cfg_wr(struct crystalhd_adp *adp, uint32_t off,
 	default:
 		rc = -EINVAL;
 		sts = BC_STS_INV_ARG;
-		BCMLOG_ERR("Invalid len:%d\n",len);
+		dev_err(&adp->pdev->dev, "Invalid len:%d\n", len);
 	};
 
 	if (rc && (sts == BC_STS_SUCCESS))
@@ -391,7 +232,7 @@ void *bc_kern_dma_alloc(struct crystalhd_adp *adp, uint32_t sz,
 	void *temp = NULL;
 
 	if (!adp || !sz || !phy_addr) {
-		BCMLOG_ERR("Invalide Arg..\n");
+		printk(KERN_ERR "%s: Invalid arg\n", __func__);
 		return temp;
 	}
 
@@ -417,7 +258,7 @@ void bc_kern_dma_free(struct crystalhd_adp *adp, uint32_t sz, void *ka,
 		      dma_addr_t phy_addr)
 {
 	if (!adp || !ka || !sz || !phy_addr) {
-		BCMLOG_ERR("Invalide Arg..\n");
+		printk(KERN_ERR "%s: Invalid arg\n", __func__);
 		return;
 	}
 
@@ -444,7 +285,7 @@ BC_STATUS crystalhd_create_dioq(struct crystalhd_adp *adp,
 	crystalhd_dioq_t *dioq = NULL;
 
 	if (!adp || !dioq_hnd) {
-		BCMLOG_ERR("Invalid arg!!\n");
+		printk(KERN_ERR "%s: Invalid arg\n", __func__);
 		return BC_STS_INV_ARG;
 	}
 
@@ -452,7 +293,7 @@ BC_STATUS crystalhd_create_dioq(struct crystalhd_adp *adp,
 	if (!dioq)
 		return BC_STS_INSUFF_RES;
 
-	dioq->lock = SPIN_LOCK_UNLOCKED;
+	spin_lock_init(&dioq->lock);
 	dioq->sig = BC_LINK_DIOQ_SIG;
 	dioq->head = (crystalhd_elem_t *)&dioq->head;
 	dioq->tail = (crystalhd_elem_t *)&dioq->head;
@@ -509,17 +350,18 @@ void crystalhd_delete_dioq(struct crystalhd_adp *adp, crystalhd_dioq_t *dioq)
 BC_STATUS crystalhd_dioq_add(crystalhd_dioq_t *ioq, void *data,
 			   bool wake, uint32_t tag)
 {
+	struct device *dev = chd_get_device();
 	unsigned long flags = 0;
 	crystalhd_elem_t *tmp;
 
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG) || !data) {
-		BCMLOG_ERR("Invalid arg!!\n");
+		dev_err(dev, "%s: Invalid arg\n", __func__);
 		return BC_STS_INV_ARG;
 	}
 
 	tmp = crystalhd_alloc_elem(ioq->adp);
 	if (!tmp) {
-		BCMLOG_ERR("No free elements.\n");
+		dev_err(dev, "%s: No free elements.\n", __func__);
 		return BC_STS_INSUFF_RES;
 	}
 
@@ -550,19 +392,20 @@ BC_STATUS crystalhd_dioq_add(crystalhd_dioq_t *ioq, void *data,
  */
 void *crystalhd_dioq_fetch(crystalhd_dioq_t *ioq)
 {
+	struct device *dev = chd_get_device();
 	unsigned long flags = 0;
 	crystalhd_elem_t *tmp;
 	crystalhd_elem_t *ret = NULL;
 	void *data = NULL;
 
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG)) {
-		BCMLOG_ERR("Invalid arg!!\n");
+		dev_err(dev, "%s: Invalid arg\n", __func__);
 		return data;
 	}
 
 	spin_lock_irqsave(&ioq->lock, flags);
 	tmp = ioq->head;
-	if (tmp != (crystalhd_elem_t*)&ioq->head) {
+	if (tmp != (crystalhd_elem_t *)&ioq->head) {
 		ret = tmp;
 		tmp->flink->blink = tmp->blink;
 		tmp->blink->flink = tmp->flink;
@@ -588,19 +431,20 @@ void *crystalhd_dioq_fetch(crystalhd_dioq_t *ioq)
  */
 void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq, uint32_t tag)
 {
+	struct device *dev = chd_get_device();
 	unsigned long flags = 0;
 	crystalhd_elem_t *tmp;
 	crystalhd_elem_t *ret = NULL;
 	void *data = NULL;
 
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG)) {
-		BCMLOG_ERR("Invalid arg!!\n");
+		dev_err(dev, "%s: Invalid arg\n", __func__);
 		return data;
 	}
 
-	spin_lock_irqsave(&ioq->lock,flags);
+	spin_lock_irqsave(&ioq->lock, flags);
 	tmp = ioq->head;
-	while (tmp != (crystalhd_elem_t*)&ioq->head) {
+	while (tmp != (crystalhd_elem_t *)&ioq->head) {
 		if (tmp->tag == tag) {
 			ret = tmp;
 			tmp->flink->blink = tmp->blink;
@@ -610,7 +454,7 @@ void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq, uint32_t tag)
 		}
 		tmp = tmp->flink;
 	}
-	spin_unlock_irqrestore(&ioq->lock,flags);
+	spin_unlock_irqrestore(&ioq->lock, flags);
 
 	if (ret) {
 		data = ret->data;
@@ -631,38 +475,67 @@ void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq, uint32_t tag)
  * Return element from head if Q is not empty. Wait for new element
  * if Q is empty for Timeout seconds.
  */
-void *crystalhd_dioq_fetch_wait(crystalhd_dioq_t *ioq, uint32_t to_secs,
-			      uint32_t *sig_pend)
+void *crystalhd_dioq_fetch_wait(void *hw, uint32_t to_secs, uint32_t *sig_pend)
 {
+	struct device *dev = chd_get_device();
 	unsigned long flags = 0;
-	int rc = 0, count;
-	void *tmp = NULL;
+	int rc = 0;
 
+	crystalhd_rx_dma_pkt *r_pkt = NULL;
+	crystalhd_dioq_t *ioq = ((struct crystalhd_hw *)hw)->rx_rdyq;
+	unsigned long picYcomp = 0;
+
+	unsigned long fetchTimeout = jiffies + msecs_to_jiffies(to_secs * 1000);
+	
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG) || !to_secs || !sig_pend) {
-		BCMLOG_ERR("Invalid arg!!\n");
-		return tmp;
+		dev_err(dev, "%s: Invalid arg\n", __func__);
+		return r_pkt;
 	}
 
-	count = to_secs;
 	spin_lock_irqsave(&ioq->lock, flags);
-	while ((ioq->count == 0) && count) {
-		spin_unlock_irqrestore(&ioq->lock, flags);
-
-		crystalhd_wait_on_event(&ioq->event, (ioq->count>0), 1000, rc, 0);
+	while (!time_after_eq(jiffies, fetchTimeout)) {
+		if(ioq->count == 0) {
+			spin_unlock_irqrestore(&ioq->lock, flags);
+			crystalhd_wait_on_event(&ioq->event, (ioq->count > 0),
+					250, rc, false);
+		}
+		else
+			spin_unlock_irqrestore(&ioq->lock, flags);
 		if (rc == 0) {
-			goto out;
+			// Found a packet. Check if it is a repeated picture or not
+			// Drop the picture if it is a repeated picture
+			r_pkt = crystalhd_dioq_fetch(ioq);
+			// If format change packet, then return with out checking anything
+			if(r_pkt->flags & (COMP_FLAG_PIB_VALID | COMP_FLAG_FMT_CHANGE))
+				return r_pkt;
+			if(((struct crystalhd_hw *)hw)->adp->pdev->device == BC_PCI_DEVID_LINK)
+				picYcomp = link_GetRptDropParam(((struct crystalhd_hw *)hw)->PICHeight, ((struct crystalhd_hw *)hw)->PICWidth, (void *)r_pkt);
+			else
+				dev_info(dev,"FLEA NOT IMPLEMENTED YET\n");
+			if(!picYcomp || (picYcomp == ((struct crystalhd_hw *)hw)->LastPicNo) ||
+				(picYcomp == ((struct crystalhd_hw *)hw)->LastTwoPicNo)) {
+				//Discard picture
+				if(picYcomp != 0) {
+					((struct crystalhd_hw *)hw)->LastTwoPicNo = ((struct crystalhd_hw *)hw)->LastPicNo;
+					((struct crystalhd_hw *)hw)->LastPicNo = picYcomp;
+				}
+				crystalhd_dioq_add(((struct crystalhd_hw *)hw)->rx_freeq, r_pkt, false, r_pkt->pkt_tag);
+				r_pkt = NULL;
+			} else {
+				if((picYcomp - ((struct crystalhd_hw *)hw)->LastPicNo) > 1)
+					dev_info(dev, "MISSING %lu PICTURES\n", (picYcomp - ((struct crystalhd_hw *)hw)->LastPicNo));
+				((struct crystalhd_hw *)hw)->LastTwoPicNo = ((struct crystalhd_hw *)hw)->LastPicNo;
+				((struct crystalhd_hw *)hw)->LastPicNo = picYcomp;
+				return r_pkt;
+			}
 		} else if (rc == -EINTR) {
-			BCMLOG(BCMLOG_INFO,"Cancelling fetch wait\n");
 			*sig_pend = 1;
-			return tmp;
+			return r_pkt;
 		}
 		spin_lock_irqsave(&ioq->lock, flags);
-		count--;
 	}
 	spin_unlock_irqrestore(&ioq->lock, flags);
-
-out:
-	return crystalhd_dioq_fetch(ioq);
+	return r_pkt;
 }
 
 /**
@@ -686,6 +559,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 			  bool en_422mode, bool dir_tx,
 			  crystalhd_dio_req **dio_hnd)
 {
+	struct device *dev;
 	crystalhd_dio_req	*dio;
 	/* FIXME: jarod: should some of these unsigned longs be uint32_t or uintptr_t? */
 	unsigned long start = 0, end = 0, uaddr = 0, count = 0;
@@ -693,9 +567,12 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	int i = 0, rw = 0, res = 0, nr_pages = 0, skip_fb_sg = 0;
 
 	if (!adp || !ubuff || !ubuff_sz || !dio_hnd) {
-		BCMLOG_ERR("Invalid arg \n");
+		printk(KERN_ERR "%s: Invalid arg\n", __func__);
 		return BC_STS_INV_ARG;
 	}
+
+	dev = &adp->pdev->dev;
+
 	/* Compute pages */
 	uaddr = (unsigned long)ubuff;
 	count = (unsigned long)ubuff_sz;
@@ -704,13 +581,13 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	nr_pages = end - start;
 
 	if (!count || ((uaddr + count) < uaddr)) {
-		BCMLOG_ERR("User addr overflow!!\n");
+		dev_err(dev, "User addr overflow!!\n");
 		return BC_STS_INV_ARG;
 	}
 
 	dio = crystalhd_alloc_dio(adp);
 	if (!dio) {
-		BCMLOG_ERR("dio pool empty..\n");
+		dev_err(dev, "dio pool empty..\n");
 		return BC_STS_INSUFF_RES;
 	}
 
@@ -723,9 +600,9 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	}
 
 	if (nr_pages > dio->max_pages) {
-		BCMLOG_ERR("max_pages(%d) exceeded(%d)!!\n",
-			   dio->max_pages, nr_pages);
-		crystalhd_unmap_dio(adp,dio);
+		dev_err(dev, "max_pages(%d) exceeded(%d)!!\n",
+			dio->max_pages, nr_pages);
+		crystalhd_unmap_dio(adp, dio);
 		return BC_STS_INSUFF_RES;
 	}
 
@@ -741,10 +618,10 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 				     (void *)(uaddr + count - dio->fb_size),
 				     dio->fb_size);
 		if (res) {
-			BCMLOG_ERR("failed %d to copy %u fill bytes from %p\n",
-				   res, dio->fb_size,
-				   (void *)(uaddr+count-dio->fb_size));
-			crystalhd_unmap_dio(adp,dio);
+			dev_err(dev, "failed %d to copy %u fill bytes from %p\n",
+				res, dio->fb_size,
+				(void *)(uaddr + count-dio->fb_size));
+			crystalhd_unmap_dio(adp, dio);
 			return BC_STS_INSUFF_RES;
 		}
 	}
@@ -757,7 +634,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	/* Save for release..*/
 	dio->sig = crystalhd_dio_locked;
 	if (res < nr_pages) {
-		BCMLOG_ERR("get pages failed: %d-%d\n", nr_pages, res);
+		dev_err(dev, "get pages failed: %d-%d\n", nr_pages, res);
 		dio->page_cnt = res;
 		crystalhd_unmap_dio(adp, dio);
 		return BC_STS_ERROR;
@@ -769,8 +646,11 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	crystalhd_set_sg(&dio->sg[0], dio->pages[0], 0, uaddr & ~PAGE_MASK);
 	if (nr_pages > 1) {
 		dio->sg[0].length = PAGE_SIZE - dio->sg[0].offset;
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,23)) && defined(CONFIG_X86_64)
+
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 23)
+#ifdef CONFIG_X86_64
 		dio->sg[0].dma_length = dio->sg[0].length;
+#endif
 #endif
 		count -= dio->sg[0].length;
 		for (i = 1; i < nr_pages; i++) {
@@ -787,19 +667,21 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	} else {
 		if (count < 4) {
 			dio->sg[0].length = count;
-			skip_fb_sg=1;
+			skip_fb_sg = 1;
 		} else {
 			dio->sg[0].length = count - dio->fb_size;
 		}
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,23)) && defined(CONFIG_X86_64)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 23)
+#ifdef CONFIG_X86_64
 		dio->sg[0].dma_length = dio->sg[0].length;
+#endif
 #endif
 	}
 	dio->sg_cnt = pci_map_sg(adp->pdev, dio->sg,
 				 dio->page_cnt, dio->direction);
 	if (dio->sg_cnt <= 0) {
-		BCMLOG_ERR("sg map %d-%d \n",dio->sg_cnt, dio->page_cnt);
-		crystalhd_unmap_dio(adp,dio);
+		dev_err(dev, "sg map %d-%d\n", dio->sg_cnt, dio->page_cnt);
+		crystalhd_unmap_dio(adp, dio);
 		return BC_STS_ERROR;
 	}
 	if (dio->sg_cnt && skip_fb_sg)
@@ -832,8 +714,8 @@ BC_STATUS crystalhd_unmap_dio(struct crystalhd_adp *adp, crystalhd_dio_req *dio)
 	struct page *page = NULL;
 	int j = 0;
 
-	if (!adp || !dio ) {
-		BCMLOG_ERR("Invalid arg \n");
+	if (!adp || !dio) {
+		printk(KERN_ERR "%s: Invalid arg\n", __func__);
 		return BC_STS_INV_ARG;
 	}
 
@@ -869,20 +751,23 @@ BC_STATUS crystalhd_unmap_dio(struct crystalhd_adp *adp, crystalhd_dio_req *dio)
  */
 int crystalhd_create_dio_pool(struct crystalhd_adp *adp, uint32_t max_pages)
 {
+	struct device *dev;
 	uint32_t asz = 0, i = 0;
 	uint8_t	*temp;
 	crystalhd_dio_req *dio;
 
 	if (!adp || !max_pages) {
-		BCMLOG_ERR("Invalid Arg!!\n");
+		printk(KERN_ERR "%s: Invalid arg\n", __func__);
 		return -EINVAL;
 	}
+
+	dev = &adp->pdev->dev;
 
 	/* Get dma memory for fill byte handling..*/
 	adp->fill_byte_pool = pci_pool_create("crystalhd_fbyte",
 					      adp->pdev, 8, 8, 0);
 	if (!adp->fill_byte_pool) {
-		BCMLOG_ERR("failed to create fill byte pool\n");
+		dev_err(dev, "failed to create fill byte pool\n");
 		return -ENOMEM;
 	}
 
@@ -890,26 +775,26 @@ int crystalhd_create_dio_pool(struct crystalhd_adp *adp, uint32_t max_pages)
 	asz =  (sizeof(*dio->pages) * max_pages) +
 	       (sizeof(*dio->sg) * max_pages) + sizeof(*dio);
 
-	BCMLOG(BCMLOG_DBG,"Initializing Dio pool %d %d %x %p\n",
-	       BC_LINK_SG_POOL_SZ, max_pages, asz, adp->fill_byte_pool);
+	dev_dbg(dev, "Initializing Dio pool %d %d %x %p\n",
+		BC_LINK_SG_POOL_SZ, max_pages, asz, adp->fill_byte_pool);
 
 	for (i = 0; i < BC_LINK_SG_POOL_SZ; i++) {
 		temp = (uint8_t *)kzalloc(asz, GFP_KERNEL);
 		if ((temp) == NULL) {
-			BCMLOG_ERR("Failed to alloc %d mem\n",asz);
+			dev_err(dev, "Failed to alloc %d mem\n", asz);
 			return -ENOMEM;
 		}
 
 		dio = (crystalhd_dio_req *)temp;
 		temp += sizeof(*dio);
-		dio->pages = (struct page**)temp;
+		dio->pages = (struct page **)temp;
 		temp += (sizeof(*dio->pages) * max_pages);
 		dio->sg = (struct scatterlist *)temp;
 		dio->max_pages = max_pages;
 		dio->fb_va = pci_pool_alloc(adp->fill_byte_pool, GFP_KERNEL,
 					    &dio->fb_pa);
 		if (!dio->fb_va) {
-			BCMLOG_ERR("fill byte alloc failed.\n");
+			dev_err(dev, "fill byte alloc failed.\n");
 			return -ENOMEM;
 		}
 
@@ -934,7 +819,7 @@ void crystalhd_destroy_dio_pool(struct crystalhd_adp *adp)
 	int count = 0;
 
 	if (!adp) {
-		BCMLOG_ERR("Invalid Arg!!\n");
+		printk(KERN_ERR "%s: Invalid arg\n", __func__);
 		return;
 	}
 
@@ -954,7 +839,7 @@ void crystalhd_destroy_dio_pool(struct crystalhd_adp *adp)
 		adp->fill_byte_pool = NULL;
 	}
 
-	BCMLOG(BCMLOG_DBG,"Released dio pool %d \n",count);
+	dev_dbg(&adp->pdev->dev, "Released dio pool %d\n", count);
 }
 
 /**
@@ -968,7 +853,8 @@ void crystalhd_destroy_dio_pool(struct crystalhd_adp *adp)
  * Create general purpose list element pool to hold pending,
  * and active requests.
  */
-int crystalhd_create_elem_pool(struct crystalhd_adp *adp, uint32_t pool_size)
+int __devinit crystalhd_create_elem_pool(struct crystalhd_adp *adp,
+		uint32_t pool_size)
 {
 	uint32_t i;
 	crystalhd_elem_t *temp;
@@ -979,12 +865,12 @@ int crystalhd_create_elem_pool(struct crystalhd_adp *adp, uint32_t pool_size)
 	for (i = 0; i < pool_size; i++) {
 		temp = kzalloc(sizeof(*temp), GFP_KERNEL);
 		if (!temp) {
-			BCMLOG_ERR("kalloc failed \n");
+			dev_err(&adp->pdev->dev, "kzalloc failed\n");
 			return -ENOMEM;
 		}
 		crystalhd_free_elem(adp, temp);
 	}
-	BCMLOG(BCMLOG_DBG, "allocated %d elem\n", pool_size);
+	dev_dbg(&adp->pdev->dev, "allocated %d elem\n", pool_size);
 	return 0;
 }
 
@@ -1013,25 +899,26 @@ void crystalhd_delete_elem_pool(struct crystalhd_adp *adp)
 		}
 	} while (temp);
 
-	BCMLOG(BCMLOG_DBG,"released %d elem\n",dbg_cnt);
+	dev_dbg(&adp->pdev->dev, "released %d elem\n", dbg_cnt);
 }
 
 /*================ Debug support routines.. ================================*/
 void crystalhd_show_buffer(uint32_t off, uint8_t *buff, uint32_t dwcount)
 {
+	struct device *dev = chd_get_device();
 	uint32_t i, k = 1;
 
 	for (i = 0; i < dwcount; i++) {
 		if (k == 1)
-			BCMLOG(BCMLOG_DATA, "0x%08X : ", off);
+			dev_dbg(dev, "0x%08X : ", off);
 
-		BCMLOG(BCMLOG_DATA," 0x%08X ", *((uint32_t *)buff));
+		dev_dbg(dev, " 0x%08X ", *((uint32_t *)buff));
 
 		buff += sizeof(uint32_t);
 		off  += sizeof(uint32_t);
 		k++;
 		if ((i == dwcount - 1) || (k > 4)) {
-			BCMLOG(BCMLOG_DATA,"\n");
+			dev_dbg(dev, "\n");
 			k = 1;
 		}
 	}

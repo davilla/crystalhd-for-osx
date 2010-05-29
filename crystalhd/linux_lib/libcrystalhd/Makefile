@@ -1,9 +1,9 @@
 #
-#  Broadcom "BCM970012" Crystal HD device interface library.
+#  Broadcom "BCM970012/BCM970015" Crystal HD device interface library.
 #
 #
 BCLIB_MINOR=0
-BCLIB_MAJOR=1
+BCLIB_MAJOR=2
 BCLIB_NAME=libcrystalhd.so
 BCLIB_SL=$(BCLIB_NAME).$(BCLIB_MAJOR)
 BCLIB=$(BCLIB_NAME).$(BCLIB_MAJOR).$(BCLIB_MINOR)
@@ -25,7 +25,7 @@ CPPFLAGS = -D__LINUX_USER__
 
 CPPFLAGS += ${INCLUDES}
 CPPFLAGS += -g -Wall -fPIC -shared
-LDFLAGS = -Wl,-soname,${BCLIB_SL}
+LDFLAGS = -Wl,-soname,${BCLIB_SL} -pthread
 
 SRCFILES = 	libcrystalhd_if.cpp \
 		libcrystalhd_int_if.cpp \
@@ -52,13 +52,15 @@ clean:
 	rm -f  ${OBJFILES}
 
 install:
-	mkdir -p /usr/include/libcrystalhd
-	cp libcrystalhd_if.h /usr/include/libcrystalhd/
-	cp $(ROOTDIR)/include/bc_dts_defs.h /usr/include/libcrystalhd/
-	cp $(ROOTDIR)/include/bc_dts_types.h /usr/include/libcrystalhd/
-	cp $(ROOTDIR)/firmware/fwbin/70012/bcm70012fw.bin /lib/firmware/
-	cp $(ROOTDIR)/firmware/fwbin/70015/bcm70015fw.bin /lib/firmware/
-	install -m 755 $(BCLIB) $(LIBDIR)
-	(cd $(LIBDIR); ln -sf $(BCLIB) $(BCLIB_NAME))
-	(cd $(LIBDIR); ln -sf $(BCLIB) $(BCLIB_SL))
+	mkdir -p $(DESTDIR)$(LIBDIR)
+	mkdir -p $(DESTDIR)/lib/firmware
+	mkdir -p $(DESTDIR)/usr/include/libcrystalhd
+	cp libcrystalhd_if.h $(DESTDIR)/usr/include/libcrystalhd/
+	cp $(ROOTDIR)/include/bc_dts_defs.h $(DESTDIR)/usr/include/libcrystalhd/
+	cp $(ROOTDIR)/include/bc_dts_types.h $(DESTDIR)/usr/include/libcrystalhd/
+	cp $(ROOTDIR)/firmware/fwbin/70012/bcm70012fw.bin $(DESTDIR)/lib/firmware/
+	cp $(ROOTDIR)/firmware/fwbin/70015/bcm70015fw.bin $(DESTDIR)/lib/firmware/
+	install -m 755 $(BCLIB) $(DESTDIR)$(LIBDIR)
+	(cd $(DESTDIR)$(LIBDIR); ln -sf $(BCLIB) $(BCLIB_NAME))
+	(cd $(DESTDIR)$(LIBDIR); ln -sf $(BCLIB) $(BCLIB_SL))
 

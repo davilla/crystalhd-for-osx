@@ -3,14 +3,11 @@
 #include <stdint.h>
 #include <string.h>
 #include <semaphore.h>
+#include "bc_dts_types.h"
+#include "libcrystalhd_if.h"
 #include <iostream>
 #include <fstream>
 #include <sys/shm.h>
-
-#define __LINUX_USER__
-#include <libcrystalhd/bc_dts_defs.h>
-#include <libcrystalhd/bc_dts_types.h>
-#include <libcrystalhd/libcrystalhd_if.h>
 
 #define TRY_CALL_1(func, p1, errmsg) \
   if (BC_STS_SUCCESS != func(p1)) \
@@ -74,6 +71,7 @@ int main()
       printf("crap, DtsStartCapture failed\n");
       throw "Failed to start capture";
     }
+    printf("try calls done\n");
 
     // Open the input stream
     inFile.open("/Users/Shared/crystalhd-for-osx/crystalhd/examples/test_video.264", std::ios::in | std::ios::binary);

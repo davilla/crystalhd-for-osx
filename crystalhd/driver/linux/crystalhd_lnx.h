@@ -40,21 +40,21 @@
 #include <linux/init.h>
 #include <linux/interrupt.h>
 #include <linux/pagemap.h>
+#include <linux/vmalloc.h>
 
-#include <asm/io.h>
+#include <linux/io.h>
 #include <asm/irq.h>
 #include <asm/pgtable.h>
 #include <asm/system.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 
 #include "crystalhd_cmds.h"
 
-#define CRYSTAL_HD_NAME		"Broadcom Crystal HD Decoder (BCM70012) Driver"
-
+#define CRYSTAL_HD_NAME		"Broadcom Crystal HD Decoder Driver"
 
 /* OS specific PCI information structure and adapter information. */
 struct crystalhd_adp {
-	/* Hardware borad/PCI specifics */
+	/* Hardware board/PCI specifics */
 	char			name[32];
 	struct pci_dev		*pdev;
 
@@ -79,16 +79,17 @@ struct crystalhd_adp {
 	unsigned int		cfg_users;
 
 	crystalhd_ioctl_data	*idata_free_head;	/* ioctl data pool */
-	crystalhd_elem_t		*elem_pool_head;	/* Queue element pool */
+	crystalhd_elem_t	*elem_pool_head;	/* Queue element pool */
 
 	struct crystalhd_cmd	cmds;
 
-	crystalhd_dio_req		*ua_map_free_head;
+	crystalhd_dio_req	*ua_map_free_head;
 	struct pci_pool		*fill_byte_pool;
 };
 
 
 struct crystalhd_adp *chd_get_adp(void);
+struct device * chd_get_device(void);
 void chd_set_log_level(struct crystalhd_adp *adp, char *arg);
 
 #endif
