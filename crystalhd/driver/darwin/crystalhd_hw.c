@@ -236,6 +236,10 @@ BC_STATUS crystalhd_hw_close(struct crystalhd_hw *hw)
 
 	/* Stop and DDR sleep will happen in here */
 	crystalhd_hw_suspend(hw);
+#ifdef __APPLE__
+	free_spin_lock(hw->lock);
+	free_spin_lock(hw->rx_lock);
+#endif
 	hw->dev_started = false;
 
 	return BC_STS_SUCCESS;
@@ -276,7 +280,11 @@ BC_STATUS crystalhd_hw_setup_dma_rings(struct crystalhd_hw *hw)
 			return BC_STS_INSUFF_RES;
 		}
 		/* rx_pkt_pool -- static memory allocation  */
+#ifndef __APPLE__
+		hw->tx_pkt_pool[i].desc_mem.pdma_desc_start = mem;
+#else
 		hw->tx_pkt_pool[i].desc_mem.pdma_desc_start = (dma_descriptor*)mem;
+#endif
 		hw->tx_pkt_pool[i].desc_mem.phy_addr = phy_addr;
 		hw->tx_pkt_pool[i].desc_mem.sz = BC_LINK_MAX_SGLS *
 						 sizeof(dma_descriptor);
@@ -292,7 +300,11 @@ BC_STATUS crystalhd_hw_setup_dma_rings(struct crystalhd_hw *hw)
 	}
 
 	for (i = 0; i < BC_RX_LIST_CNT; i++) {
+#ifndef __APPLE__
+		rpkt = kzalloc(sizeof(*rpkt), GFP_KERNEL);
+#else
 		rpkt = (crystalhd_rx_dma_pkt*)kzalloc(sizeof(*rpkt), GFP_KERNEL);
+#endif
 		if (!rpkt) {
 			dev_err(dev, "Insufficient Memory For RX\n");
 			crystalhd_hw_free_dma_rings(hw);
@@ -307,7 +319,11 @@ BC_STATUS crystalhd_hw_setup_dma_rings(struct crystalhd_hw *hw)
 			crystalhd_hw_free_dma_rings(hw);
 			return BC_STS_INSUFF_RES;
 		}
+#ifndef __APPLE__
+		rpkt->desc_mem.pdma_desc_start = mem;
+#else
 		rpkt->desc_mem.pdma_desc_start = (dma_descriptor*)mem;
+#endif
 		rpkt->desc_mem.phy_addr = phy_addr;
 		rpkt->desc_mem.sz  = BC_LINK_MAX_SGLS * sizeof(dma_descriptor);
 		rpkt->pkt_tag = hw->rx_pkt_tag_seed + i;
