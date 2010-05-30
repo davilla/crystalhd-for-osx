@@ -1466,12 +1466,16 @@ bool crystalhd_link_rx_list0_handler(struct crystalhd_hw *hw,
 				       uint32_t uv_err_sts)
 {
 	uint32_t tmp;
+#ifdef __APPLE__
+	uint32_t tmp_lsts;
+#else
 	list_sts tmp_lsts;
+#endif
 
 	if (!(y_err_sts & GET_Y0_ERR_MSK) && !(uv_err_sts & GET_UV0_ERR_MSK))
 		return false;
 
-	tmp_lsts = (list_sts)hw->rx_list_sts[0];
+	tmp_lsts = hw->rx_list_sts[0];
 
 	/* Y0 - DMA */
 	tmp = y_err_sts & GET_Y0_ERR_MSK;
@@ -1527,7 +1531,7 @@ bool crystalhd_link_rx_list0_handler(struct crystalhd_hw *hw,
 		hw->pfnWriteFPGARegister(hw->adp, MISC1_UV_RX_ERROR_STATUS, tmp);
 	}
 
-	return ((uint32_t)tmp_lsts != hw->rx_list_sts[0]);
+	return (tmp_lsts != hw->rx_list_sts[0]);
 }
 
 bool crystalhd_link_rx_list1_handler(struct crystalhd_hw *hw,
@@ -1535,12 +1539,16 @@ bool crystalhd_link_rx_list1_handler(struct crystalhd_hw *hw,
 				       uint32_t uv_err_sts)
 {
 	uint32_t tmp;
+#ifdef __APPLE__
+	uint32_t tmp_lsts;
+#else
 	list_sts tmp_lsts;
+#endif
 
 	if (!(y_err_sts & GET_Y1_ERR_MSK) && !(uv_err_sts & GET_UV1_ERR_MSK))
 		return false;
 
-	tmp_lsts = (list_sts)hw->rx_list_sts[1];
+	tmp_lsts = hw->rx_list_sts[1];
 
 	/* Y1 - DMA */
 	tmp = y_err_sts & GET_Y1_ERR_MSK;
@@ -1598,7 +1606,7 @@ bool crystalhd_link_rx_list1_handler(struct crystalhd_hw *hw,
 		hw->pfnWriteFPGARegister(hw->adp, MISC1_UV_RX_ERROR_STATUS, tmp);
 	}
 
-	return ((uint32_t)tmp_lsts != hw->rx_list_sts[1]);
+	return (tmp_lsts != hw->rx_list_sts[1]);
 }
 
 void crystalhd_link_rx_isr(struct crystalhd_hw *hw, uint32_t intr_sts)
