@@ -21,7 +21,9 @@
 
 #include "crystalhd_lnx.h"
 
-#ifndef __APPLE__
+#ifdef __APPLE__
+extern struct crystalhd_adp *g_adp_info;
+#else
 static struct class *crystalhd_class;
 
 static struct crystalhd_adp *g_adp_info;
@@ -770,7 +772,6 @@ static struct pci_driver bc_chd_driver = {
 };
 #endif
 
-#ifndef __APPLE__
 struct crystalhd_adp *chd_get_adp(void)
 {
 	return g_adp_info;
@@ -781,6 +782,7 @@ struct device * chd_get_device(void)
 	return &chd_get_adp()->pdev->dev;
 }
 
+#ifndef __APPLE__
 static int __init chd_dec_module_init(void)
 {
 	int rc;

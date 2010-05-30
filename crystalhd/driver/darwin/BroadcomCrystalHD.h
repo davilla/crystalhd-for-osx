@@ -43,6 +43,7 @@
 #endif
 #include <IOKit/IOInterruptEventSource.h>
 #include <IOKit/IOCommandGate.h>
+#include "linux_compatible.h"
 
 class IOCommandGate;
 
@@ -72,6 +73,7 @@ private:
     OSDictionary                *m_Names;
     BroadcomCrystalHD           **m_DEVs;
     struct bc_link_user         **m_USERs;
+    struct pci_dev              m_pci_dev;      // fake Linux pci_dev struct
     
     // BSD ioctl support functions
     IOReturn                    bsd_create_device(void);

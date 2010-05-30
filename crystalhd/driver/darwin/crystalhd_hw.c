@@ -237,8 +237,8 @@ BC_STATUS crystalhd_hw_close(struct crystalhd_hw *hw)
 	/* Stop and DDR sleep will happen in here */
 	crystalhd_hw_suspend(hw);
 #ifdef __APPLE__
-	free_spin_lock(hw->lock);
-	free_spin_lock(hw->rx_lock);
+	free_spin_lock(&hw->lock);
+	free_spin_lock(&hw->rx_lock);
 #endif
 	hw->dev_started = false;
 

@@ -67,9 +67,8 @@ __END_DECLS
 
 // Icky, globals (fix this later)
 OSArray* g_bcm_dma_info = NULL;
+struct crystalhd_adp* g_adp_info = NULL;
 struct crystalhd_user* g_bcm_USER = NULL;
-struct crystalhd_adp* g_bcm_adapter = NULL;
-
 IOPCIDevice* BroadcomCrystalHD::m_pciNub = NULL;
 
 // BSD ioctl API
@@ -206,21 +205,21 @@ BroadcomCrystalHD::start( IOService * provider )
     //IOLog("Starting: map PCI bars, bar0(%p), bar2(%p)\n", m_pci_bar0, m_pci_bar2);
 
     // Setup crystalhd adapter
-    chd_set_log_level(NULL, "debug");
-    g_bcm_adapter->pdev->vendor = m_pciNub->configRead16(kIOPCIConfigVendorID);
-    g_bcm_adapter->pdev->device = m_pciNub->configRead16(kIOPCIConfigDeviceID);
-    g_bcm_adapter->pdev->subsystem_vendor = m_pciNub->configRead16(kIOPCIConfigSubSystemVendorID);
-    g_bcm_adapter->pdev->subsystem_device = m_pciNub->configRead16(kIOPCIConfigSubSystemID);
+    g_adp_info->pdev->vendor = m_pciNub->configRead16(kIOPCIConfigVendorID);
+    g_adp_info->pdev->device = m_pciNub->configRead16(kIOPCIConfigDeviceID);
+    g_adp_info->pdev->subsystem_vendor = m_pciNub->configRead16(kIOPCIConfigSubSystemVendorID);
+    g_adp_info->pdev->subsystem_device = m_pciNub->configRead16(kIOPCIConfigSubSystemID);
+    //IOLog("Starting: g_adp_info(%p), g_adp_info->pdev(%p)\n", g_adp_info, g_adp_info->pdev);
 
-    g_bcm_adapter->pci_i2o_len  = m_pci_bar0->getLength();
-    g_bcm_adapter->i2o_addr = (uint8_t*)m_pci_bar0->getVirtualAddress();
-    g_bcm_adapter->pci_mem_len  = m_pci_bar2->getLength();
-    g_bcm_adapter->addr = (uint8_t*)m_pci_bar2->getVirtualAddress();
-    spin_lock_init(&g_bcm_adapter->lock);
+    g_adp_info->pci_i2o_len  = m_pci_bar0->getLength();
+    g_adp_info->i2o_addr = (uint8_t*)m_pci_bar0->getVirtualAddress();
+    g_adp_info->pci_mem_len  = m_pci_bar2->getLength();
+    g_adp_info->addr = (uint8_t*)m_pci_bar2->getVirtualAddress();
+    spin_lock_init(&g_adp_info->lock);
     // Setup crystalhd ioctl handler
-    chd_dec_init_chdev(g_bcm_adapter);
+    chd_dec_init_chdev(g_adp_info);
     
-    if ( (sts = crystalhd_setup_cmd_context(&g_bcm_adapter->cmds, g_bcm_adapter)) != BC_STS_SUCCESS){
+    if ( (sts = crystalhd_setup_cmd_context(&g_adp_info->cmds, g_adp_info)) != BC_STS_SUCCESS){
         IOLog("cmd setup :%d \n", sts);
         goto abortOpen;
     }
@@ -274,19 +273,19 @@ BroadcomCrystalHD::stop( IOService * provider )
     SAFE_RELEASE(m_pciNub);
 
     // shutdown BSD API handler
-    if ( (sts = crystalhd_delete_cmd_context(&g_bcm_adapter->cmds)) != BC_STS_SUCCESS){
+    if ( (sts = crystalhd_delete_cmd_context(&g_adp_info->cmds)) != BC_STS_SUCCESS){
         IOLog("crystalhd_delete_cmd_context :%d \n",sts);
     }
-    chd_dec_release_chdev(g_bcm_adapter);
+    chd_dec_release_chdev(g_adp_info);
     // chd_dec_release_chdev uses adp->lock so free lock after.
-    free_spin_lock(g_bcm_adapter->lock);
+    free_spin_lock(&g_adp_info->lock);
     // free BSD device mode.
     bsd_destroy_device();
 	
     g_bcm_dma_info->flushCollection();
     SAFE_RELEASE(g_bcm_dma_info);
     
-	PMstop();
+    PMstop();
     super::stop( provider );
 }
 
@@ -315,8 +314,8 @@ BroadcomCrystalHD::getCommandGate(void)
 void
 BroadcomCrystalHD::interruptOccured(IOInterruptEventSource *sender, int count)
 {
-    if (g_bcm_adapter) {
-      crystalhd_cmd_interrupt(&g_bcm_adapter->cmds);
+    if (g_adp_info) {
+      crystalhd_cmd_interrupt(&g_adp_info->cmds);
     }
 }
 
@@ -337,29 +336,23 @@ BroadcomCrystalHD::bsd_create_device(void)
     m_cdev_node = NULL;
 
     do {
-        m_Names = OSDictionary::withCapacity(4);
-        m_DEVs = (BroadcomCrystalHD**)IOMalloc(m_LastMinor * sizeof(m_DEVs[0]));
-        g_bcm_adapter = (struct crystalhd_adp*)IOMalloc(sizeof(*g_bcm_adapter));
         m_bds_lock = IOLockAlloc();
+        m_Names = OSDictionary::withCapacity(4);
+        m_DEVs  = (BroadcomCrystalHD**)IOMalloc(m_LastMinor * sizeof(m_DEVs[0]));
+        g_adp_info = (struct crystalhd_adp*)IOMalloc(sizeof(struct crystalhd_adp));
 
-        if (!m_bds_lock || !g_bcm_adapter || !m_DEVs || !m_Names) {
+        if (!m_bds_lock || !g_adp_info || !m_DEVs || !m_Names) {
             IOLog("BroadcomCrystalHD::chd_create_device didn't initialize\n");
             io_return = kIOReturnNoMemory;
             break;
         }
-
-        g_bcm_adapter->pdev = (struct pci_dev*)IOMalloc(sizeof(struct pci_dev));
-        if (!g_bcm_adapter->pdev) {
-          IOFree(g_bcm_adapter, sizeof(*g_bcm_adapter));
-          IOLog("BroadcomCrystalHD::chd_create_device didn't initialize\n");
-          io_return = kIOReturnNoMemory;
-          break;
-        }
-
-        bzero(g_bcm_adapter,sizeof(*g_bcm_adapter));
-        bzero(g_bcm_adapter->pdev, sizeof(struct pci_dev));
+        bzero(g_adp_info, sizeof(struct crystalhd_adp));
         bzero(m_DEVs, m_LastMinor * sizeof(m_DEVs[0]));
         IOLockInit(m_bds_lock);
+
+        g_adp_info->pdev = &m_pci_dev;
+        bzero(g_adp_info->pdev, sizeof(struct pci_dev));
+
         m_Major = cdevsw_add(-1, &m_devsw);
         if (m_Major == (unsigned int)-1) {
             IOLog("BroadcomCrystalHD::cdevsw_add failed\n");
@@ -415,13 +408,9 @@ BroadcomCrystalHD::bsd_destroy_device(void)
         //IOLog("BroadcomCrystalHD::IOFree m_DEVs\n");
         IOFree(m_DEVs, m_LastMinor * sizeof(m_DEVs[0]));
     }
-    if (g_bcm_adapter->pdev) {
-        //IOLog("BroadcomCrystalHD::IOFree g_bcm_adapter->pdev\n");
-        IOFree(g_bcm_adapter->pdev, sizeof(*g_bcm_adapter->pdev));
-    }
-    if (g_bcm_adapter) {
-        //IOLog("BroadcomCrystalHD::IOFree g_bcm_adapter\n");
-        IOFree(g_bcm_adapter, sizeof(*g_bcm_adapter));
+    if (g_adp_info) {
+        //IOLog("BroadcomCrystalHD::IOFree g_adp_info\n");
+        IOFree(g_adp_info, sizeof(struct crystalhd_adp));
     }
     if (m_bds_lock) {
         IOLockFree(m_bds_lock);
@@ -500,9 +489,9 @@ BroadcomCrystalHD::bsd_get_device(dev_t dev)
 int
 bsd_open(dev_t dev, int flags, int devtype, struct proc *p)
 {
-    struct crystalhd_adp	*adp = g_bcm_adapter;
+    struct crystalhd_adp  *adp = g_adp_info;
     BC_STATUS             sts = BC_STS_SUCCESS;
-    struct crystalhd_user	*uc = NULL;
+    struct crystalhd_user *uc = NULL;
     int                   rc = 0;
 
     if(!adp) {
@@ -534,7 +523,7 @@ exitOpen:
 int
 bsd_close(dev_t dev, int flags, int devtype, struct proc *p)
 {
-    struct crystalhd_adp	*adp = g_bcm_adapter;
+    struct crystalhd_adp	*adp = g_adp_info;
     struct crystalhd_user *uc=NULL;
 
     if (!adp) {
@@ -565,10 +554,10 @@ bsd_ioctl(dev_t dev, u_long cmd, caddr_t data, int fflag, struct proc *p)
     // @param   data        Pointer to the data (if any it's a SUPDRVIOCTLDATA (kernel copy)).
     // @param   fflag       Flag saying we're a character device (like we didn't know already).
     // @param   p           The process issuing this request.
-    struct crystalhd_adp	*adp = g_bcm_adapter;
+    struct crystalhd_adp  *adp = g_adp_info;
     crystalhd_cmd_proc    cproc = NULL;
-    struct crystalhd_user	*uc = NULL;
-    user_addr_t           arg = NULL;
+    struct crystalhd_user *uc = NULL;
+    user_addr_t           ua = NULL;
     int                   error = -1;
     
     if (!adp) {
@@ -589,11 +578,11 @@ bsd_ioctl(dev_t dev, u_long cmd, caddr_t data, int fflag, struct proc *p)
 
     if (data) {
         BC_IOCTL_ARG *tmp = (BC_IOCTL_ARG*)data;
-        arg = tmp->user_address;
+        ua = tmp->user_address;
         //BCMLOG_ERR("DtsDrvCmd:ioctl 0x%x 0x%llX\n", (unsigned int)cmd, arg);
     }
     
-    error = chd_dec_api_cmd(adp, arg, uc->uid, cmd, cproc);
+    error = chd_dec_api_cmd(adp, ua, uc->uid, cmd, cproc);
 
 exitIoctl:
     return error;

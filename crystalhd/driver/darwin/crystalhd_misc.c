@@ -344,7 +344,7 @@ void crystalhd_delete_dioq(struct crystalhd_adp *adp, crystalhd_dioq_t *dioq)
 	} while (temp);
 	dioq->sig = 0;
 #ifdef __APPLE__
-	free_spin_lock(dioq->lock);
+	free_spin_lock(&dioq->lock);
 #endif
 	kfree(dioq);
 }

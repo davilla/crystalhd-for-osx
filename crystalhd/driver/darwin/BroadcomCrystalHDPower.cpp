@@ -40,7 +40,7 @@
 
 #include "crystalhd_lnx.h"
 
-extern struct crystalhd_adp* g_bcm_adapter;
+extern struct crystalhd_adp* g_adp_info;
 //**************************************************************************
 // POWER-MANAGEMENT CODE
 //***************************************************************************
@@ -267,14 +267,14 @@ void BroadcomCrystalHD::setPowerStateOff(void)
     // And beacuse of the response to this notification by all clients,
     // the controller driver is guaranteed to be disabled when this
     // function is called.
-    temp = chd_dec_alloc_iodata(g_bcm_adapter, false);
+    temp = chd_dec_alloc_iodata(g_adp_info, false);
     if (!temp) {
         IOLog("BroadcomCrystalHD: could not get ioctl data\n");
     }
 
-    crystalhd_suspend(&g_bcm_adapter->cmds, temp);
+    crystalhd_suspend(&g_adp_info->cmds, temp);
 
-    chd_dec_free_iodata(g_bcm_adapter, temp, false);
+    chd_dec_free_iodata(g_adp_info, temp, false);
 
     _pmPowerState = kPowerStateOff;
 
@@ -298,7 +298,7 @@ void BroadcomCrystalHD::setPowerStateOn(void)
     // Since the driver returned a non-acknowledgement when called at
     // setPowerState(), it sends an ACK to the policy-maker here to
     // indicate that our power state transition is complete.
-    crystalhd_resume(&g_bcm_adapter->cmds);
+    crystalhd_resume(&g_adp_info->cmds);
 
     _pmPowerState = kPowerStateOn;
 

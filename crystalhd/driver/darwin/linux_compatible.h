@@ -42,15 +42,13 @@
 #include <IOKit/IOLib.h>
 #include <IOKit/IOBufferMemoryDescriptor.h>
 
-#define UNUSED(expr) do { (void)(expr); } while (0)
-
 typedef unsigned char      u8;
 typedef unsigned short    u16;
 typedef unsigned int      u32;
 
 typedef IOPhysicalAddress dma_addr_t;
 typedef uint32_t          wait_queue_head_t;
-typedef IOLock            *spinlock_t;
+typedef IOLock*           spinlock_t;
 typedef uint32_t          gfp_t;
 #define GFP_KERNEL 1
 #define GFP_ATOMIC 1
@@ -78,16 +76,19 @@ typedef uint32_t          gfp_t;
 
 #define dev_info(dev, format, arg...) \
   if (dev) IOLog(format, ## arg)
+
+// fake Linux device struct
 struct device {
   void *dummy;
 };
 
+// fake Linux pci_dev struct
 struct pci_dev {
-  struct device dev;
   uint16_t vendor;
   uint16_t device;
   uint16_t subsystem_vendor;
   uint16_t subsystem_device;
+  struct device dev;
 };
 
 enum dma_data_direction {
@@ -106,31 +107,10 @@ struct scatterlist {
 #define copy_to_user(to,from,n) copyout(from, CAST_USER_ADDR_T(to), n)
 #define copy_from_user(to,from,n) copyin(CAST_USER_ADDR_T(from), to, n)
 
-// spinlock defs, note that we don't want to diddle the interrupt under OSX
-// so fake it.
-
-#define spin_lock_init(_lock)  \
-do{                       \
-	*_lock = IOLockAlloc(); \
-}while(0)
-
-#define free_spin_lock(_lock)   \
-do{				\
-	IOLockFree(_lock);      \
-	_lock = NULL;           \
-}while(0)
-
-#define spin_lock_irqsave(_lock,_flags)   \
-do{				\
-	_flags = 1;             \
-	IOLockLock(*_lock);     \
-}while(0)
-
-#define spin_unlock_irqrestore(_lock,_flags) \
-do{				\
-	IOLockUnlock(*_lock);   \
-	_flags = 0;             \
-}while(0)
+void spin_lock_init(spinlock_t *lock);
+void free_spin_lock(spinlock_t *lock);
+void spin_lock_irqsave(spinlock_t *lock, unsigned long flags);
+void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags);
 
 // FIXME: convert to inlines or defines later
 void udelay(unsigned int microseconds);

@@ -45,6 +45,29 @@ extern void *kern_os_malloc(size_t size);
 extern void  kern_os_free(void * addr);
 __END_DECLS
 
+void spin_lock_init(spinlock_t *lock)
+{
+  *lock = IOLockAlloc();
+}
+
+void free_spin_lock(spinlock_t *lock)
+{
+	IOLockFree(*lock);
+	lock = NULL;
+}
+void spin_lock_irqsave(spinlock_t *lock, unsigned long flags)
+{
+  // we don't diddle the interrupt under OSX so fake it.
+  flags = 1;
+	IOLockLock(*lock);
+}
+void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
+{
+  // we don't diddle the interrupt under OSX so fake it.
+  flags = 0;
+	IOLockUnlock(*lock);
+}
+
 uint64_t mach_jiffies(void)
 {
   uint64_t nanoseconds;
