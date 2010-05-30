@@ -260,7 +260,7 @@ BC_STATUS crystalhd_hw_setup_dma_rings(struct crystalhd_hw *hw)
 		return BC_STS_INV_ARG;
 	}
 
-	dev = (struct device*)&hw->adp->pdev->dev;
+	dev = &hw->adp->pdev->dev;
 
 	sts = crystalhd_hw_create_ioqs(hw);
 	if (sts != BC_STS_SUCCESS) {
@@ -628,7 +628,7 @@ BC_STATUS crystalhd_hw_post_tx(struct crystalhd_hw *hw, crystalhd_dio_req *ioreq
 		return BC_STS_INV_ARG;
 	}
 
-	dev = (struct device*)&hw->adp->pdev->dev;
+	dev = &hw->adp->pdev->dev;
 
 	/*
 	 * Since we hit code in busy condition very frequently,
@@ -741,7 +741,7 @@ BC_STATUS crystalhd_hw_add_cap_buffer(struct crystalhd_hw *hw,
 	tag = rpkt->pkt_tag;
 
 	sts = crystalhd_xlat_sgl_to_dma_desc(ioreq, &rpkt->desc_mem,
-					     &uv_desc_ix, (struct device *)&hw->adp->pdev->dev);
+					     &uv_desc_ix, &hw->adp->pdev->dev);
 	if (sts != BC_STS_SUCCESS)
 		return sts;
 

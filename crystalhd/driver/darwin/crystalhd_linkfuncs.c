@@ -490,7 +490,7 @@ bool crystalhd_link_start_device(struct crystalhd_hw *hw)
 	if (!hw)
 		return -EINVAL;
 
-	dev = (struct device *)&hw->adp->pdev->dev;
+	dev = &hw->adp->pdev->dev;
 
 	dev_dbg(dev, "Starting Crystal HD Device\n");
 
@@ -1012,7 +1012,7 @@ BC_STATUS crystalhd_link_stop_tx_dma_engine(struct crystalhd_hw *hw)
 
 	dma_cntrl = hw->pfnReadFPGARegister(hw->adp, MISC1_TX_SW_DESC_LIST_CTRL_STS);
 
-	dev = (struct device *)&hw->adp->pdev->dev;
+	dev = &hw->adp->pdev->dev;
 
 	dev_dbg(dev, "Stopping TX DMA Engine..\n");
 
@@ -1274,7 +1274,7 @@ void crystalhd_link_start_rx_dma_engine(struct crystalhd_hw *hw)
 
 void crystalhd_link_stop_rx_dma_engine(struct crystalhd_hw *hw)
 {
-	struct device *dev = (struct device *)&hw->adp->pdev->dev;
+	struct device *dev = &hw->adp->pdev->dev;
 	uint32_t dma_cntrl = 0, count = 30;
 	uint32_t l0y = 1, l0uv = 1, l1y = 1, l1uv = 1;
 
@@ -1350,7 +1350,7 @@ BC_STATUS crystalhd_link_hw_prog_rxdma(struct crystalhd_hw *hw,
 		return BC_STS_INV_ARG;
 	}
 
-	dev = (struct device *)&hw->adp->pdev->dev;
+	dev = &hw->adp->pdev->dev;
 
 	if (hw->rx_list_post_index >= DMA_ENGINE_CNT) {
 		dev_err(dev, "List Out Of bounds %x\n", hw->rx_list_post_index);
@@ -1807,7 +1807,7 @@ BC_STATUS crystalhd_link_download_fw(struct crystalhd_hw *hw,
 		return BC_STS_INV_ARG;
 	}
 
-	dev = (struct device *)&hw->adp->pdev->dev;
+	dev = &hw->adp->pdev->dev;
 
 	dev_dbg(dev, "%s entered\n", __func__);
 
@@ -1906,7 +1906,7 @@ BC_STATUS crystalhd_link_do_fw_cmd(struct crystalhd_hw *hw, BC_FW_CMD *fw_cmd)
 		return BC_STS_INV_ARG;
 	}
 
-	dev = (struct device *)&hw->adp->pdev->dev;
+	dev = &hw->adp->pdev->dev;
 
 	dev_dbg(dev, "%s entered\n", __func__);
 

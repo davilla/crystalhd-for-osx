@@ -78,9 +78,12 @@ typedef uint32_t          gfp_t;
 
 #define dev_info(dev, format, arg...) \
   if (dev) IOLog(format, ## arg)
+struct device {
+  void *dummy;
+};
 
 struct pci_dev {
-  void *dev;
+  struct device dev;
   uint16_t vendor;
   uint16_t device;
   uint16_t subsystem_vendor;
