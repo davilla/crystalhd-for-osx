@@ -68,16 +68,16 @@ void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
 	IOLockUnlock(*lock);
 }
 
-uint64_t mach_jiffies(void)
+unsigned long mach_jiffies(void)
 {
   uint64_t nanoseconds;
   absolutetime_to_nanoseconds(mach_absolute_time(), &nanoseconds);
-  return(nanoseconds);
+  return(nanoseconds/10000);
 }
 
-uint64_t msecs_to_jiffies(uint32_t msecs)
+unsigned long msecs_to_mach_jiffies(uint32_t msecs)
 {
-  return( (uint64_t)(msecs * 1000000));
+  return(msecs * 100);
 }
 
 void udelay(unsigned int microseconds)

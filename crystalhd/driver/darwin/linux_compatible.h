@@ -117,9 +117,10 @@ void udelay(unsigned int microseconds);
 unsigned long msleep_interruptible(unsigned int msecs);
 
 #define jiffies mach_jiffies()
+#define msecs_to_jiffies msecs_to_mach_jiffies
 #define time_after_eq(a,b) ( (a) - (b) >= 0 )
-uint64_t mach_jiffies(void);
-uint64_t msecs_to_jiffies(uint32_t msecs);
+unsigned long mach_jiffies(void);
+unsigned long msecs_to_mach_jiffies(uint32_t msecs);
 
 // FIXME: convert to inlines or defines later
 unsigned long readl(void *addr);
