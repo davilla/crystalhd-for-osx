@@ -60,28 +60,19 @@ struct crystalhd_adp {
 	char			name[32];
 	struct pci_dev		*pdev;
 
-#ifndef __APPLE__
 	unsigned long		pci_mem_start;
 	uint32_t		pci_mem_len;
-	void			*addr;
+	uint8_t			*addr;
 
 	unsigned long		pci_i2o_start;
 	uint32_t		pci_i2o_len;
-	void			*i2o_addr;
+	uint8_t			*i2o_addr;
 
 	unsigned int		drv_data;
 	unsigned int		dmabits;	/* 32 | 64 */
 	unsigned int		registered;
 	unsigned int		present;
 	unsigned int		msi;
-#else
-	IOByteCount		pci_mem_len;
-	uint8_t       *addr;
-	//IOVirtualAddress	addr;
-	IOByteCount		pci_i2o_len;
-	//IOVirtualAddress	i2o_addr;
-	uint8_t       *i2o_addr;
-#endif
 
 	spinlock_t		lock;
 

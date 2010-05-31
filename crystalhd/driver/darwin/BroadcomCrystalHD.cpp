@@ -205,16 +205,27 @@ BroadcomCrystalHD::start( IOService * provider )
     //IOLog("Starting: map PCI bars, bar0(%p), bar2(%p)\n", m_pci_bar0, m_pci_bar2);
 
     // Setup crystalhd adapter
+    
     g_adp_info->pdev->vendor = m_pciNub->configRead16(kIOPCIConfigVendorID);
     g_adp_info->pdev->device = m_pciNub->configRead16(kIOPCIConfigDeviceID);
     g_adp_info->pdev->subsystem_vendor = m_pciNub->configRead16(kIOPCIConfigSubSystemVendorID);
     g_adp_info->pdev->subsystem_device = m_pciNub->configRead16(kIOPCIConfigSubSystemID);
-    //IOLog("Starting: g_adp_info(%p), g_adp_info->pdev(%p)\n", g_adp_info, g_adp_info->pdev);
 
-    g_adp_info->pci_i2o_len  = m_pci_bar0->getLength();
+    g_adp_info->pci_i2o_start = 0;
+    g_adp_info->pci_i2o_len = m_pci_bar0->getLength();
     g_adp_info->i2o_addr = (uint8_t*)m_pci_bar0->getVirtualAddress();
-    g_adp_info->pci_mem_len  = m_pci_bar2->getLength();
+
+    g_adp_info->pci_mem_start = 0;
+    g_adp_info->pci_mem_len = m_pci_bar2->getLength();
     g_adp_info->addr = (uint8_t*)m_pci_bar2->getVirtualAddress();
+
+    // none of this matters, we just do it for completeness
+		g_adp_info->drv_data = 0;
+		g_adp_info->dmabits = 32;
+    g_adp_info->registered = 1;
+    g_adp_info->present = 1;
+    g_adp_info->msi = 1;
+
     spin_lock_init(&g_adp_info->lock);
     // Setup crystalhd ioctl handler
     chd_dec_init_chdev(g_adp_info);
