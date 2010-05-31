@@ -262,6 +262,7 @@ void BroadcomCrystalHD::setPowerStateOff(void)
 {
     crystalhd_ioctl_data *temp;
 
+    IOLog("BroadcomCrystalHD::setPowerStateOff\n");
     // At this point, all clients have been notified of the driver's
     // imminent transition to a power state that renders it "unusable".
     // And beacuse of the response to this notification by all clients,
@@ -295,6 +296,7 @@ void BroadcomCrystalHD::setPowerStateOff(void)
 
 void BroadcomCrystalHD::setPowerStateOn(void)
 {
+    IOLog("BroadcomCrystalHD::setPowerStateOn\n");
     // Since the driver returned a non-acknowledgement when called at
     // setPowerState(), it sends an ACK to the policy-maker here to
     // indicate that our power state transition is complete.
