@@ -224,7 +224,7 @@ extern void crystalhd_delete_dioq(struct crystalhd_adp *, crystalhd_dioq_t *);
 extern BC_STATUS crystalhd_dioq_add(crystalhd_dioq_t *ioq, void *data, bool wake, uint32_t tag);
 extern void *crystalhd_dioq_fetch(crystalhd_dioq_t *ioq);
 extern void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq, uint32_t tag);
-extern void *crystalhd_dioq_fetch_wait(void *, uint32_t , uint32_t *);
+extern void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint32_t *sig_pend);
 
 #define crystalhd_dioq_count(_ioq)	((_ioq) ? _ioq->count : 0)
 
