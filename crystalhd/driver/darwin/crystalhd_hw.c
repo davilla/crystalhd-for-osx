@@ -27,8 +27,6 @@
 #include <linux/delay.h>
 #include <linux/device.h>
 #include <asm/tsc.h>
-#else
-#include <IOKit/IODMACommand.h>
 #endif
 #include "crystalhd_lnx.h"
 
