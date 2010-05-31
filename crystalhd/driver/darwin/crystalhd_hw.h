@@ -121,6 +121,32 @@ typedef enum _list_sts_ {
 	rx_uv_mask		= 0x0000FF00,
 
 } list_sts;
+#ifdef __APPLE__
+inline _list_sts_ operator|(_list_sts_ a, _list_sts_ b) {
+  return _list_sts_(int(a) | int(b));
+}
+inline _list_sts_& operator|=(_list_sts_& a, _list_sts_ b) {
+  a = a | b;
+  return a;
+}
+inline _list_sts_ operator&(_list_sts_ a, _list_sts_ b) {
+  return _list_sts_(int(a) & int(b));
+}
+inline _list_sts_& operator&=(_list_sts_& a, _list_sts_ b) {
+  a = a & b;
+  return a;
+}
+inline _list_sts_ operator^(_list_sts_ a, _list_sts_ b) {
+  return _list_sts_(int(a) ^ int(b));
+}
+inline _list_sts_& operator^=(_list_sts_& a, _list_sts_ b) {
+  a = a ^ b;
+  return a;
+}
+inline _list_sts_ operator~(_list_sts_ a) {
+  return _list_sts_(~int(a));
+}
+#endif
 
 typedef struct _tx_dma_pkt_ {
 	dma_desc_mem		desc_mem;
@@ -225,11 +251,7 @@ struct crystalhd_hw {
 	/* Rx DMA Engine Specific Locks */
 	spinlock_t		rx_lock;
 	uint32_t		rx_list_post_index;
-#ifndef __APPLE__
 	list_sts		rx_list_sts[DMA_ENGINE_CNT];
-#else
-	uint32_t		rx_list_sts[DMA_ENGINE_CNT];            
-#endif
 	crystalhd_dioq_t	*rx_rdyq;
 	crystalhd_dioq_t	*rx_freeq;
 	crystalhd_dioq_t	*rx_actq;
