@@ -516,26 +516,25 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 			// Drop the picture if it is a repeated picture
 			r_pkt = (crystalhd_rx_dma_pkt*)crystalhd_dioq_fetch(ioq);
 			// If format change packet, then return with out checking anything
-			if(r_pkt->flags & (COMP_FLAG_PIB_VALID | COMP_FLAG_FMT_CHANGE))
+			if (r_pkt->flags & (COMP_FLAG_PIB_VALID | COMP_FLAG_FMT_CHANGE))
 				return r_pkt;
-			if(((struct crystalhd_hw *)hw)->adp->pdev->device == BC_PCI_DEVID_LINK)
-				picYcomp = link_GetRptDropParam(((struct crystalhd_hw *)hw)->PICHeight, ((struct crystalhd_hw *)hw)->PICWidth, (void *)r_pkt);
+			if(hw->adp->pdev->device == BC_PCI_DEVID_LINK)
+				picYcomp = link_GetRptDropParam(hw->PICHeight, hw->PICWidth, (void *)r_pkt);
 			else
 				dev_info(chd_get_device(),"FLEA NOT IMPLEMENTED YET\n");
-			if(!picYcomp || (picYcomp == ((struct crystalhd_hw *)hw)->LastPicNo) ||
-				(picYcomp == ((struct crystalhd_hw *)hw)->LastTwoPicNo)) {
+			if (!picYcomp || (picYcomp == hw->LastPicNo) || (picYcomp == hw->LastTwoPicNo)) {
 				//Discard picture
 				if(picYcomp != 0) {
-					((struct crystalhd_hw *)hw)->LastTwoPicNo = ((struct crystalhd_hw *)hw)->LastPicNo;
-					((struct crystalhd_hw *)hw)->LastPicNo = picYcomp;
+					hw->LastTwoPicNo = hw->LastPicNo;
+					hw->LastPicNo = picYcomp;
 				}
-				crystalhd_dioq_add(((struct crystalhd_hw *)hw)->rx_freeq, r_pkt, false, r_pkt->pkt_tag);
+				crystalhd_dioq_add(hw->rx_freeq, r_pkt, false, r_pkt->pkt_tag);
 				r_pkt = NULL;
 			} else {
-				if((picYcomp - ((struct crystalhd_hw *)hw)->LastPicNo) > 1)
-					dev_info(chd_get_device(), "MISSING %lu PICTURES\n", (picYcomp - ((struct crystalhd_hw *)hw)->LastPicNo));
-				((struct crystalhd_hw *)hw)->LastTwoPicNo = ((struct crystalhd_hw *)hw)->LastPicNo;
-				((struct crystalhd_hw *)hw)->LastPicNo = picYcomp;
+				if ((picYcomp - hw->LastPicNo) > 1)
+					dev_info(chd_get_device(), "MISSING %lu PICTURES\n", (picYcomp - hw->LastPicNo));
+				hw->LastTwoPicNo = hw->LastPicNo;
+				hw->LastPicNo = picYcomp;
 				return r_pkt;
 			}
 		} else if (rc == -EINTR) {
