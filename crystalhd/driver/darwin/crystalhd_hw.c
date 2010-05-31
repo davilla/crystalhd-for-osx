@@ -774,9 +774,9 @@ BC_STATUS crystalhd_hw_get_cap_buffer(struct crystalhd_hw *hw,
 	}
 
 #ifndef __APPLE__
-	rpkt = crystalhd_dioq_fetch_wait(hw->rx_rdyq, timeout, &sig_pending);
+	rpkt = crystalhd_dioq_fetch_wait(hw, timeout, &sig_pending);
 #else
-	rpkt = (crystalhd_rx_dma_pkt*)crystalhd_dioq_fetch_wait(hw->rx_rdyq, timeout, &sig_pending);
+	rpkt = (crystalhd_rx_dma_pkt*)crystalhd_dioq_fetch_wait(hw, timeout, &sig_pending);
 #endif
 	if((crystalhd_dioq_count(hw->rx_rdyq) < HW_RESUME_THRESHOLD) && hw->hw_pause_issued)
 	{
