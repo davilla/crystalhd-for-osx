@@ -475,14 +475,14 @@ void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq, uint32_t tag)
  * Return element from head if Q is not empty. Wait for new element
  * if Q is empty for Timeout seconds.
  */
-void *crystalhd_dioq_fetch_wait(void *hw, uint32_t to_secs, uint32_t *sig_pend)
+void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint32_t *sig_pend)
 {
 	struct device *dev = chd_get_device();
 	unsigned long flags = 0;
 	int rc = 0;
 
 	crystalhd_rx_dma_pkt *r_pkt = NULL;
-	crystalhd_dioq_t *ioq = ((struct crystalhd_hw *)hw)->rx_rdyq;
+	crystalhd_dioq_t *ioq = hw->rx_rdyq;
 	unsigned long picYcomp = 0;
 
 	unsigned long fetchTimeout = jiffies + msecs_to_jiffies(to_secs * 1000);
