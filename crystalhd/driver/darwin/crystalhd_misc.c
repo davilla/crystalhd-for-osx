@@ -496,7 +496,7 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 	int rc = 0;
 
 	crystalhd_rx_dma_pkt *r_pkt = NULL;
-  crystalhd_dioq_t *ioq = hw->rx_rdyq;
+	crystalhd_dioq_t *ioq = hw->rx_rdyq;
 	unsigned long picYcomp = 0;
 
 	unsigned long fetchTimeout = jiffies + msecs_to_jiffies(to_secs * 1000);
