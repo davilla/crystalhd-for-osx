@@ -245,7 +245,6 @@ BC_STATUS crystalhd_hw_close(struct crystalhd_hw *hw)
 
 BC_STATUS crystalhd_hw_setup_dma_rings(struct crystalhd_hw *hw)
 {
-	struct device *dev;
 	unsigned int i;
 	void *mem;
 	size_t mem_len;
@@ -258,11 +257,9 @@ BC_STATUS crystalhd_hw_setup_dma_rings(struct crystalhd_hw *hw)
 		return BC_STS_INV_ARG;
 	}
 
-	dev = &hw->adp->pdev->dev;
-
 	sts = crystalhd_hw_create_ioqs(hw);
 	if (sts != BC_STS_SUCCESS) {
-		dev_err(dev, "Failed to create IOQs..\n");
+		dev_err(&hw->adp->pdev->dev, "Failed to create IOQs..\n");
 		return sts;
 	}
 
@@ -273,7 +270,7 @@ BC_STATUS crystalhd_hw_setup_dma_rings(struct crystalhd_hw *hw)
 		if (mem) {
 			memset(mem, 0, mem_len);
 		} else {
-			dev_err(dev, "Insufficient Memory For TX\n");
+			dev_err(&hw->adp->pdev->dev, "Insufficient Memory For TX\n");
 			crystalhd_hw_free_dma_rings(hw);
 			return BC_STS_INSUFF_RES;
 		}
@@ -304,7 +301,7 @@ BC_STATUS crystalhd_hw_setup_dma_rings(struct crystalhd_hw *hw)
 		rpkt = (crystalhd_rx_dma_pkt*)kzalloc(sizeof(*rpkt), GFP_KERNEL);
 #endif
 		if (!rpkt) {
-			dev_err(dev, "Insufficient Memory For RX\n");
+			dev_err(&hw->adp->pdev->dev, "Insufficient Memory For RX\n");
 			crystalhd_hw_free_dma_rings(hw);
 			return BC_STS_INSUFF_RES;
 		}
@@ -313,7 +310,7 @@ BC_STATUS crystalhd_hw_setup_dma_rings(struct crystalhd_hw *hw)
 		if (mem) {
 			memset(mem, 0, mem_len);
 		} else {
-			dev_err(dev, "Insufficient Memory For RX\n");
+			dev_err(&hw->adp->pdev->dev, "Insufficient Memory For RX\n");
 			crystalhd_hw_free_dma_rings(hw);
 			return BC_STS_INSUFF_RES;
 		}
@@ -611,7 +608,6 @@ BC_STATUS crystalhd_hw_post_tx(struct crystalhd_hw *hw, crystalhd_dio_req *ioreq
 			     wait_queue_head_t *cb_event, uint32_t *list_id,
 			     uint8_t data_flags)
 {
-	struct device *dev;
 	tx_dma_pkt *tx_dma_packet = NULL;
 	uint32_t low_addr, high_addr;
 	addr_64 desc_addr;
@@ -625,8 +621,6 @@ BC_STATUS crystalhd_hw_post_tx(struct crystalhd_hw *hw, crystalhd_dio_req *ioreq
 		printk(KERN_ERR "%s: Invalid Arguments\n", __func__);
 		return BC_STS_INV_ARG;
 	}
-
-	dev = &hw->adp->pdev->dev;
 
 	/*
 	 * Since we hit code in busy condition very frequently,
@@ -645,18 +639,18 @@ BC_STATUS crystalhd_hw_post_tx(struct crystalhd_hw *hw, crystalhd_dio_req *ioreq
 	/* Get a list from TxFreeQ */
 	tx_dma_packet = (tx_dma_pkt *)crystalhd_dioq_fetch(hw->tx_freeq);
 	if (!tx_dma_packet) {
-		dev_err(dev, "No empty elements..\n");
+		dev_err(&hw->adp->pdev->dev, "No empty elements..\n");
 		return BC_STS_ERR_USAGE;
 	}
 
 	sts = crystalhd_xlat_sgl_to_dma_desc(ioreq,
 					     &tx_dma_packet->desc_mem,
-					     &dummy_index, dev);
+					     &dummy_index, &hw->adp->pdev->dev);
 	if (sts != BC_STS_SUCCESS) {
 		add_sts = crystalhd_dioq_add(hw->tx_freeq, tx_dma_packet,
 					   false, 0);
 		if (add_sts != BC_STS_SUCCESS)
-			dev_err(dev, "double fault..\n");
+			dev_err(&hw->adp->pdev->dev, "double fault..\n");
 
 		return sts;
 	}
