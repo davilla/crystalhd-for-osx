@@ -259,6 +259,31 @@ void pci_free_consistent(void *pdev, size_t size, void *vaddr, dma_addr_t dma_ha
 	}
 }
 
+int copy_from_mem_descriptor(void *dst, void *io_class, size_t offset, size_t size)
+{
+	IOMemoryDescriptor *mem_desc;
+	IODMACommand *dma_command;
+  IOByteCount bytes_read = 0;
+
+	dma_command = OSDynamicCast(IODMACommand, (OSMetaClassBase*)io_class);
+	if (!dma_command)
+		goto err_exit;
+	mem_desc = (IOMemoryDescriptor*)dma_command->getMemoryDescriptor();
+	if (!mem_desc)
+		goto err_exit;
+
+  bytes_read = mem_desc->readBytes(offset, dst, size);
+
+  if (bytes_read == size)
+    return 0;
+
+err_exit:
+  size = size - bytes_read;
+  bzero((uint8_t*)dst + size, size);
+
+  return size;
+}
+
 void* kzalloc(size_t size, gfp_t flags)
 {
 	void *mem = kern_os_malloc(size);

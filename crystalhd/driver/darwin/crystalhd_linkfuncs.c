@@ -669,7 +669,11 @@ bool link_GetPictureInfo(uint32_t picHeight, uint32_t picWidth, crystalhd_dio_re
 	dio->pib_va = kmalloc(2 * sizeof(BC_PIC_INFO_BLOCK) + 16, GFP_KERNEL); // since copy_from_user can sleep anyway
 	if(dio->pib_va == NULL)
 		goto getpictureinfo_err;
+#ifndef __APPLE__
 	res = copy_from_user(dio->pib_va, (void *)dio->uinfo.xfr_buff, 8);
+#else
+	res = copy_from_mem_descriptor(dio->pib_va, dio->io_class, 0, 8);
+#endif
 	if (res != 0)
 		goto getpictureinfo_err;
 
@@ -718,7 +722,11 @@ bool link_GetPictureInfo(uint32_t picHeight, uint32_t picWidth, crystalhd_dio_re
 		offset = (PicInfoLineNum * picWidth) + 4;
 	}
 
+#ifndef __APPLE__
 	res = copy_from_user(dio->pib_va, (void *)((uint8_t*)dio->uinfo.xfr_buff+offset), size);
+#else
+	res = copy_from_mem_descriptor(dio->pib_va, dio->io_class, offset, size);
+#endif
 	if (res != 0)
 		goto getpictureinfo_err;
 	pPicInfoLine = (PBC_PIC_INFO_BLOCK)(dio->pib_va);
@@ -754,7 +762,11 @@ bool link_GetPictureInfo(uint32_t picHeight, uint32_t picWidth, crystalhd_dio_re
 	else
 		offset = (PicInfoLineNum * picWidth);
 
+#ifndef __APPLE__
 	res = copy_from_user(dio->pib_va, (void *)((uint8_t*)dio->uinfo.xfr_buff+offset), 12);
+#else
+	res = copy_from_mem_descriptor(dio->pib_va, dio->io_class, offset, 12);
+#endif
 	if (res != 0)
 		goto getpictureinfo_err;
 	

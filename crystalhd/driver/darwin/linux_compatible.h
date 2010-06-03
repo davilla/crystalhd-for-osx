@@ -149,6 +149,8 @@ void pci_pool_destroy(struct pci_pool *pool);
 void *pci_alloc_consistent(void *pdev, size_t size, dma_addr_t *dma_handle);
 void pci_free_consistent(void *pdev, size_t size, void *vaddr, dma_addr_t dma_handle);
 
+int copy_from_mem_descriptor(void *dst, void *io_class, size_t offset, size_t size);
+
 // FIXME: convert to inlines or defines later
 void* kzalloc(size_t size, gfp_t flags);
 void* kmalloc(size_t size, gfp_t flags);
