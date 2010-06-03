@@ -29,12 +29,13 @@
 #ifndef _BCM_DRV_IF_PRIV_
 #define _BCM_DRV_IF_PRIV_
 #ifndef __APPLE__
+#include <semaphore.h>
 #include "bc_dts_glob_lnx.h"
 #else
+#include "linux_compatible.h"
 #include "bc_dts_glob_osx.h"
 #endif
 #include "libcrystalhd_parser.h"
-#include <semaphore.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -218,12 +219,12 @@ typedef struct _DTS_LIB_CONTEXT{
 	/* Proc Output Related */
 	BOOL			ProcOutPending;	/* To avoid muliple ProcOuts */
 	BOOL			CancelWaiting;	/* Notify FetchOut to signal */
-#ifndef __APPLE__
+//#ifndef __APPLE__
 	sem_t			CancelProcOut;	/* Cancel outstanding ProcOut Request */
-#else
-	sem_t			*CancelProcOut;	/* Cancel outstanding ProcOut Request */
-  char      CancelProcOutSEMName[64];
-#endif
+//#else
+//	sem_t			*CancelProcOut;	/* Cancel outstanding ProcOut Request */
+//  char      CancelProcOutSEMName[64];
+//#endif
 
 	/* pOutData is dedicated for ProcOut() use only. Every other
 	 * Interface should use the memory from IocData pool. This

@@ -39,6 +39,7 @@
 #include <sys/ioctl.h>
 #else
 #include <sys/time.h>
+#include "linux_compatible.h"
 #endif
 #include "7411d.h"
 #include "libcrystalhd_priv.h"
@@ -1079,21 +1080,7 @@ BC_STATUS DtsAllocMemPools(DTS_LIB_CONTEXT *Ctx)
 		return BC_STS_INSUFF_RES;
 	}
 
-#ifndef __APPLE__
 	ret = sem_init(&Ctx->CancelProcOut,0,0);
-#else
-	// OSX does not have un-named semaphores :(
-	static int semno = 0;
-	
-	sprintf(Ctx->CancelProcOutSEMName, "/link-sem-%d-%d", getpid(), semno++);
-	if ((Ctx->CancelProcOut = sem_open(Ctx->CancelProcOutSEMName, O_CREAT, 0600, 0)) != (sem_t*)SEM_FAILED) {
-		ret = 0;
-	} else {
-    	strcpy(Ctx->CancelProcOutSEMName, "");
-		Ctx->CancelProcOut = 0;
-		ret = -1;
-	}
-#endif
 	if(ret == -1) {
 		DebugLog_Trace(LDIL_DBG,"Unable to create event\n");
 		return BC_STS_INSUFF_RES;
@@ -1211,19 +1198,8 @@ void DtsReleaseMemPools(DTS_LIB_CONTEXT *Ctx)
 	if(Ctx->pOutData)
 		free(Ctx->pOutData);
 
-	// OSX does not have named sems so delete the created sem
-#ifndef __APPLE__
 	if(&Ctx->CancelProcOut)
 		sem_destroy(&Ctx->CancelProcOut);
-#else
-	if(Ctx->CancelProcOut) {
-    	sem_close(Ctx->CancelProcOut);
-    	Ctx->CancelProcOut = 0;
-    	sem_unlink(Ctx->CancelProcOutSEMName);
-    	strcpy(Ctx->CancelProcOutSEMName, "");
-  	}
-#endif
-
 
 	if(Ctx->MdataPoolPtr)
 		DtsDeleteMdataPool(Ctx);
@@ -1374,11 +1350,7 @@ BC_STATUS DtsFetchOutInterruptible(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, 
 		sts = BC_STS_IO_USER_ABORT;
 		DtsRelRxBuff(Ctx,&Ctx->pOutData->u.RxBuffs,FALSE);
 	}
-#ifndef __APPLE__
 	if(sem_post(&Ctx->CancelProcOut) == -1) {
-#else
-	if(sem_post(Ctx->CancelProcOut) == -1) {
-#endif
 		DebugLog_Trace(LDIL_DBG, "SetEvent for CancelProcOut Failed (Error)\n");
 	}
 	return sts;
@@ -1403,22 +1375,7 @@ BC_STATUS DtsCancelFetchOutInt(DTS_LIB_CONTEXT *Ctx)
 	ts.tv_sec=time(NULL)+(BC_PROC_OUTPUT_TIMEOUT/1000)+2;
         ts.tv_nsec=0;
 
-#ifndef __APPLE__
 	if(sem_timedwait(&Ctx->CancelProcOut,&ts)){
-#else
-	int				rc;
-  	do {
-    	// OSX does not have sem_timedwait :(
-		rc = sem_trywait(Ctx->CancelProcOut);
-		if ((rc == 0) || Ctx->CancelProcOut) {
-			break;
-		}
-		bc_sleep_ms(100);
-		DebugLog_Trace(LDIL_DBG,"DtsCancelFetchOutInt: ts.tv (secs) %d\n", (int)ts.tv_sec);
-	} while (time(NULL) < ts.tv_sec );
-	
-	if(rc) {
-#endif
 		if(errno == ETIMEDOUT){
 			DebugLog_Trace(LDIL_DBG,"DtsCancelFetchOutInt: TimeOut\n");
 			Ctx->CancelWaiting = 0;

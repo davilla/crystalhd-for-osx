@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		F5A1D7E411B71F59007F615D /* linux_compatible.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = linux_compatible.cpp; sourceTree = "<group>"; };
+		F5A1D7E511B71F59007F615D /* linux_compatible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = linux_compatible.h; sourceTree = "<group>"; };
 		F5C091E0115008BA0094A9B0 /* libcrystalhd_fwcmds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libcrystalhd_fwcmds.h; sourceTree = SOURCE_ROOT; };
 		F5C091E1115008BA0094A9B0 /* libcrystalhd_fwcmds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = libcrystalhd_fwcmds.cpp; sourceTree = SOURCE_ROOT; };
 		F5C091E2115008C20094A9B0 /* libcrystalhd_fwdiag_if.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libcrystalhd_fwdiag_if.h; sourceTree = SOURCE_ROOT; };
@@ -55,6 +57,8 @@
 				F5C091E7115008CE0094A9B0 /* libcrystalhd_int_if.cpp */,
 				F5C091E8115008D60094A9B0 /* libcrystalhd_priv.h */,
 				F5C091E9115008D60094A9B0 /* libcrystalhd_priv.cpp */,
+				F5A1D7E411B71F59007F615D /* linux_compatible.cpp */,
+				F5A1D7E511B71F59007F615D /* linux_compatible.h */,
 			);
 			name = source;
 			sourceTree = "<group>";
