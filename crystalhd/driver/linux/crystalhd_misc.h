@@ -37,7 +37,9 @@
 #include <linux/version.h>
 #include <linux/sched.h>
 #include <asm/system.h>
+
 #include "bc_dts_glob_lnx.h"
+struct crystalhd_hw; // forward declaration for the types
 
 /* Global element pool for all Queue management.
  * TX: Active = BC_TX_LIST_CNT, Free = BC_TX_LIST_CNT.
