@@ -489,20 +489,40 @@ void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq, uint32_t tag)
 void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint32_t *sig_pend)
 {
 	unsigned long flags = 0;
-	int rc = 0;
+	int rc = 0, count = to_secs * 10;
 
 	crystalhd_rx_dma_pkt *r_pkt = NULL;
 	crystalhd_dioq_t *ioq = hw->rx_rdyq;
+/*
 	unsigned long picYcomp = 0;
 
 	unsigned long fetchTimeout = jiffies + msecs_to_jiffies(to_secs * 1000);
-	
+*/
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG) || !to_secs || !sig_pend) {
 		dev_err(chd_get_device(), "%s: Invalid arg\n", __func__);
 		return r_pkt;
 	}
 
 	spin_lock_irqsave(&ioq->lock, flags);
+	while ((ioq->count == 0) && count) {
+		spin_unlock_irqrestore(&ioq->lock, flags);
+
+		crystalhd_wait_on_event(&ioq->event, (ioq->count > 0), 100, rc, 0);
+		if (rc == 0) {
+			goto out;
+		} else if (rc == -EINTR) {
+			dev_info(chd_get_device(), "Cancelling fetch wait\n");
+			*sig_pend = 1;
+			return r_pkt;
+		}
+		spin_lock_irqsave(&ioq->lock, flags);
+		count--;
+ 	}
+	spin_unlock_irqrestore(&ioq->lock, flags);
+
+out:
+	return crystalhd_dioq_fetch(ioq);
+/*
 	while (fetchTimeout >= jiffies) {
 		if(ioq->count == 0) {
 			spin_unlock_irqrestore(&ioq->lock, flags);
@@ -545,6 +565,7 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 	}
 	spin_unlock_irqrestore(&ioq->lock, flags);
 	return r_pkt;
+*/
 }
 
 #ifdef __APPLE__
