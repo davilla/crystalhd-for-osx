@@ -174,6 +174,7 @@ do{ \
 }while(0)
 
 #define crystalhd_set_event(ev)	thread_wakeup((event_t)ev)
+#define crystalhd_cancel_event(ev) thread_wakeup_with_result(&enabled, THREAD_INTERRUPTED)
 
 #define crystalhd_wait_on_event(ev, condition, timeout, ret, nosig) \
 do { \
