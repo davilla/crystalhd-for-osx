@@ -219,12 +219,7 @@ typedef struct _DTS_LIB_CONTEXT{
 	/* Proc Output Related */
 	BOOL			ProcOutPending;	/* To avoid muliple ProcOuts */
 	BOOL			CancelWaiting;	/* Notify FetchOut to signal */
-//#ifndef __APPLE__
 	sem_t			CancelProcOut;	/* Cancel outstanding ProcOut Request */
-//#else
-//	sem_t			*CancelProcOut;	/* Cancel outstanding ProcOut Request */
-//  char      CancelProcOutSEMName[64];
-//#endif
 
 	/* pOutData is dedicated for ProcOut() use only. Every other
 	 * Interface should use the memory from IocData pool. This

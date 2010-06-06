@@ -488,7 +488,6 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 
 	unsigned long fetchTimeout = jiffies + msecs_to_jiffies(to_secs * 1000);
 */
-	
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG) || !to_secs || !sig_pend) {
 		dev_err(dev, "%s: Invalid arg\n", __func__);
 		return r_pkt;

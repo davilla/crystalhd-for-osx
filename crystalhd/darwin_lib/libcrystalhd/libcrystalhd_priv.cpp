@@ -1350,6 +1350,7 @@ BC_STATUS DtsFetchOutInterruptible(DTS_LIB_CONTEXT *Ctx, BC_DTS_PROC_OUT *pOut, 
 		sts = BC_STS_IO_USER_ABORT;
 		DtsRelRxBuff(Ctx,&Ctx->pOutData->u.RxBuffs,FALSE);
 	}
+
 	if(sem_post(&Ctx->CancelProcOut) == -1) {
 		DebugLog_Trace(LDIL_DBG, "SetEvent for CancelProcOut Failed (Error)\n");
 	}

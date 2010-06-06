@@ -854,6 +854,8 @@ DtsOpenDecoder(
 	Ctx->bEOSCheck = FALSE;
 	Ctx->bEOS = FALSE;
 	Ctx->CapState = 0;
+	Ctx->picWidth = 0;
+	Ctx->picHeight = 0;
 	if(Ctx->SingleThreadedAppMode) {
 		Ctx->cpbBase = 0;
 		Ctx->cpbEnd = 0;
@@ -1034,7 +1036,7 @@ DtsSetVideoParams(
 	// SingleThreadedAppMode is bit 7 of OptFlags
 	if(OptFlags & 0x80) {
 		Ctx->SingleThreadedAppMode = 1;
-	// Hard code BD mode as well as max frame rate mode for Link
+		// Hard code BD mode as well as max frame rate mode for Link
 		Ctx->VidParams.OptFlags |= 0xD1;
 	}
 	else
@@ -1552,9 +1554,6 @@ DtsProcOutput(
 	/* Update Counters */
 	DtsUpdateOutStats(Ctx,pOut);
 
-	/* Update Counters */
-	DtsUpdateOutStats(Ctx,pOut);
-
 	/* We need to release the buffers even if we fail to copy..*/
 	stRel = DtsRelRxBuff(Ctx,&Ctx->pOutData->u.RxBuffs,FALSE);
 
@@ -1589,6 +1588,7 @@ DtsProcOutputNoCopy(
 	BC_STATUS	sts = BC_STS_SUCCESS;
 
 	DTS_LIB_CONTEXT		*Ctx = NULL;
+	uint32_t	savFlags=0;
 
 	DTS_GET_CTX(hDevice,Ctx);
 
@@ -1601,17 +1601,45 @@ DtsProcOutputNoCopy(
 	}else{
 		pOut->bPibEnc = FALSE;
 	}
+	savFlags = pOut->PoutFlags;
+	pOut->discCnt = 0;
 	pOut->b422Mode = Ctx->b422Mode;
 
-	while(1){
+	do
+	{
+		// If running in adobe mode and we are draining that make sure TX is still going
+		if (Ctx->SingleThreadedAppMode && Ctx->nPendFPBufInd != 0 && Ctx->FPDrain)
+			DtsSendData(hDevice, 0, 0, 0, 0);
 
-		if( (sts = DtsFetchOutInterruptible(Ctx,pOut,milliSecWait)) != BC_STS_SUCCESS){
-			DebugLog_Trace(LDIL_DBG,"DtsProcOutput: No Active Channels\n");
-				/* In case of a peek..*/
-			if((sts == BC_STS_TIMEOUT) && !(milliSecWait) ){
+		sts = DtsFetchOutInterruptible(Ctx, pOut, milliSecWait);
+		if(sts != BC_STS_SUCCESS)
+		{
+			if(sts == BC_STS_TIMEOUT)
+			{
+				if (Ctx->bEOSCheck == TRUE && Ctx->bEOS == FALSE)
+				{
+					if(milliSecWait)
+						Ctx->EOSCnt = BC_EOS_PIC_COUNT;
+					else
+						Ctx->EOSCnt ++;
+
+					if(Ctx->EOSCnt >= BC_EOS_PIC_COUNT)
+					{
+						/* Mark this picture as end of stream..*/
+						pOut->PicInfo.flags |= VDEC_FLAG_LAST_PICTURE;
+						Ctx->bEOS = TRUE;
+						DebugLog_Trace(LDIL_DBG,"HIT EOS with counter\n");
+					}
+				}
+
 				sts = BC_STS_NO_DATA;
-				break;
 			}
+			// Have to make sure EOS is returned correctly for FLEA
+			// In case of Flea the EOS picture has no data and hence the status will be STS_NO_DATA
+			if (pOut->PicInfo.flags & VDEC_FLAG_EOS)
+				pOut->PicInfo.flags |= (VDEC_FLAG_EOS | VDEC_FLAG_LAST_PICTURE);
+			DtsRelRxBuff(Ctx, &Ctx->pOutData->u.RxBuffs, TRUE);
+			return sts;
 		}
 
 		/*
@@ -1671,18 +1699,39 @@ DtsProcOutputNoCopy(
 		}
 
 #endif
-		/* Update Counters.. */
-		DtsUpdateOutStats(Ctx,pOut);
 
-		if( (sts == BC_STS_SUCCESS) && (pOut->PoutFlags & BC_POUT_FLAGS_FMT_CHANGE) ){
-			DtsRelRxBuff(Ctx,&Ctx->pOutData->u.RxBuffs,TRUE);
-			sts = BC_STS_FMT_CHANGE;
-			break;
+		Ctx->bEOS = FALSE;
+    /* Update Counters.. */
+    DtsUpdateOutStats(Ctx, pOut);
+
+		if (pOut->PoutFlags & BC_POUT_FLAGS_FMT_CHANGE) {
+			DtsUpdateVidParams(Ctx, pOut);
+
+			DtsRelRxBuff(Ctx, &Ctx->pOutData->u.RxBuffs, TRUE);	
+			return BC_STS_FMT_CHANGE;
 		}
 
-		if(pOut->DropFrames){
-			/* We need to release the buffers even if we fail to copy..*/
-			sts = DtsRelRxBuff(Ctx,&Ctx->pOutData->u.RxBuffs,FALSE);
+		if (Ctx->DevId == BC_PCI_DEVID_FLEA)
+		{
+			if (Ctx->bEOSCheck == TRUE && Ctx->bEOS == FALSE && (pOut->PicInfo.flags & VDEC_FLAG_EOS))
+			{
+				Ctx->bEOS = TRUE;
+				pOut->PicInfo.flags |= (VDEC_FLAG_LAST_PICTURE | VDEC_FLAG_EOS);
+			}
+		}
+		else
+		{
+			if (DtsCheckRptPic(Ctx, pOut) == TRUE)
+			{
+				DtsRelRxBuff(Ctx, &Ctx->pOutData->u.RxBuffs, FALSE);
+				DebugLog_Trace(LDIL_DBG,"repeated picture\n");
+				return BC_STS_NO_DATA;
+			}
+		}
+
+		if (pOut->DropFrames) {
+			/* We need to release the buffers even if we fail ..*/
+			sts = DtsRelRxBuff(Ctx, &Ctx->pOutData->u.RxBuffs, FALSE);
 
 			if(sts != BC_STS_SUCCESS)
 			{
@@ -1692,11 +1741,20 @@ DtsProcOutputNoCopy(
 			pOut->DropFrames--;
 			DebugLog_Trace(LDIL_DBG,"DtsProcOutput: Drop count.. %d\n", pOut->DropFrames);
 
+			/* Get back the original flags */
+			pOut->PoutFlags = savFlags;
+
+			// Added support for dropping of single pictures by Adobe FP
+			if(Ctx->SingleThreadedAppMode && (pOut->DropFrames == 0))
+			{
+				pOut->PicInfo.timeStamp = 0;
+				return BC_STS_SUCCESS;
+			}
 		}
 		else
 			break;
 
-	}
+	} while((pOut->DropFrames > 0));
 
 
 	return sts;

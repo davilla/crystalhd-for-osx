@@ -522,6 +522,7 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 
 out:
 	return crystalhd_dioq_fetch(ioq);
+
 /*
 	while (fetchTimeout >= jiffies) {
 		if(ioq->count == 0) {

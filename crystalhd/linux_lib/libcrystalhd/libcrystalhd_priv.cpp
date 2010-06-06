@@ -1186,7 +1186,6 @@ void DtsReleaseMemPools(DTS_LIB_CONTEXT *Ctx)
 	if(&Ctx->CancelProcOut)
 		sem_destroy(&Ctx->CancelProcOut);
 
-
 	if(Ctx->MdataPoolPtr)
 		DtsDeleteMdataPool(Ctx);
 
