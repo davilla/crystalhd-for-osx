@@ -11,8 +11,9 @@ BCGCC = g++
 
 ROOTDIR = ../..
 
-INCLUDES = -I./ -I/usr/include -I$(ROOTDIR)/include
+INCLUDES = -I$(ROOTDIR)/include
 INCLUDES += -I$(ROOTDIR)/include/link
+INCLUDES += -I$(ROOTDIR)/include/flea
 
 
 CPPFLAGS = -D__LINUX_USER__
