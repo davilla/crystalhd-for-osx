@@ -23,6 +23,141 @@
 		F5959CEB10F042CA004B58B3 /* version_lnx.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CEA10F042CA004B58B3 /* version_lnx.h */; };
 		F5959DAB10F052EE004B58B3 /* linux_compatible.c in Sources */ = {isa = PBXBuildFile; fileRef = F5959DA910F052EE004B58B3 /* linux_compatible.c */; };
 		F5959DAC10F052EE004B58B3 /* linux_compatible.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959DAA10F052EE004B58B3 /* linux_compatible.h */; };
+		F59AE39411CF1AE8000A28B3 /* crystalhd_flea_ddr.c in Sources */ = {isa = PBXBuildFile; fileRef = F59AE39011CF1AE8000A28B3 /* crystalhd_flea_ddr.c */; };
+		F59AE39511CF1AE8000A28B3 /* crystalhd_fleafuncs.c in Sources */ = {isa = PBXBuildFile; fileRef = F59AE39111CF1AE8000A28B3 /* crystalhd_fleafuncs.c */; };
+		F59AE39611CF1AE8000A28B3 /* crystalhd_flea_ddr.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE39211CF1AE8000A28B3 /* crystalhd_flea_ddr.h */; };
+		F59AE39711CF1AE8000A28B3 /* crystalhd_fleafuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE39311CF1AE8000A28B3 /* crystalhd_fleafuncs.h */; };
+		F59AE3BF11CF1C67000A28B3 /* crystalhd_flea_rdb.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3BD11CF1C67000A28B3 /* crystalhd_flea_rdb.h */; };
+		F59AE3C011CF1C67000A28B3 /* DriverFwShare.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3BE11CF1C67000A28B3 /* DriverFwShare.h */; };
+		F59AE44911CF1C76000A28B3 /* bchp.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3C811CF1C76000A28B3 /* bchp.h */; };
+		F59AE44A11CF1C76000A28B3 /* bchp_arm_uart.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3C911CF1C76000A28B3 /* bchp_arm_uart.h */; };
+		F59AE44B11CF1C76000A28B3 /* bchp_armcr4_bridge.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3CA11CF1C76000A28B3 /* bchp_armcr4_bridge.h */; };
+		F59AE44C11CF1C76000A28B3 /* bchp_armcr4_bridge_axi_slave.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3CB11CF1C76000A28B3 /* bchp_armcr4_bridge_axi_slave.h */; };
+		F59AE44D11CF1C76000A28B3 /* bchp_avd_block_avg_regs_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3CC11CF1C76000A28B3 /* bchp_avd_block_avg_regs_0.h */; };
+		F59AE44E11CF1C76000A28B3 /* bchp_avd_cache_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3CD11CF1C76000A28B3 /* bchp_avd_cache_0.h */; };
+		F59AE44F11CF1C76000A28B3 /* bchp_avd_gr_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3CE11CF1C76000A28B3 /* bchp_avd_gr_0.h */; };
+		F59AE45011CF1C76000A28B3 /* bchp_avd_intr2_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3CF11CF1C76000A28B3 /* bchp_avd_intr2_0.h */; };
+		F59AE45111CF1C76000A28B3 /* bchp_bop_aes.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3D011CF1C76000A28B3 /* bchp_bop_aes.h */; };
+		F59AE45211CF1C76000A28B3 /* bchp_bop_gr_bridge.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3D111CF1C76000A28B3 /* bchp_bop_gr_bridge.h */; };
+		F59AE45311CF1C76000A28B3 /* bchp_bvnt_gr_bridge.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3D211CF1C76000A28B3 /* bchp_bvnt_gr_bridge.h */; };
+		F59AE45411CF1C76000A28B3 /* bchp_bvnt_intr2.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3D311CF1C76000A28B3 /* bchp_bvnt_intr2.h */; };
+		F59AE45511CF1C76000A28B3 /* bchp_cce_rgr_bridge.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3D411CF1C76000A28B3 /* bchp_cce_rgr_bridge.h */; };
+		F59AE45611CF1C76000A28B3 /* bchp_clk.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3D511CF1C76000A28B3 /* bchp_clk.h */; };
+		F59AE45711CF1C76000A28B3 /* bchp_clk_gr.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3D611CF1C76000A28B3 /* bchp_clk_gr.h */; };
+		F59AE45811CF1C76000A28B3 /* bchp_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3D711CF1C76000A28B3 /* bchp_common.h */; };
+		F59AE45911CF1C76000A28B3 /* bchp_csc.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3D811CF1C76000A28B3 /* bchp_csc.h */; };
+		F59AE45A11CF1C76000A28B3 /* bchp_ddr23_ctl_regs_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3D911CF1C76000A28B3 /* bchp_ddr23_ctl_regs_0.h */; };
+		F59AE45B11CF1C76000A28B3 /* bchp_ddr23_phy_byte_lane_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3DA11CF1C76000A28B3 /* bchp_ddr23_phy_byte_lane_0.h */; };
+		F59AE45C11CF1C76000A28B3 /* bchp_ddr23_phy_byte_lane_1.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3DB11CF1C76000A28B3 /* bchp_ddr23_phy_byte_lane_1.h */; };
+		F59AE45D11CF1C76000A28B3 /* bchp_ddr23_phy_control_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3DC11CF1C76000A28B3 /* bchp_ddr23_phy_control_regs.h */; };
+		F59AE45E11CF1C76000A28B3 /* bchp_decode_cpuaux2_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3DD11CF1C76000A28B3 /* bchp_decode_cpuaux2_0.h */; };
+		F59AE45F11CF1C76000A28B3 /* bchp_decode_cpuaux_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3DE11CF1C76000A28B3 /* bchp_decode_cpuaux_0.h */; };
+		F59AE46011CF1C76000A28B3 /* bchp_decode_cpucore2_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3DF11CF1C76000A28B3 /* bchp_decode_cpucore2_0.h */; };
+		F59AE46111CF1C76000A28B3 /* bchp_decode_cpucore_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3E011CF1C76000A28B3 /* bchp_decode_cpucore_0.h */; };
+		F59AE46211CF1C76000A28B3 /* bchp_decode_cpudma2_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3E111CF1C76000A28B3 /* bchp_decode_cpudma2_0.h */; };
+		F59AE46311CF1C76000A28B3 /* bchp_decode_cpudma_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3E211CF1C76000A28B3 /* bchp_decode_cpudma_0.h */; };
+		F59AE46411CF1C76000A28B3 /* bchp_decode_cpudmem2_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3E311CF1C76000A28B3 /* bchp_decode_cpudmem2_0.h */; };
+		F59AE46511CF1C76000A28B3 /* bchp_decode_cpudmem_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3E411CF1C76000A28B3 /* bchp_decode_cpudmem_0.h */; };
+		F59AE46611CF1C76000A28B3 /* bchp_decode_cpuimem2_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3E511CF1C76000A28B3 /* bchp_decode_cpuimem2_0.h */; };
+		F59AE46711CF1C76000A28B3 /* bchp_decode_cpuimem_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3E611CF1C76000A28B3 /* bchp_decode_cpuimem_0.h */; };
+		F59AE46811CF1C76000A28B3 /* bchp_decode_cpuregs2_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3E711CF1C76000A28B3 /* bchp_decode_cpuregs2_0.h */; };
+		F59AE46911CF1C76000A28B3 /* bchp_decode_cpuregs_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3E811CF1C76000A28B3 /* bchp_decode_cpuregs_0.h */; };
+		F59AE46A11CF1C76000A28B3 /* bchp_decode_dblk_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3E911CF1C76000A28B3 /* bchp_decode_dblk_0.h */; };
+		F59AE46B11CF1C76000A28B3 /* bchp_decode_dmamem2_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3EA11CF1C76000A28B3 /* bchp_decode_dmamem2_0.h */; };
+		F59AE46C11CF1C76000A28B3 /* bchp_decode_dmamem_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3EB11CF1C76000A28B3 /* bchp_decode_dmamem_0.h */; };
+		F59AE46D11CF1C76000A28B3 /* bchp_decode_dqnt_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3EC11CF1C76000A28B3 /* bchp_decode_dqnt_0.h */; };
+		F59AE46E11CF1C76000A28B3 /* bchp_decode_dqnt_8x8_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3ED11CF1C76000A28B3 /* bchp_decode_dqnt_8x8_0.h */; };
+		F59AE46F11CF1C76000A28B3 /* bchp_decode_ind_sdram_regs2_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3EE11CF1C76000A28B3 /* bchp_decode_ind_sdram_regs2_0.h */; };
+		F59AE47011CF1C76000A28B3 /* bchp_decode_ind_sdram_regs_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3EF11CF1C76000A28B3 /* bchp_decode_ind_sdram_regs_0.h */; };
+		F59AE47111CF1C76000A28B3 /* bchp_decode_ip_shim_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3F011CF1C76000A28B3 /* bchp_decode_ip_shim_0.h */; };
+		F59AE47211CF1C76000A28B3 /* bchp_decode_main_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3F111CF1C76000A28B3 /* bchp_decode_main_0.h */; };
+		F59AE47311CF1C76000A28B3 /* bchp_decode_mb_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3F211CF1C76000A28B3 /* bchp_decode_mb_0.h */; };
+		F59AE47411CF1C76000A28B3 /* bchp_decode_mcom_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3F311CF1C76000A28B3 /* bchp_decode_mcom_0.h */; };
+		F59AE47511CF1C76000A28B3 /* bchp_decode_rvc_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3F411CF1C76000A28B3 /* bchp_decode_rvc_0.h */; };
+		F59AE47611CF1C76000A28B3 /* bchp_decode_sint_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3F511CF1C76000A28B3 /* bchp_decode_sint_0.h */; };
+		F59AE47711CF1C76000A28B3 /* bchp_decode_sint_oloop_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3F611CF1C76000A28B3 /* bchp_decode_sint_oloop_0.h */; };
+		F59AE47811CF1C76000A28B3 /* bchp_decode_spre_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3F711CF1C76000A28B3 /* bchp_decode_spre_0.h */; };
+		F59AE47911CF1C76000A28B3 /* bchp_decode_wprd_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3F811CF1C76000A28B3 /* bchp_decode_wprd_0.h */; };
+		F59AE47A11CF1C76000A28B3 /* bchp_decode_wptbl_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3F911CF1C76000A28B3 /* bchp_decode_wptbl_0.h */; };
+		F59AE47B11CF1C76000A28B3 /* bchp_decode_xfrm_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3FA11CF1C76000A28B3 /* bchp_decode_xfrm_0.h */; };
+		F59AE47C11CF1C76000A28B3 /* bchp_dnr.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3FB11CF1C76000A28B3 /* bchp_dnr.h */; };
+		F59AE47D11CF1C76000A28B3 /* bchp_gio.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3FC11CF1C76000A28B3 /* bchp_gio.h */; };
+		F59AE47E11CF1C76000A28B3 /* bchp_i2c.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3FD11CF1C76000A28B3 /* bchp_i2c.h */; };
+		F59AE47F11CF1C76000A28B3 /* bchp_i2c_gr_bridge.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3FE11CF1C76000A28B3 /* bchp_i2c_gr_bridge.h */; };
+		F59AE48011CF1C76000A28B3 /* bchp_int_id_irq0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE3FF11CF1C76000A28B3 /* bchp_int_id_irq0.h */; };
+		F59AE48111CF1C76000A28B3 /* bchp_int_id_timer.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40011CF1C76000A28B3 /* bchp_int_id_timer.h */; };
+		F59AE48211CF1C76000A28B3 /* bchp_int_id_xpt_pb0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40111CF1C76000A28B3 /* bchp_int_id_xpt_pb0.h */; };
+		F59AE48311CF1C76000A28B3 /* bchp_int_id_xpt_pb1.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40211CF1C76000A28B3 /* bchp_int_id_xpt_pb1.h */; };
+		F59AE48411CF1C76000A28B3 /* bchp_int_id_xpt_pb2.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40311CF1C76000A28B3 /* bchp_int_id_xpt_pb2.h */; };
+		F59AE48511CF1C76000A28B3 /* bchp_int_id_xpt_rave.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40411CF1C76000A28B3 /* bchp_int_id_xpt_rave.h */; };
+		F59AE48611CF1C76000A28B3 /* bchp_intr.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40511CF1C76000A28B3 /* bchp_intr.h */; };
+		F59AE48711CF1C76000A28B3 /* bchp_irq0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40611CF1C76000A28B3 /* bchp_irq0.h */; };
+		F59AE48811CF1C76000A28B3 /* bchp_irq1.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40711CF1C76000A28B3 /* bchp_irq1.h */; };
+		F59AE48911CF1C76000A28B3 /* bchp_l1_intr.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40811CF1C76000A28B3 /* bchp_l1_intr.h */; };
+		F59AE48A11CF1C76000A28B3 /* bchp_mdio.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40911CF1C76000A28B3 /* bchp_mdio.h */; };
+		F59AE48B11CF1C76000A28B3 /* bchp_mem_dma.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40A11CF1C76000A28B3 /* bchp_mem_dma.h */; };
+		F59AE48C11CF1C76000A28B3 /* bchp_mem_dma_secure.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40B11CF1C76000A28B3 /* bchp_mem_dma_secure.h */; };
+		F59AE48D11CF1C76000A28B3 /* bchp_mfd.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40C11CF1C76000A28B3 /* bchp_mfd.h */; };
+		F59AE48E11CF1C76000A28B3 /* bchp_misc1.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40D11CF1C76000A28B3 /* bchp_misc1.h */; };
+		F59AE48F11CF1C76000A28B3 /* bchp_misc2.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40E11CF1C76000A28B3 /* bchp_misc2.h */; };
+		F59AE49011CF1C76000A28B3 /* bchp_misc3.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE40F11CF1C76000A28B3 /* bchp_misc3.h */; };
+		F59AE49111CF1C76000A28B3 /* bchp_misc_gr_bridge.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41011CF1C76000A28B3 /* bchp_misc_gr_bridge.h */; };
+		F59AE49211CF1C76000A28B3 /* bchp_misc_perst.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41111CF1C76000A28B3 /* bchp_misc_perst.h */; };
+		F59AE49311CF1C76000A28B3 /* bchp_mmscram.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41211CF1C76000A28B3 /* bchp_mmscram.h */; };
+		F59AE49411CF1C76000A28B3 /* bchp_pcie_cfg.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41311CF1C76000A28B3 /* bchp_pcie_cfg.h */; };
+		F59AE49511CF1C76000A28B3 /* bchp_pcie_dll.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41411CF1C76000A28B3 /* bchp_pcie_dll.h */; };
+		F59AE49611CF1C76000A28B3 /* bchp_pcie_phy.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41511CF1C76000A28B3 /* bchp_pcie_phy.h */; };
+		F59AE49711CF1C76000A28B3 /* bchp_pcie_tl.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41611CF1C76000A28B3 /* bchp_pcie_tl.h */; };
+		F59AE49811CF1C76000A28B3 /* bchp_pm_l2.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41711CF1C76000A28B3 /* bchp_pm_l2.h */; };
+		F59AE49911CF1C76000A28B3 /* bchp_pri_arb_arc_l1_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41811CF1C76000A28B3 /* bchp_pri_arb_arc_l1_regs.h */; };
+		F59AE49A11CF1C76000A28B3 /* bchp_pri_arb_arch_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41911CF1C76000A28B3 /* bchp_pri_arb_arch_regs.h */; };
+		F59AE49B11CF1C76000A28B3 /* bchp_pri_arb_control_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41A11CF1C76000A28B3 /* bchp_pri_arb_control_regs.h */; };
+		F59AE49C11CF1C76000A28B3 /* bchp_pri_arb_mips_l2_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41B11CF1C76000A28B3 /* bchp_pri_arb_mips_l2_regs.h */; };
+		F59AE49D11CF1C76000A28B3 /* bchp_pri_arb_msa_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41C11CF1C76000A28B3 /* bchp_pri_arb_msa_regs.h */; };
+		F59AE49E11CF1C76000A28B3 /* bchp_pri_arb_sarch_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41D11CF1C76000A28B3 /* bchp_pri_arb_sarch_regs.h */; };
+		F59AE49F11CF1C76000A28B3 /* bchp_pri_arb_starch_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41E11CF1C76000A28B3 /* bchp_pri_arb_starch_regs.h */; };
+		F59AE4A011CF1C76000A28B3 /* bchp_pri_arb_trace_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE41F11CF1C76000A28B3 /* bchp_pri_arb_trace_regs.h */; };
+		F59AE4A111CF1C76000A28B3 /* bchp_pri_arb_wrch_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42011CF1C76000A28B3 /* bchp_pri_arb_wrch_regs.h */; };
+		F59AE4A211CF1C76000A28B3 /* bchp_pri_client_regs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42111CF1C76000A28B3 /* bchp_pri_client_regs.h */; };
+		F59AE4A311CF1C76000A28B3 /* bchp_pri_crit_l2_regs_1.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42211CF1C76000A28B3 /* bchp_pri_crit_l2_regs_1.h */; };
+		F59AE4A411CF1C76000A28B3 /* bchp_pri_crit_l2_regs_2.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42311CF1C76000A28B3 /* bchp_pri_crit_l2_regs_2.h */; };
+		F59AE4A511CF1C76000A28B3 /* bchp_pri_crit_l2_regs_3.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42411CF1C76000A28B3 /* bchp_pri_crit_l2_regs_3.h */; };
+		F59AE4A611CF1C76000A28B3 /* bchp_pri_rts_l2_regs_1.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42511CF1C76000A28B3 /* bchp_pri_rts_l2_regs_1.h */; };
+		F59AE4A711CF1C76000A28B3 /* bchp_pri_rts_l2_regs_2.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42611CF1C76000A28B3 /* bchp_pri_rts_l2_regs_2.h */; };
+		F59AE4A811CF1C76000A28B3 /* bchp_pri_rts_l2_regs_3.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42711CF1C76000A28B3 /* bchp_pri_rts_l2_regs_3.h */; };
+		F59AE4A911CF1C76000A28B3 /* bchp_reg_cabac2bins2_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42811CF1C76000A28B3 /* bchp_reg_cabac2bins2_0.h */; };
+		F59AE4AA11CF1C76000A28B3 /* bchp_reg_cabac2bins_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42911CF1C76000A28B3 /* bchp_reg_cabac2bins_0.h */; };
+		F59AE4AB11CF1C76000A28B3 /* bchp_scl_hd.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42A11CF1C76000A28B3 /* bchp_scl_hd.h */; };
+		F59AE4AC11CF1C76000A28B3 /* bchp_scrub_ctrl.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42B11CF1C76000A28B3 /* bchp_scrub_ctrl.h */; };
+		F59AE4AD11CF1C76000A28B3 /* bchp_sentinel.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42C11CF1C76000A28B3 /* bchp_sentinel.h */; };
+		F59AE4AE11CF1C76000A28B3 /* bchp_sharf_mem_dma0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42D11CF1C76000A28B3 /* bchp_sharf_mem_dma0.h */; };
+		F59AE4AF11CF1C76000A28B3 /* bchp_sharf_top.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42E11CF1C76000A28B3 /* bchp_sharf_top.h */; };
+		F59AE4B011CF1C76000A28B3 /* bchp_sun_gisb_arb.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE42F11CF1C76000A28B3 /* bchp_sun_gisb_arb.h */; };
+		F59AE4B111CF1C76000A28B3 /* bchp_sun_gisb_arb_sec.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43011CF1C76000A28B3 /* bchp_sun_gisb_arb_sec.h */; };
+		F59AE4B211CF1C76000A28B3 /* bchp_sun_l2.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43111CF1C76000A28B3 /* bchp_sun_l2.h */; };
+		F59AE4B311CF1C76000A28B3 /* bchp_sun_rg.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43211CF1C76000A28B3 /* bchp_sun_rg.h */; };
+		F59AE4B411CF1C76000A28B3 /* bchp_sun_rgr.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43311CF1C76000A28B3 /* bchp_sun_rgr.h */; };
+		F59AE4B511CF1C76000A28B3 /* bchp_sun_top_ctrl.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43411CF1C76000A28B3 /* bchp_sun_top_ctrl.h */; };
+		F59AE4B611CF1C76000A28B3 /* bchp_tgt_rgr_bridge.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43511CF1C76000A28B3 /* bchp_tgt_rgr_bridge.h */; };
+		F59AE4B711CF1C76000A28B3 /* bchp_timer.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43611CF1C76000A28B3 /* bchp_timer.h */; };
+		F59AE4B811CF1C76000A28B3 /* bchp_tmisc.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43711CF1C76000A28B3 /* bchp_tmisc.h */; };
+		F59AE4B911CF1C76000A28B3 /* bchp_trb_top.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43811CF1C76000A28B3 /* bchp_trb_top.h */; };
+		F59AE4BA11CF1C76000A28B3 /* bchp_triple_sec.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43911CF1C76000A28B3 /* bchp_triple_sec.h */; };
+		F59AE4BB11CF1C76000A28B3 /* bchp_vich_0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43A11CF1C76000A28B3 /* bchp_vich_0.h */; };
+		F59AE4BC11CF1C76000A28B3 /* bchp_wakeup_ctrl2.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43B11CF1C76000A28B3 /* bchp_wakeup_ctrl2.h */; };
+		F59AE4BD11CF1C76000A28B3 /* bchp_wrap_misc_gr_bridge.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43C11CF1C76000A28B3 /* bchp_wrap_misc_gr_bridge.h */; };
+		F59AE4BE11CF1C76000A28B3 /* bchp_wrap_misc_intr2.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43D11CF1C76000A28B3 /* bchp_wrap_misc_intr2.h */; };
+		F59AE4BF11CF1C76000A28B3 /* bchp_wrap_misc_secure_intr2.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43E11CF1C76000A28B3 /* bchp_wrap_misc_secure_intr2.h */; };
+		F59AE4C011CF1C76000A28B3 /* bchp_xpt_bus_if.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE43F11CF1C76000A28B3 /* bchp_xpt_bus_if.h */; };
+		F59AE4C111CF1C76000A28B3 /* bchp_xpt_fe.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE44011CF1C76000A28B3 /* bchp_xpt_fe.h */; };
+		F59AE4C211CF1C76000A28B3 /* bchp_xpt_gr.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE44111CF1C76000A28B3 /* bchp_xpt_gr.h */; };
+		F59AE4C311CF1C76000A28B3 /* bchp_xpt_pb0.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE44211CF1C76000A28B3 /* bchp_xpt_pb0.h */; };
+		F59AE4C411CF1C76000A28B3 /* bchp_xpt_pb1.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE44311CF1C76000A28B3 /* bchp_xpt_pb1.h */; };
+		F59AE4C511CF1C76000A28B3 /* bchp_xpt_pb2.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE44411CF1C76000A28B3 /* bchp_xpt_pb2.h */; };
+		F59AE4C611CF1C76000A28B3 /* bchp_xpt_pcroffset.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE44511CF1C76000A28B3 /* bchp_xpt_pcroffset.h */; };
+		F59AE4C711CF1C76000A28B3 /* bchp_xpt_rave.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE44611CF1C76000A28B3 /* bchp_xpt_rave.h */; };
+		F59AE4C811CF1C76000A28B3 /* bchp_xpt_xmemif.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE44711CF1C76000A28B3 /* bchp_xpt_xmemif.h */; };
+		F59AE4C911CF1C76000A28B3 /* bchp_xpt_xpu.h in Headers */ = {isa = PBXBuildFile; fileRef = F59AE44811CF1C76000A28B3 /* bchp_xpt_xpu.h */; };
 		F59D702910419DED00AD752F /* bc_dts_types.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D702610419DED00AD752F /* bc_dts_types.h */; };
 		F59D702A10419DED00AD752F /* bc_dts_defs.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D702710419DED00AD752F /* bc_dts_defs.h */; };
 		F59D702B10419DED00AD752F /* 7411d.h in Headers */ = {isa = PBXBuildFile; fileRef = F59D702810419DED00AD752F /* 7411d.h */; };
@@ -51,6 +186,141 @@
 		F5959CEA10F042CA004B58B3 /* version_lnx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = version_lnx.h; path = ../../include/version_lnx.h; sourceTree = SOURCE_ROOT; };
 		F5959DA910F052EE004B58B3 /* linux_compatible.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = linux_compatible.c; sourceTree = "<group>"; };
 		F5959DAA10F052EE004B58B3 /* linux_compatible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = linux_compatible.h; sourceTree = "<group>"; };
+		F59AE39011CF1AE8000A28B3 /* crystalhd_flea_ddr.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = crystalhd_flea_ddr.c; sourceTree = SOURCE_ROOT; };
+		F59AE39111CF1AE8000A28B3 /* crystalhd_fleafuncs.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = crystalhd_fleafuncs.c; sourceTree = SOURCE_ROOT; };
+		F59AE39211CF1AE8000A28B3 /* crystalhd_flea_ddr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crystalhd_flea_ddr.h; sourceTree = SOURCE_ROOT; };
+		F59AE39311CF1AE8000A28B3 /* crystalhd_fleafuncs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crystalhd_fleafuncs.h; sourceTree = SOURCE_ROOT; };
+		F59AE3BD11CF1C67000A28B3 /* crystalhd_flea_rdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crystalhd_flea_rdb.h; path = ../../include/flea/crystalhd_flea_rdb.h; sourceTree = SOURCE_ROOT; };
+		F59AE3BE11CF1C67000A28B3 /* DriverFwShare.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DriverFwShare.h; path = ../../include/flea/DriverFwShare.h; sourceTree = SOURCE_ROOT; };
+		F59AE3C811CF1C76000A28B3 /* bchp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp.h; sourceTree = SOURCE_ROOT; };
+		F59AE3C911CF1C76000A28B3 /* bchp_arm_uart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_arm_uart.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_arm_uart.h; sourceTree = SOURCE_ROOT; };
+		F59AE3CA11CF1C76000A28B3 /* bchp_armcr4_bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_armcr4_bridge.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_armcr4_bridge.h; sourceTree = SOURCE_ROOT; };
+		F59AE3CB11CF1C76000A28B3 /* bchp_armcr4_bridge_axi_slave.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_armcr4_bridge_axi_slave.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_armcr4_bridge_axi_slave.h; sourceTree = SOURCE_ROOT; };
+		F59AE3CC11CF1C76000A28B3 /* bchp_avd_block_avg_regs_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_avd_block_avg_regs_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_avd_block_avg_regs_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3CD11CF1C76000A28B3 /* bchp_avd_cache_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_avd_cache_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_avd_cache_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3CE11CF1C76000A28B3 /* bchp_avd_gr_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_avd_gr_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_avd_gr_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3CF11CF1C76000A28B3 /* bchp_avd_intr2_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_avd_intr2_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_avd_intr2_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3D011CF1C76000A28B3 /* bchp_bop_aes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_bop_aes.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_bop_aes.h; sourceTree = SOURCE_ROOT; };
+		F59AE3D111CF1C76000A28B3 /* bchp_bop_gr_bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_bop_gr_bridge.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_bop_gr_bridge.h; sourceTree = SOURCE_ROOT; };
+		F59AE3D211CF1C76000A28B3 /* bchp_bvnt_gr_bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_bvnt_gr_bridge.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_bvnt_gr_bridge.h; sourceTree = SOURCE_ROOT; };
+		F59AE3D311CF1C76000A28B3 /* bchp_bvnt_intr2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_bvnt_intr2.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_bvnt_intr2.h; sourceTree = SOURCE_ROOT; };
+		F59AE3D411CF1C76000A28B3 /* bchp_cce_rgr_bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_cce_rgr_bridge.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_cce_rgr_bridge.h; sourceTree = SOURCE_ROOT; };
+		F59AE3D511CF1C76000A28B3 /* bchp_clk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_clk.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_clk.h; sourceTree = SOURCE_ROOT; };
+		F59AE3D611CF1C76000A28B3 /* bchp_clk_gr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_clk_gr.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_clk_gr.h; sourceTree = SOURCE_ROOT; };
+		F59AE3D711CF1C76000A28B3 /* bchp_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_common.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_common.h; sourceTree = SOURCE_ROOT; };
+		F59AE3D811CF1C76000A28B3 /* bchp_csc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_csc.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_csc.h; sourceTree = SOURCE_ROOT; };
+		F59AE3D911CF1C76000A28B3 /* bchp_ddr23_ctl_regs_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_ddr23_ctl_regs_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_ddr23_ctl_regs_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3DA11CF1C76000A28B3 /* bchp_ddr23_phy_byte_lane_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_ddr23_phy_byte_lane_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_ddr23_phy_byte_lane_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3DB11CF1C76000A28B3 /* bchp_ddr23_phy_byte_lane_1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_ddr23_phy_byte_lane_1.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_ddr23_phy_byte_lane_1.h; sourceTree = SOURCE_ROOT; };
+		F59AE3DC11CF1C76000A28B3 /* bchp_ddr23_phy_control_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_ddr23_phy_control_regs.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_ddr23_phy_control_regs.h; sourceTree = SOURCE_ROOT; };
+		F59AE3DD11CF1C76000A28B3 /* bchp_decode_cpuaux2_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpuaux2_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpuaux2_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3DE11CF1C76000A28B3 /* bchp_decode_cpuaux_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpuaux_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpuaux_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3DF11CF1C76000A28B3 /* bchp_decode_cpucore2_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpucore2_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpucore2_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3E011CF1C76000A28B3 /* bchp_decode_cpucore_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpucore_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpucore_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3E111CF1C76000A28B3 /* bchp_decode_cpudma2_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpudma2_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpudma2_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3E211CF1C76000A28B3 /* bchp_decode_cpudma_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpudma_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpudma_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3E311CF1C76000A28B3 /* bchp_decode_cpudmem2_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpudmem2_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpudmem2_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3E411CF1C76000A28B3 /* bchp_decode_cpudmem_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpudmem_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpudmem_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3E511CF1C76000A28B3 /* bchp_decode_cpuimem2_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpuimem2_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpuimem2_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3E611CF1C76000A28B3 /* bchp_decode_cpuimem_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpuimem_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpuimem_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3E711CF1C76000A28B3 /* bchp_decode_cpuregs2_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpuregs2_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpuregs2_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3E811CF1C76000A28B3 /* bchp_decode_cpuregs_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_cpuregs_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_cpuregs_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3E911CF1C76000A28B3 /* bchp_decode_dblk_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_dblk_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_dblk_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3EA11CF1C76000A28B3 /* bchp_decode_dmamem2_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_dmamem2_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_dmamem2_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3EB11CF1C76000A28B3 /* bchp_decode_dmamem_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_dmamem_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_dmamem_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3EC11CF1C76000A28B3 /* bchp_decode_dqnt_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_dqnt_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_dqnt_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3ED11CF1C76000A28B3 /* bchp_decode_dqnt_8x8_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_dqnt_8x8_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_dqnt_8x8_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3EE11CF1C76000A28B3 /* bchp_decode_ind_sdram_regs2_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_ind_sdram_regs2_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_ind_sdram_regs2_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3EF11CF1C76000A28B3 /* bchp_decode_ind_sdram_regs_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_ind_sdram_regs_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_ind_sdram_regs_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3F011CF1C76000A28B3 /* bchp_decode_ip_shim_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_ip_shim_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_ip_shim_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3F111CF1C76000A28B3 /* bchp_decode_main_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_main_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_main_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3F211CF1C76000A28B3 /* bchp_decode_mb_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_mb_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_mb_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3F311CF1C76000A28B3 /* bchp_decode_mcom_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_mcom_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_mcom_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3F411CF1C76000A28B3 /* bchp_decode_rvc_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_rvc_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_rvc_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3F511CF1C76000A28B3 /* bchp_decode_sint_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_sint_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_sint_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3F611CF1C76000A28B3 /* bchp_decode_sint_oloop_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_sint_oloop_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_sint_oloop_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3F711CF1C76000A28B3 /* bchp_decode_spre_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_spre_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_spre_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3F811CF1C76000A28B3 /* bchp_decode_wprd_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_wprd_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_wprd_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3F911CF1C76000A28B3 /* bchp_decode_wptbl_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_wptbl_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_wptbl_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3FA11CF1C76000A28B3 /* bchp_decode_xfrm_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_decode_xfrm_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_decode_xfrm_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE3FB11CF1C76000A28B3 /* bchp_dnr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_dnr.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_dnr.h; sourceTree = SOURCE_ROOT; };
+		F59AE3FC11CF1C76000A28B3 /* bchp_gio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_gio.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_gio.h; sourceTree = SOURCE_ROOT; };
+		F59AE3FD11CF1C76000A28B3 /* bchp_i2c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_i2c.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_i2c.h; sourceTree = SOURCE_ROOT; };
+		F59AE3FE11CF1C76000A28B3 /* bchp_i2c_gr_bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_i2c_gr_bridge.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_i2c_gr_bridge.h; sourceTree = SOURCE_ROOT; };
+		F59AE3FF11CF1C76000A28B3 /* bchp_int_id_irq0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_int_id_irq0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_int_id_irq0.h; sourceTree = SOURCE_ROOT; };
+		F59AE40011CF1C76000A28B3 /* bchp_int_id_timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_int_id_timer.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_int_id_timer.h; sourceTree = SOURCE_ROOT; };
+		F59AE40111CF1C76000A28B3 /* bchp_int_id_xpt_pb0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_int_id_xpt_pb0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_int_id_xpt_pb0.h; sourceTree = SOURCE_ROOT; };
+		F59AE40211CF1C76000A28B3 /* bchp_int_id_xpt_pb1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_int_id_xpt_pb1.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_int_id_xpt_pb1.h; sourceTree = SOURCE_ROOT; };
+		F59AE40311CF1C76000A28B3 /* bchp_int_id_xpt_pb2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_int_id_xpt_pb2.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_int_id_xpt_pb2.h; sourceTree = SOURCE_ROOT; };
+		F59AE40411CF1C76000A28B3 /* bchp_int_id_xpt_rave.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_int_id_xpt_rave.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_int_id_xpt_rave.h; sourceTree = SOURCE_ROOT; };
+		F59AE40511CF1C76000A28B3 /* bchp_intr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_intr.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_intr.h; sourceTree = SOURCE_ROOT; };
+		F59AE40611CF1C76000A28B3 /* bchp_irq0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_irq0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_irq0.h; sourceTree = SOURCE_ROOT; };
+		F59AE40711CF1C76000A28B3 /* bchp_irq1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_irq1.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_irq1.h; sourceTree = SOURCE_ROOT; };
+		F59AE40811CF1C76000A28B3 /* bchp_l1_intr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_l1_intr.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_l1_intr.h; sourceTree = SOURCE_ROOT; };
+		F59AE40911CF1C76000A28B3 /* bchp_mdio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_mdio.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_mdio.h; sourceTree = SOURCE_ROOT; };
+		F59AE40A11CF1C76000A28B3 /* bchp_mem_dma.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_mem_dma.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_mem_dma.h; sourceTree = SOURCE_ROOT; };
+		F59AE40B11CF1C76000A28B3 /* bchp_mem_dma_secure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_mem_dma_secure.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_mem_dma_secure.h; sourceTree = SOURCE_ROOT; };
+		F59AE40C11CF1C76000A28B3 /* bchp_mfd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_mfd.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_mfd.h; sourceTree = SOURCE_ROOT; };
+		F59AE40D11CF1C76000A28B3 /* bchp_misc1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_misc1.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_misc1.h; sourceTree = SOURCE_ROOT; };
+		F59AE40E11CF1C76000A28B3 /* bchp_misc2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_misc2.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_misc2.h; sourceTree = SOURCE_ROOT; };
+		F59AE40F11CF1C76000A28B3 /* bchp_misc3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_misc3.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_misc3.h; sourceTree = SOURCE_ROOT; };
+		F59AE41011CF1C76000A28B3 /* bchp_misc_gr_bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_misc_gr_bridge.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_misc_gr_bridge.h; sourceTree = SOURCE_ROOT; };
+		F59AE41111CF1C76000A28B3 /* bchp_misc_perst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_misc_perst.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_misc_perst.h; sourceTree = SOURCE_ROOT; };
+		F59AE41211CF1C76000A28B3 /* bchp_mmscram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_mmscram.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_mmscram.h; sourceTree = SOURCE_ROOT; };
+		F59AE41311CF1C76000A28B3 /* bchp_pcie_cfg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pcie_cfg.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pcie_cfg.h; sourceTree = SOURCE_ROOT; };
+		F59AE41411CF1C76000A28B3 /* bchp_pcie_dll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pcie_dll.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pcie_dll.h; sourceTree = SOURCE_ROOT; };
+		F59AE41511CF1C76000A28B3 /* bchp_pcie_phy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pcie_phy.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pcie_phy.h; sourceTree = SOURCE_ROOT; };
+		F59AE41611CF1C76000A28B3 /* bchp_pcie_tl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pcie_tl.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pcie_tl.h; sourceTree = SOURCE_ROOT; };
+		F59AE41711CF1C76000A28B3 /* bchp_pm_l2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pm_l2.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pm_l2.h; sourceTree = SOURCE_ROOT; };
+		F59AE41811CF1C76000A28B3 /* bchp_pri_arb_arc_l1_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_arb_arc_l1_regs.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_arb_arc_l1_regs.h; sourceTree = SOURCE_ROOT; };
+		F59AE41911CF1C76000A28B3 /* bchp_pri_arb_arch_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_arb_arch_regs.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_arb_arch_regs.h; sourceTree = SOURCE_ROOT; };
+		F59AE41A11CF1C76000A28B3 /* bchp_pri_arb_control_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_arb_control_regs.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_arb_control_regs.h; sourceTree = SOURCE_ROOT; };
+		F59AE41B11CF1C76000A28B3 /* bchp_pri_arb_mips_l2_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_arb_mips_l2_regs.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_arb_mips_l2_regs.h; sourceTree = SOURCE_ROOT; };
+		F59AE41C11CF1C76000A28B3 /* bchp_pri_arb_msa_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_arb_msa_regs.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_arb_msa_regs.h; sourceTree = SOURCE_ROOT; };
+		F59AE41D11CF1C76000A28B3 /* bchp_pri_arb_sarch_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_arb_sarch_regs.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_arb_sarch_regs.h; sourceTree = SOURCE_ROOT; };
+		F59AE41E11CF1C76000A28B3 /* bchp_pri_arb_starch_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_arb_starch_regs.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_arb_starch_regs.h; sourceTree = SOURCE_ROOT; };
+		F59AE41F11CF1C76000A28B3 /* bchp_pri_arb_trace_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_arb_trace_regs.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_arb_trace_regs.h; sourceTree = SOURCE_ROOT; };
+		F59AE42011CF1C76000A28B3 /* bchp_pri_arb_wrch_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_arb_wrch_regs.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_arb_wrch_regs.h; sourceTree = SOURCE_ROOT; };
+		F59AE42111CF1C76000A28B3 /* bchp_pri_client_regs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_client_regs.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_client_regs.h; sourceTree = SOURCE_ROOT; };
+		F59AE42211CF1C76000A28B3 /* bchp_pri_crit_l2_regs_1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_crit_l2_regs_1.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_crit_l2_regs_1.h; sourceTree = SOURCE_ROOT; };
+		F59AE42311CF1C76000A28B3 /* bchp_pri_crit_l2_regs_2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_crit_l2_regs_2.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_crit_l2_regs_2.h; sourceTree = SOURCE_ROOT; };
+		F59AE42411CF1C76000A28B3 /* bchp_pri_crit_l2_regs_3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_crit_l2_regs_3.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_crit_l2_regs_3.h; sourceTree = SOURCE_ROOT; };
+		F59AE42511CF1C76000A28B3 /* bchp_pri_rts_l2_regs_1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_rts_l2_regs_1.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_rts_l2_regs_1.h; sourceTree = SOURCE_ROOT; };
+		F59AE42611CF1C76000A28B3 /* bchp_pri_rts_l2_regs_2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_rts_l2_regs_2.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_rts_l2_regs_2.h; sourceTree = SOURCE_ROOT; };
+		F59AE42711CF1C76000A28B3 /* bchp_pri_rts_l2_regs_3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_pri_rts_l2_regs_3.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_pri_rts_l2_regs_3.h; sourceTree = SOURCE_ROOT; };
+		F59AE42811CF1C76000A28B3 /* bchp_reg_cabac2bins2_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_reg_cabac2bins2_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_reg_cabac2bins2_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE42911CF1C76000A28B3 /* bchp_reg_cabac2bins_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_reg_cabac2bins_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_reg_cabac2bins_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE42A11CF1C76000A28B3 /* bchp_scl_hd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_scl_hd.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_scl_hd.h; sourceTree = SOURCE_ROOT; };
+		F59AE42B11CF1C76000A28B3 /* bchp_scrub_ctrl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_scrub_ctrl.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_scrub_ctrl.h; sourceTree = SOURCE_ROOT; };
+		F59AE42C11CF1C76000A28B3 /* bchp_sentinel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_sentinel.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_sentinel.h; sourceTree = SOURCE_ROOT; };
+		F59AE42D11CF1C76000A28B3 /* bchp_sharf_mem_dma0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_sharf_mem_dma0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_sharf_mem_dma0.h; sourceTree = SOURCE_ROOT; };
+		F59AE42E11CF1C76000A28B3 /* bchp_sharf_top.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_sharf_top.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_sharf_top.h; sourceTree = SOURCE_ROOT; };
+		F59AE42F11CF1C76000A28B3 /* bchp_sun_gisb_arb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_sun_gisb_arb.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_sun_gisb_arb.h; sourceTree = SOURCE_ROOT; };
+		F59AE43011CF1C76000A28B3 /* bchp_sun_gisb_arb_sec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_sun_gisb_arb_sec.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_sun_gisb_arb_sec.h; sourceTree = SOURCE_ROOT; };
+		F59AE43111CF1C76000A28B3 /* bchp_sun_l2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_sun_l2.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_sun_l2.h; sourceTree = SOURCE_ROOT; };
+		F59AE43211CF1C76000A28B3 /* bchp_sun_rg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_sun_rg.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_sun_rg.h; sourceTree = SOURCE_ROOT; };
+		F59AE43311CF1C76000A28B3 /* bchp_sun_rgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_sun_rgr.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_sun_rgr.h; sourceTree = SOURCE_ROOT; };
+		F59AE43411CF1C76000A28B3 /* bchp_sun_top_ctrl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_sun_top_ctrl.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_sun_top_ctrl.h; sourceTree = SOURCE_ROOT; };
+		F59AE43511CF1C76000A28B3 /* bchp_tgt_rgr_bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_tgt_rgr_bridge.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_tgt_rgr_bridge.h; sourceTree = SOURCE_ROOT; };
+		F59AE43611CF1C76000A28B3 /* bchp_timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_timer.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_timer.h; sourceTree = SOURCE_ROOT; };
+		F59AE43711CF1C76000A28B3 /* bchp_tmisc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_tmisc.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_tmisc.h; sourceTree = SOURCE_ROOT; };
+		F59AE43811CF1C76000A28B3 /* bchp_trb_top.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_trb_top.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_trb_top.h; sourceTree = SOURCE_ROOT; };
+		F59AE43911CF1C76000A28B3 /* bchp_triple_sec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_triple_sec.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_triple_sec.h; sourceTree = SOURCE_ROOT; };
+		F59AE43A11CF1C76000A28B3 /* bchp_vich_0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_vich_0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_vich_0.h; sourceTree = SOURCE_ROOT; };
+		F59AE43B11CF1C76000A28B3 /* bchp_wakeup_ctrl2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_wakeup_ctrl2.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_wakeup_ctrl2.h; sourceTree = SOURCE_ROOT; };
+		F59AE43C11CF1C76000A28B3 /* bchp_wrap_misc_gr_bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_wrap_misc_gr_bridge.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_wrap_misc_gr_bridge.h; sourceTree = SOURCE_ROOT; };
+		F59AE43D11CF1C76000A28B3 /* bchp_wrap_misc_intr2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_wrap_misc_intr2.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_wrap_misc_intr2.h; sourceTree = SOURCE_ROOT; };
+		F59AE43E11CF1C76000A28B3 /* bchp_wrap_misc_secure_intr2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_wrap_misc_secure_intr2.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_wrap_misc_secure_intr2.h; sourceTree = SOURCE_ROOT; };
+		F59AE43F11CF1C76000A28B3 /* bchp_xpt_bus_if.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_xpt_bus_if.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_xpt_bus_if.h; sourceTree = SOURCE_ROOT; };
+		F59AE44011CF1C76000A28B3 /* bchp_xpt_fe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_xpt_fe.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_xpt_fe.h; sourceTree = SOURCE_ROOT; };
+		F59AE44111CF1C76000A28B3 /* bchp_xpt_gr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_xpt_gr.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_xpt_gr.h; sourceTree = SOURCE_ROOT; };
+		F59AE44211CF1C76000A28B3 /* bchp_xpt_pb0.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_xpt_pb0.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_xpt_pb0.h; sourceTree = SOURCE_ROOT; };
+		F59AE44311CF1C76000A28B3 /* bchp_xpt_pb1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_xpt_pb1.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_xpt_pb1.h; sourceTree = SOURCE_ROOT; };
+		F59AE44411CF1C76000A28B3 /* bchp_xpt_pb2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_xpt_pb2.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_xpt_pb2.h; sourceTree = SOURCE_ROOT; };
+		F59AE44511CF1C76000A28B3 /* bchp_xpt_pcroffset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_xpt_pcroffset.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_xpt_pcroffset.h; sourceTree = SOURCE_ROOT; };
+		F59AE44611CF1C76000A28B3 /* bchp_xpt_rave.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_xpt_rave.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_xpt_rave.h; sourceTree = SOURCE_ROOT; };
+		F59AE44711CF1C76000A28B3 /* bchp_xpt_xmemif.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_xpt_xmemif.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_xpt_xmemif.h; sourceTree = SOURCE_ROOT; };
+		F59AE44811CF1C76000A28B3 /* bchp_xpt_xpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bchp_xpt_xpu.h; path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0/bchp_xpt_xpu.h; sourceTree = SOURCE_ROOT; };
 		F59D702610419DED00AD752F /* bc_dts_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_types.h; path = ../../include/bc_dts_types.h; sourceTree = SOURCE_ROOT; };
 		F59D702710419DED00AD752F /* bc_dts_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bc_dts_defs.h; path = ../../include/bc_dts_defs.h; sourceTree = SOURCE_ROOT; };
 		F59D702810419DED00AD752F /* 7411d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 7411d.h; path = ../../include/7411d.h; sourceTree = SOURCE_ROOT; };
@@ -108,6 +378,10 @@
 				F5959DAA10F052EE004B58B3 /* linux_compatible.h */,
 				F5959CAD10F03F8D004B58B3 /* crystalhd_cmds.c */,
 				F5959CAC10F03F8D004B58B3 /* crystalhd_cmds.h */,
+				F59AE39011CF1AE8000A28B3 /* crystalhd_flea_ddr.c */,
+				F59AE39211CF1AE8000A28B3 /* crystalhd_flea_ddr.h */,
+				F59AE39111CF1AE8000A28B3 /* crystalhd_fleafuncs.c */,
+				F59AE39311CF1AE8000A28B3 /* crystalhd_fleafuncs.h */,
 				F5959CAF10F03F8D004B58B3 /* crystalhd_fw_if.h */,
 				F5959CAE10F03F8D004B58B3 /* crystalhd_hw.c */,
 				F5959CAB10F03F8D004B58B3 /* crystalhd_hw.h */,
@@ -121,6 +395,207 @@
 			name = Source;
 			sourceTree = "<group>";
 		};
+		F59AE3B911CF1C46000A28B3 /* flea */ = {
+			isa = PBXGroup;
+			children = (
+				F59AE3C111CF1C76000A28B3 /* 70015 */,
+				F59AE3BD11CF1C67000A28B3 /* crystalhd_flea_rdb.h */,
+				F59AE3BE11CF1C67000A28B3 /* DriverFwShare.h */,
+			);
+			name = flea;
+			sourceTree = "<group>";
+		};
+		F59AE3C111CF1C76000A28B3 /* 70015 */ = {
+			isa = PBXGroup;
+			children = (
+				F59AE3C211CF1C76000A28B3 /* magnum */,
+			);
+			name = 70015;
+			path = ../../include/flea/70015;
+			sourceTree = SOURCE_ROOT;
+		};
+		F59AE3C211CF1C76000A28B3 /* magnum */ = {
+			isa = PBXGroup;
+			children = (
+				F59AE3C311CF1C76000A28B3 /* basemodules */,
+			);
+			name = magnum;
+			path = ../../include/flea/70015/magnum;
+			sourceTree = SOURCE_ROOT;
+		};
+		F59AE3C311CF1C76000A28B3 /* basemodules */ = {
+			isa = PBXGroup;
+			children = (
+				F59AE3C411CF1C76000A28B3 /* chp */,
+			);
+			name = basemodules;
+			path = ../../include/flea/70015/magnum/basemodules;
+			sourceTree = SOURCE_ROOT;
+		};
+		F59AE3C411CF1C76000A28B3 /* chp */ = {
+			isa = PBXGroup;
+			children = (
+				F59AE3C511CF1C76000A28B3 /* 70015 */,
+			);
+			name = chp;
+			path = ../../include/flea/70015/magnum/basemodules/chp;
+			sourceTree = SOURCE_ROOT;
+		};
+		F59AE3C511CF1C76000A28B3 /* 70015 */ = {
+			isa = PBXGroup;
+			children = (
+				F59AE3C611CF1C76000A28B3 /* rdb */,
+			);
+			name = 70015;
+			path = ../../include/flea/70015/magnum/basemodules/chp/70015;
+			sourceTree = SOURCE_ROOT;
+		};
+		F59AE3C611CF1C76000A28B3 /* rdb */ = {
+			isa = PBXGroup;
+			children = (
+				F59AE3C711CF1C76000A28B3 /* a0 */,
+			);
+			name = rdb;
+			path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb;
+			sourceTree = SOURCE_ROOT;
+		};
+		F59AE3C711CF1C76000A28B3 /* a0 */ = {
+			isa = PBXGroup;
+			children = (
+				F59AE3C811CF1C76000A28B3 /* bchp.h */,
+				F59AE3C911CF1C76000A28B3 /* bchp_arm_uart.h */,
+				F59AE3CA11CF1C76000A28B3 /* bchp_armcr4_bridge.h */,
+				F59AE3CB11CF1C76000A28B3 /* bchp_armcr4_bridge_axi_slave.h */,
+				F59AE3CC11CF1C76000A28B3 /* bchp_avd_block_avg_regs_0.h */,
+				F59AE3CD11CF1C76000A28B3 /* bchp_avd_cache_0.h */,
+				F59AE3CE11CF1C76000A28B3 /* bchp_avd_gr_0.h */,
+				F59AE3CF11CF1C76000A28B3 /* bchp_avd_intr2_0.h */,
+				F59AE3D011CF1C76000A28B3 /* bchp_bop_aes.h */,
+				F59AE3D111CF1C76000A28B3 /* bchp_bop_gr_bridge.h */,
+				F59AE3D211CF1C76000A28B3 /* bchp_bvnt_gr_bridge.h */,
+				F59AE3D311CF1C76000A28B3 /* bchp_bvnt_intr2.h */,
+				F59AE3D411CF1C76000A28B3 /* bchp_cce_rgr_bridge.h */,
+				F59AE3D511CF1C76000A28B3 /* bchp_clk.h */,
+				F59AE3D611CF1C76000A28B3 /* bchp_clk_gr.h */,
+				F59AE3D711CF1C76000A28B3 /* bchp_common.h */,
+				F59AE3D811CF1C76000A28B3 /* bchp_csc.h */,
+				F59AE3D911CF1C76000A28B3 /* bchp_ddr23_ctl_regs_0.h */,
+				F59AE3DA11CF1C76000A28B3 /* bchp_ddr23_phy_byte_lane_0.h */,
+				F59AE3DB11CF1C76000A28B3 /* bchp_ddr23_phy_byte_lane_1.h */,
+				F59AE3DC11CF1C76000A28B3 /* bchp_ddr23_phy_control_regs.h */,
+				F59AE3DD11CF1C76000A28B3 /* bchp_decode_cpuaux2_0.h */,
+				F59AE3DE11CF1C76000A28B3 /* bchp_decode_cpuaux_0.h */,
+				F59AE3DF11CF1C76000A28B3 /* bchp_decode_cpucore2_0.h */,
+				F59AE3E011CF1C76000A28B3 /* bchp_decode_cpucore_0.h */,
+				F59AE3E111CF1C76000A28B3 /* bchp_decode_cpudma2_0.h */,
+				F59AE3E211CF1C76000A28B3 /* bchp_decode_cpudma_0.h */,
+				F59AE3E311CF1C76000A28B3 /* bchp_decode_cpudmem2_0.h */,
+				F59AE3E411CF1C76000A28B3 /* bchp_decode_cpudmem_0.h */,
+				F59AE3E511CF1C76000A28B3 /* bchp_decode_cpuimem2_0.h */,
+				F59AE3E611CF1C76000A28B3 /* bchp_decode_cpuimem_0.h */,
+				F59AE3E711CF1C76000A28B3 /* bchp_decode_cpuregs2_0.h */,
+				F59AE3E811CF1C76000A28B3 /* bchp_decode_cpuregs_0.h */,
+				F59AE3E911CF1C76000A28B3 /* bchp_decode_dblk_0.h */,
+				F59AE3EA11CF1C76000A28B3 /* bchp_decode_dmamem2_0.h */,
+				F59AE3EB11CF1C76000A28B3 /* bchp_decode_dmamem_0.h */,
+				F59AE3EC11CF1C76000A28B3 /* bchp_decode_dqnt_0.h */,
+				F59AE3ED11CF1C76000A28B3 /* bchp_decode_dqnt_8x8_0.h */,
+				F59AE3EE11CF1C76000A28B3 /* bchp_decode_ind_sdram_regs2_0.h */,
+				F59AE3EF11CF1C76000A28B3 /* bchp_decode_ind_sdram_regs_0.h */,
+				F59AE3F011CF1C76000A28B3 /* bchp_decode_ip_shim_0.h */,
+				F59AE3F111CF1C76000A28B3 /* bchp_decode_main_0.h */,
+				F59AE3F211CF1C76000A28B3 /* bchp_decode_mb_0.h */,
+				F59AE3F311CF1C76000A28B3 /* bchp_decode_mcom_0.h */,
+				F59AE3F411CF1C76000A28B3 /* bchp_decode_rvc_0.h */,
+				F59AE3F511CF1C76000A28B3 /* bchp_decode_sint_0.h */,
+				F59AE3F611CF1C76000A28B3 /* bchp_decode_sint_oloop_0.h */,
+				F59AE3F711CF1C76000A28B3 /* bchp_decode_spre_0.h */,
+				F59AE3F811CF1C76000A28B3 /* bchp_decode_wprd_0.h */,
+				F59AE3F911CF1C76000A28B3 /* bchp_decode_wptbl_0.h */,
+				F59AE3FA11CF1C76000A28B3 /* bchp_decode_xfrm_0.h */,
+				F59AE3FB11CF1C76000A28B3 /* bchp_dnr.h */,
+				F59AE3FC11CF1C76000A28B3 /* bchp_gio.h */,
+				F59AE3FD11CF1C76000A28B3 /* bchp_i2c.h */,
+				F59AE3FE11CF1C76000A28B3 /* bchp_i2c_gr_bridge.h */,
+				F59AE3FF11CF1C76000A28B3 /* bchp_int_id_irq0.h */,
+				F59AE40011CF1C76000A28B3 /* bchp_int_id_timer.h */,
+				F59AE40111CF1C76000A28B3 /* bchp_int_id_xpt_pb0.h */,
+				F59AE40211CF1C76000A28B3 /* bchp_int_id_xpt_pb1.h */,
+				F59AE40311CF1C76000A28B3 /* bchp_int_id_xpt_pb2.h */,
+				F59AE40411CF1C76000A28B3 /* bchp_int_id_xpt_rave.h */,
+				F59AE40511CF1C76000A28B3 /* bchp_intr.h */,
+				F59AE40611CF1C76000A28B3 /* bchp_irq0.h */,
+				F59AE40711CF1C76000A28B3 /* bchp_irq1.h */,
+				F59AE40811CF1C76000A28B3 /* bchp_l1_intr.h */,
+				F59AE40911CF1C76000A28B3 /* bchp_mdio.h */,
+				F59AE40A11CF1C76000A28B3 /* bchp_mem_dma.h */,
+				F59AE40B11CF1C76000A28B3 /* bchp_mem_dma_secure.h */,
+				F59AE40C11CF1C76000A28B3 /* bchp_mfd.h */,
+				F59AE40D11CF1C76000A28B3 /* bchp_misc1.h */,
+				F59AE40E11CF1C76000A28B3 /* bchp_misc2.h */,
+				F59AE40F11CF1C76000A28B3 /* bchp_misc3.h */,
+				F59AE41011CF1C76000A28B3 /* bchp_misc_gr_bridge.h */,
+				F59AE41111CF1C76000A28B3 /* bchp_misc_perst.h */,
+				F59AE41211CF1C76000A28B3 /* bchp_mmscram.h */,
+				F59AE41311CF1C76000A28B3 /* bchp_pcie_cfg.h */,
+				F59AE41411CF1C76000A28B3 /* bchp_pcie_dll.h */,
+				F59AE41511CF1C76000A28B3 /* bchp_pcie_phy.h */,
+				F59AE41611CF1C76000A28B3 /* bchp_pcie_tl.h */,
+				F59AE41711CF1C76000A28B3 /* bchp_pm_l2.h */,
+				F59AE41811CF1C76000A28B3 /* bchp_pri_arb_arc_l1_regs.h */,
+				F59AE41911CF1C76000A28B3 /* bchp_pri_arb_arch_regs.h */,
+				F59AE41A11CF1C76000A28B3 /* bchp_pri_arb_control_regs.h */,
+				F59AE41B11CF1C76000A28B3 /* bchp_pri_arb_mips_l2_regs.h */,
+				F59AE41C11CF1C76000A28B3 /* bchp_pri_arb_msa_regs.h */,
+				F59AE41D11CF1C76000A28B3 /* bchp_pri_arb_sarch_regs.h */,
+				F59AE41E11CF1C76000A28B3 /* bchp_pri_arb_starch_regs.h */,
+				F59AE41F11CF1C76000A28B3 /* bchp_pri_arb_trace_regs.h */,
+				F59AE42011CF1C76000A28B3 /* bchp_pri_arb_wrch_regs.h */,
+				F59AE42111CF1C76000A28B3 /* bchp_pri_client_regs.h */,
+				F59AE42211CF1C76000A28B3 /* bchp_pri_crit_l2_regs_1.h */,
+				F59AE42311CF1C76000A28B3 /* bchp_pri_crit_l2_regs_2.h */,
+				F59AE42411CF1C76000A28B3 /* bchp_pri_crit_l2_regs_3.h */,
+				F59AE42511CF1C76000A28B3 /* bchp_pri_rts_l2_regs_1.h */,
+				F59AE42611CF1C76000A28B3 /* bchp_pri_rts_l2_regs_2.h */,
+				F59AE42711CF1C76000A28B3 /* bchp_pri_rts_l2_regs_3.h */,
+				F59AE42811CF1C76000A28B3 /* bchp_reg_cabac2bins2_0.h */,
+				F59AE42911CF1C76000A28B3 /* bchp_reg_cabac2bins_0.h */,
+				F59AE42A11CF1C76000A28B3 /* bchp_scl_hd.h */,
+				F59AE42B11CF1C76000A28B3 /* bchp_scrub_ctrl.h */,
+				F59AE42C11CF1C76000A28B3 /* bchp_sentinel.h */,
+				F59AE42D11CF1C76000A28B3 /* bchp_sharf_mem_dma0.h */,
+				F59AE42E11CF1C76000A28B3 /* bchp_sharf_top.h */,
+				F59AE42F11CF1C76000A28B3 /* bchp_sun_gisb_arb.h */,
+				F59AE43011CF1C76000A28B3 /* bchp_sun_gisb_arb_sec.h */,
+				F59AE43111CF1C76000A28B3 /* bchp_sun_l2.h */,
+				F59AE43211CF1C76000A28B3 /* bchp_sun_rg.h */,
+				F59AE43311CF1C76000A28B3 /* bchp_sun_rgr.h */,
+				F59AE43411CF1C76000A28B3 /* bchp_sun_top_ctrl.h */,
+				F59AE43511CF1C76000A28B3 /* bchp_tgt_rgr_bridge.h */,
+				F59AE43611CF1C76000A28B3 /* bchp_timer.h */,
+				F59AE43711CF1C76000A28B3 /* bchp_tmisc.h */,
+				F59AE43811CF1C76000A28B3 /* bchp_trb_top.h */,
+				F59AE43911CF1C76000A28B3 /* bchp_triple_sec.h */,
+				F59AE43A11CF1C76000A28B3 /* bchp_vich_0.h */,
+				F59AE43B11CF1C76000A28B3 /* bchp_wakeup_ctrl2.h */,
+				F59AE43C11CF1C76000A28B3 /* bchp_wrap_misc_gr_bridge.h */,
+				F59AE43D11CF1C76000A28B3 /* bchp_wrap_misc_intr2.h */,
+				F59AE43E11CF1C76000A28B3 /* bchp_wrap_misc_secure_intr2.h */,
+				F59AE43F11CF1C76000A28B3 /* bchp_xpt_bus_if.h */,
+				F59AE44011CF1C76000A28B3 /* bchp_xpt_fe.h */,
+				F59AE44111CF1C76000A28B3 /* bchp_xpt_gr.h */,
+				F59AE44211CF1C76000A28B3 /* bchp_xpt_pb0.h */,
+				F59AE44311CF1C76000A28B3 /* bchp_xpt_pb1.h */,
+				F59AE44411CF1C76000A28B3 /* bchp_xpt_pb2.h */,
+				F59AE44511CF1C76000A28B3 /* bchp_xpt_pcroffset.h */,
+				F59AE44611CF1C76000A28B3 /* bchp_xpt_rave.h */,
+				F59AE44711CF1C76000A28B3 /* bchp_xpt_xmemif.h */,
+				F59AE44811CF1C76000A28B3 /* bchp_xpt_xpu.h */,
+			);
+			name = a0;
+			path = ../../include/flea/70015/magnum/basemodules/chp/70015/rdb/a0;
+			sourceTree = SOURCE_ROOT;
+		};
 		F59D701F10419DD500AD752F /* Include */ = {
 			isa = PBXGroup;
 			children = (
@@ -130,6 +605,7 @@
 				F59D702710419DED00AD752F /* bc_dts_defs.h */,
 				F59D702810419DED00AD752F /* 7411d.h */,
 				F59D703110419E0800AD752F /* link */,
+				F59AE3B911CF1C46000A28B3 /* flea */,
 			);
 			name = Include;
 			sourceTree = "<group>";
@@ -166,6 +642,139 @@
 				F5959CEB10F042CA004B58B3 /* version_lnx.h in Headers */,
 				F5959DAC10F052EE004B58B3 /* linux_compatible.h in Headers */,
 				F50FE3F511B1931600C8B8CD /* crystalhd_linkfuncs.h in Headers */,
+				F59AE39611CF1AE8000A28B3 /* crystalhd_flea_ddr.h in Headers */,
+				F59AE39711CF1AE8000A28B3 /* crystalhd_fleafuncs.h in Headers */,
+				F59AE3BF11CF1C67000A28B3 /* crystalhd_flea_rdb.h in Headers */,
+				F59AE3C011CF1C67000A28B3 /* DriverFwShare.h in Headers */,
+				F59AE44911CF1C76000A28B3 /* bchp.h in Headers */,
+				F59AE44A11CF1C76000A28B3 /* bchp_arm_uart.h in Headers */,
+				F59AE44B11CF1C76000A28B3 /* bchp_armcr4_bridge.h in Headers */,
+				F59AE44C11CF1C76000A28B3 /* bchp_armcr4_bridge_axi_slave.h in Headers */,
+				F59AE44D11CF1C76000A28B3 /* bchp_avd_block_avg_regs_0.h in Headers */,
+				F59AE44E11CF1C76000A28B3 /* bchp_avd_cache_0.h in Headers */,
+				F59AE44F11CF1C76000A28B3 /* bchp_avd_gr_0.h in Headers */,
+				F59AE45011CF1C76000A28B3 /* bchp_avd_intr2_0.h in Headers */,
+				F59AE45111CF1C76000A28B3 /* bchp_bop_aes.h in Headers */,
+				F59AE45211CF1C76000A28B3 /* bchp_bop_gr_bridge.h in Headers */,
+				F59AE45311CF1C76000A28B3 /* bchp_bvnt_gr_bridge.h in Headers */,
+				F59AE45411CF1C76000A28B3 /* bchp_bvnt_intr2.h in Headers */,
+				F59AE45511CF1C76000A28B3 /* bchp_cce_rgr_bridge.h in Headers */,
+				F59AE45611CF1C76000A28B3 /* bchp_clk.h in Headers */,
+				F59AE45711CF1C76000A28B3 /* bchp_clk_gr.h in Headers */,
+				F59AE45811CF1C76000A28B3 /* bchp_common.h in Headers */,
+				F59AE45911CF1C76000A28B3 /* bchp_csc.h in Headers */,
+				F59AE45A11CF1C76000A28B3 /* bchp_ddr23_ctl_regs_0.h in Headers */,
+				F59AE45B11CF1C76000A28B3 /* bchp_ddr23_phy_byte_lane_0.h in Headers */,
+				F59AE45C11CF1C76000A28B3 /* bchp_ddr23_phy_byte_lane_1.h in Headers */,
+				F59AE45D11CF1C76000A28B3 /* bchp_ddr23_phy_control_regs.h in Headers */,
+				F59AE45E11CF1C76000A28B3 /* bchp_decode_cpuaux2_0.h in Headers */,
+				F59AE45F11CF1C76000A28B3 /* bchp_decode_cpuaux_0.h in Headers */,
+				F59AE46011CF1C76000A28B3 /* bchp_decode_cpucore2_0.h in Headers */,
+				F59AE46111CF1C76000A28B3 /* bchp_decode_cpucore_0.h in Headers */,
+				F59AE46211CF1C76000A28B3 /* bchp_decode_cpudma2_0.h in Headers */,
+				F59AE46311CF1C76000A28B3 /* bchp_decode_cpudma_0.h in Headers */,
+				F59AE46411CF1C76000A28B3 /* bchp_decode_cpudmem2_0.h in Headers */,
+				F59AE46511CF1C76000A28B3 /* bchp_decode_cpudmem_0.h in Headers */,
+				F59AE46611CF1C76000A28B3 /* bchp_decode_cpuimem2_0.h in Headers */,
+				F59AE46711CF1C76000A28B3 /* bchp_decode_cpuimem_0.h in Headers */,
+				F59AE46811CF1C76000A28B3 /* bchp_decode_cpuregs2_0.h in Headers */,
+				F59AE46911CF1C76000A28B3 /* bchp_decode_cpuregs_0.h in Headers */,
+				F59AE46A11CF1C76000A28B3 /* bchp_decode_dblk_0.h in Headers */,
+				F59AE46B11CF1C76000A28B3 /* bchp_decode_dmamem2_0.h in Headers */,
+				F59AE46C11CF1C76000A28B3 /* bchp_decode_dmamem_0.h in Headers */,
+				F59AE46D11CF1C76000A28B3 /* bchp_decode_dqnt_0.h in Headers */,
+				F59AE46E11CF1C76000A28B3 /* bchp_decode_dqnt_8x8_0.h in Headers */,
+				F59AE46F11CF1C76000A28B3 /* bchp_decode_ind_sdram_regs2_0.h in Headers */,
+				F59AE47011CF1C76000A28B3 /* bchp_decode_ind_sdram_regs_0.h in Headers */,
+				F59AE47111CF1C76000A28B3 /* bchp_decode_ip_shim_0.h in Headers */,
+				F59AE47211CF1C76000A28B3 /* bchp_decode_main_0.h in Headers */,
+				F59AE47311CF1C76000A28B3 /* bchp_decode_mb_0.h in Headers */,
+				F59AE47411CF1C76000A28B3 /* bchp_decode_mcom_0.h in Headers */,
+				F59AE47511CF1C76000A28B3 /* bchp_decode_rvc_0.h in Headers */,
+				F59AE47611CF1C76000A28B3 /* bchp_decode_sint_0.h in Headers */,
+				F59AE47711CF1C76000A28B3 /* bchp_decode_sint_oloop_0.h in Headers */,
+				F59AE47811CF1C76000A28B3 /* bchp_decode_spre_0.h in Headers */,
+				F59AE47911CF1C76000A28B3 /* bchp_decode_wprd_0.h in Headers */,
+				F59AE47A11CF1C76000A28B3 /* bchp_decode_wptbl_0.h in Headers */,
+				F59AE47B11CF1C76000A28B3 /* bchp_decode_xfrm_0.h in Headers */,
+				F59AE47C11CF1C76000A28B3 /* bchp_dnr.h in Headers */,
+				F59AE47D11CF1C76000A28B3 /* bchp_gio.h in Headers */,
+				F59AE47E11CF1C76000A28B3 /* bchp_i2c.h in Headers */,
+				F59AE47F11CF1C76000A28B3 /* bchp_i2c_gr_bridge.h in Headers */,
+				F59AE48011CF1C76000A28B3 /* bchp_int_id_irq0.h in Headers */,
+				F59AE48111CF1C76000A28B3 /* bchp_int_id_timer.h in Headers */,
+				F59AE48211CF1C76000A28B3 /* bchp_int_id_xpt_pb0.h in Headers */,
+				F59AE48311CF1C76000A28B3 /* bchp_int_id_xpt_pb1.h in Headers */,
+				F59AE48411CF1C76000A28B3 /* bchp_int_id_xpt_pb2.h in Headers */,
+				F59AE48511CF1C76000A28B3 /* bchp_int_id_xpt_rave.h in Headers */,
+				F59AE48611CF1C76000A28B3 /* bchp_intr.h in Headers */,
+				F59AE48711CF1C76000A28B3 /* bchp_irq0.h in Headers */,
+				F59AE48811CF1C76000A28B3 /* bchp_irq1.h in Headers */,
+				F59AE48911CF1C76000A28B3 /* bchp_l1_intr.h in Headers */,
+				F59AE48A11CF1C76000A28B3 /* bchp_mdio.h in Headers */,
+				F59AE48B11CF1C76000A28B3 /* bchp_mem_dma.h in Headers */,
+				F59AE48C11CF1C76000A28B3 /* bchp_mem_dma_secure.h in Headers */,
+				F59AE48D11CF1C76000A28B3 /* bchp_mfd.h in Headers */,
+				F59AE48E11CF1C76000A28B3 /* bchp_misc1.h in Headers */,
+				F59AE48F11CF1C76000A28B3 /* bchp_misc2.h in Headers */,
+				F59AE49011CF1C76000A28B3 /* bchp_misc3.h in Headers */,
+				F59AE49111CF1C76000A28B3 /* bchp_misc_gr_bridge.h in Headers */,
+				F59AE49211CF1C76000A28B3 /* bchp_misc_perst.h in Headers */,
+				F59AE49311CF1C76000A28B3 /* bchp_mmscram.h in Headers */,
+				F59AE49411CF1C76000A28B3 /* bchp_pcie_cfg.h in Headers */,
+				F59AE49511CF1C76000A28B3 /* bchp_pcie_dll.h in Headers */,
+				F59AE49611CF1C76000A28B3 /* bchp_pcie_phy.h in Headers */,
+				F59AE49711CF1C76000A28B3 /* bchp_pcie_tl.h in Headers */,
+				F59AE49811CF1C76000A28B3 /* bchp_pm_l2.h in Headers */,
+				F59AE49911CF1C76000A28B3 /* bchp_pri_arb_arc_l1_regs.h in Headers */,
+				F59AE49A11CF1C76000A28B3 /* bchp_pri_arb_arch_regs.h in Headers */,
+				F59AE49B11CF1C76000A28B3 /* bchp_pri_arb_control_regs.h in Headers */,
+				F59AE49C11CF1C76000A28B3 /* bchp_pri_arb_mips_l2_regs.h in Headers */,
+				F59AE49D11CF1C76000A28B3 /* bchp_pri_arb_msa_regs.h in Headers */,
+				F59AE49E11CF1C76000A28B3 /* bchp_pri_arb_sarch_regs.h in Headers */,
+				F59AE49F11CF1C76000A28B3 /* bchp_pri_arb_starch_regs.h in Headers */,
+				F59AE4A011CF1C76000A28B3 /* bchp_pri_arb_trace_regs.h in Headers */,
+				F59AE4A111CF1C76000A28B3 /* bchp_pri_arb_wrch_regs.h in Headers */,
+				F59AE4A211CF1C76000A28B3 /* bchp_pri_client_regs.h in Headers */,
+				F59AE4A311CF1C76000A28B3 /* bchp_pri_crit_l2_regs_1.h in Headers */,
+				F59AE4A411CF1C76000A28B3 /* bchp_pri_crit_l2_regs_2.h in Headers */,
+				F59AE4A511CF1C76000A28B3 /* bchp_pri_crit_l2_regs_3.h in Headers */,
+				F59AE4A611CF1C76000A28B3 /* bchp_pri_rts_l2_regs_1.h in Headers */,
+				F59AE4A711CF1C76000A28B3 /* bchp_pri_rts_l2_regs_2.h in Headers */,
+				F59AE4A811CF1C76000A28B3 /* bchp_pri_rts_l2_regs_3.h in Headers */,
+				F59AE4A911CF1C76000A28B3 /* bchp_reg_cabac2bins2_0.h in Headers */,
+				F59AE4AA11CF1C76000A28B3 /* bchp_reg_cabac2bins_0.h in Headers */,
+				F59AE4AB11CF1C76000A28B3 /* bchp_scl_hd.h in Headers */,
+				F59AE4AC11CF1C76000A28B3 /* bchp_scrub_ctrl.h in Headers */,
+				F59AE4AD11CF1C76000A28B3 /* bchp_sentinel.h in Headers */,
+				F59AE4AE11CF1C76000A28B3 /* bchp_sharf_mem_dma0.h in Headers */,
+				F59AE4AF11CF1C76000A28B3 /* bchp_sharf_top.h in Headers */,
+				F59AE4B011CF1C76000A28B3 /* bchp_sun_gisb_arb.h in Headers */,
+				F59AE4B111CF1C76000A28B3 /* bchp_sun_gisb_arb_sec.h in Headers */,
+				F59AE4B211CF1C76000A28B3 /* bchp_sun_l2.h in Headers */,
+				F59AE4B311CF1C76000A28B3 /* bchp_sun_rg.h in Headers */,
+				F59AE4B411CF1C76000A28B3 /* bchp_sun_rgr.h in Headers */,
+				F59AE4B511CF1C76000A28B3 /* bchp_sun_top_ctrl.h in Headers */,
+				F59AE4B611CF1C76000A28B3 /* bchp_tgt_rgr_bridge.h in Headers */,
+				F59AE4B711CF1C76000A28B3 /* bchp_timer.h in Headers */,
+				F59AE4B811CF1C76000A28B3 /* bchp_tmisc.h in Headers */,
+				F59AE4B911CF1C76000A28B3 /* bchp_trb_top.h in Headers */,
+				F59AE4BA11CF1C76000A28B3 /* bchp_triple_sec.h in Headers */,
+				F59AE4BB11CF1C76000A28B3 /* bchp_vich_0.h in Headers */,
+				F59AE4BC11CF1C76000A28B3 /* bchp_wakeup_ctrl2.h in Headers */,
+				F59AE4BD11CF1C76000A28B3 /* bchp_wrap_misc_gr_bridge.h in Headers */,
+				F59AE4BE11CF1C76000A28B3 /* bchp_wrap_misc_intr2.h in Headers */,
+				F59AE4BF11CF1C76000A28B3 /* bchp_wrap_misc_secure_intr2.h in Headers */,
+				F59AE4C011CF1C76000A28B3 /* bchp_xpt_bus_if.h in Headers */,
+				F59AE4C111CF1C76000A28B3 /* bchp_xpt_fe.h in Headers */,
+				F59AE4C211CF1C76000A28B3 /* bchp_xpt_gr.h in Headers */,
+				F59AE4C311CF1C76000A28B3 /* bchp_xpt_pb0.h in Headers */,
+				F59AE4C411CF1C76000A28B3 /* bchp_xpt_pb1.h in Headers */,
+				F59AE4C511CF1C76000A28B3 /* bchp_xpt_pb2.h in Headers */,
+				F59AE4C611CF1C76000A28B3 /* bchp_xpt_pcroffset.h in Headers */,
+				F59AE4C711CF1C76000A28B3 /* bchp_xpt_rave.h in Headers */,
+				F59AE4C811CF1C76000A28B3 /* bchp_xpt_xmemif.h in Headers */,
+				F59AE4C911CF1C76000A28B3 /* bchp_xpt_xpu.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,6 +874,8 @@
 				F5959DAB10F052EE004B58B3 /* linux_compatible.c in Sources */,
 				F5AED77C11931CC20056ABEA /* BroadcomCrystalHDPower.cpp in Sources */,
 				F50FE3F611B1931600C8B8CD /* crystalhd_linkfuncs.c in Sources */,
+				F59AE39411CF1AE8000A28B3 /* crystalhd_flea_ddr.c in Sources */,
+				F59AE39511CF1AE8000A28B3 /* crystalhd_fleafuncs.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

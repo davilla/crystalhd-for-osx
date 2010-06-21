@@ -41,8 +41,8 @@ int main()
     // Initialize the Link and Decoder devices
     uint32_t mode = DTS_PLAYBACK_MODE          |
                     DTS_LOAD_FILE_PLAY_FW      |
-                    DTS_PLAYBACK_DROP_RPT_MODE |
-                    DTS_DFLT_RESOLUTION(vdecRESOLUTION_720p23_976);
+                    DTS_SKIP_TX_CHK_CPB        |
+                    DTS_DFLT_RESOLUTION(vdecRESOLUTION_1080i29_97);
 
     ret = DtsDeviceOpen(&device, mode);
     if (ret != BC_STS_SUCCESS) {
@@ -54,7 +54,7 @@ int main()
       printf("crap, DtsOpenDecoder failed\n");
       throw "Failed to open decoder";
     }
-    ret = DtsSetVideoParams(device, BC_VID_ALGO_MPEG2, FALSE, FALSE, TRUE, 0x80000000 | vdecFrameRate23_97);
+    ret = DtsSetVideoParams(device, BC_VID_ALGO_MPEG2, FALSE, FALSE, TRUE, 0);
     if (ret != BC_STS_SUCCESS) {
       printf("crap, DtsSetVideoParams failed\n");
       throw "Failed to set video params";
@@ -74,9 +74,10 @@ int main()
       printf("crap, DtsStartCapture failed\n");
       throw "Failed to start capture";
     }
+    printf("try calls done\n");
 
     // Open the input stream
-    inFile.open("/Users/Shared/crystalhd-for-osx/crystalhd/examples/test.mpeg2", std::ios::in | std::ios::binary);
+    inFile.open("/tmp/test.mpeg2", std::ios::in | std::ios::binary);
     if (!inFile.is_open())
       throw "Unable to open input file";
     else

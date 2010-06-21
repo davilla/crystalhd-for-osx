@@ -45,6 +45,7 @@
 #include "crystalhd_fw_if.h"
 #include "bc_dts_glob_osx.h"
 #endif
+#include "crystalhd_hw.h"
 /* Global element pool for all Queue management.
  * TX: Active = BC_TX_LIST_CNT, Free = BC_TX_LIST_CNT.
  * RX: Free = BC_RX_LIST_CNT, Active = 2
@@ -65,7 +66,7 @@ enum _crystalhd_dio_sig {
 };
 
 struct crystalhd_dio_user_info {
-	void			*xfr_buff;
+	uint8_t			*xfr_buff;
 	uint32_t		xfr_len;
 	uint32_t		uv_offset;
 	bool			dir_tx;
@@ -231,8 +232,6 @@ extern void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs
 
 extern int crystalhd_create_elem_pool(struct crystalhd_adp *, uint32_t);
 extern void crystalhd_delete_elem_pool(struct crystalhd_adp *);
-// Some HW specific code defines
-extern uint32_t link_GetRptDropParam(uint32_t picHeight, uint32_t picWidth, void *);
 
 /*================ Debug routines/macros .. ================================*/
 extern void crystalhd_show_buffer(uint32_t off, uint8_t *buff, uint32_t dwcount);

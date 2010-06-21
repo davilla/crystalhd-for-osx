@@ -33,6 +33,10 @@
 #include "crystalhd_lnx.h"
 #include "crystalhd_misc.h"
 
+// Some HW specific code defines
+extern uint32_t link_GetRptDropParam(uint32_t picHeight, uint32_t picWidth, void *);
+extern uint32_t flea_GetRptDropParam(void *, void *);
+
 static crystalhd_dio_req *crystalhd_alloc_dio(struct crystalhd_adp *adp)
 {
 	unsigned long flags = 0;
@@ -344,7 +348,7 @@ void crystalhd_delete_dioq(struct crystalhd_adp *adp, crystalhd_dioq_t *dioq)
 	} while (temp);
 	dioq->sig = 0;
 #ifdef __APPLE__
-	free_spin_lock(&dioq->lock);
+	spin_lock_free(&dioq->lock);
 #endif
 	kfree(dioq);
 }
@@ -542,8 +546,15 @@ out:
 				return r_pkt;
 			if(hw->adp->pdev->device == BC_PCI_DEVID_LINK)
 				picYcomp = link_GetRptDropParam(hw->PICHeight, hw->PICWidth, (void *)r_pkt);
-			else
-				dev_info(chd_get_device(),"FLEA NOT IMPLEMENTED YET\n");
+			else {
+				// For Flea, we don't have the width and height handy since they
+				// come in the PIB in the picture, so this function will also
+				// populate the width and height
+				picYcomp = flea_GetRptDropParam(hw, (void *)r_pkt);
+				// For flea it is the above function that indicated format change
+				if(r_pkt->flags & (COMP_FLAG_PIB_VALID | COMP_FLAG_FMT_CHANGE))
+					return r_pkt;
+			}
 			if (!picYcomp || (picYcomp == hw->LastPicNo) || (picYcomp == hw->LastTwoPicNo)) {
 				//Discard picture
 				if(picYcomp != 0) {
@@ -849,7 +860,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	dio->sig = crystalhd_dio_sg_mapped;
 	/* Fill in User info.. */
 	dio->uinfo.xfr_len   = ubuff_sz;
-	dio->uinfo.xfr_buff  = ubuff;
+	dio->uinfo.xfr_buff  = (uint8_t*)ubuff;
 	dio->uinfo.uv_offset = uv_offset;
 	dio->uinfo.b422mode  = en_422mode;
 	dio->uinfo.dir_tx    = dir_tx;
@@ -1043,7 +1054,9 @@ void crystalhd_destroy_dio_pool(struct crystalhd_adp *adp)
  * Create general purpose list element pool to hold pending,
  * and active requests.
  */
-int __devinit crystalhd_create_elem_pool(struct crystalhd_adp *adp,
+
+// curtis why define __devinit  ?
+int crystalhd_create_elem_pool(struct crystalhd_adp *adp,
 		uint32_t pool_size)
 {
 	uint32_t i;

@@ -41,11 +41,10 @@ _PIC_DELIVERY_HOST_INFO_
 */
 #define HOST_TO_FW_FLL_ADDR			(HOST_TO_FW_PIC_DEL_INFO_ADDR + sizeof(PIC_DELIVERY_HOST_INFO))
 
-
 typedef enum _DRIVER_FW_FLAGS_{
 	DFW_FLAGS_CLEAR			=0,
-	DFW_FLAGS_TX_ABORT		=BC_BIT(0),	//Firmware is stopped and will not give anymore buffers.
-	DFW_FLAGS_WRAP			=BC_BIT(1)	//Instruct the Firmware to WRAP the input buffer pointer
+	DFW_FLAGS_TX_ABORT	=(1 << (0)),	//Firmware is stopped and will not give anymore buffers.
+	DFW_FLAGS_WRAP			=(1 << (1))	//Instruct the Firmware to WRAP the input buffer pointer
 }DRIVER_FW_FLAGS;
 
 typedef struct

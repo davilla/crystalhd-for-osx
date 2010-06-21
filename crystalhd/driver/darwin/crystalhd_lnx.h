@@ -52,7 +52,7 @@
 
 #include "crystalhd_cmds.h"
 
-#define CRYSTAL_HD_NAME		"Broadcom Crystal HD Decoder Driver"
+#define CRYSTAL_HD_NAME "Broadcom Crystal HD Decoder Driver"
 
 /* OS specific PCI information structure and adapter information. */
 struct crystalhd_adp {
@@ -61,12 +61,12 @@ struct crystalhd_adp {
 	struct pci_dev		*pdev;
 
 	unsigned long		pci_mem_start;
-	uint32_t		pci_mem_len;
-	uint8_t			*addr;
+	uint32_t			pci_mem_len;
+	uint8_t				*mem_addr;
 
 	unsigned long		pci_i2o_start;
-	uint32_t		pci_i2o_len;
-	uint8_t			*i2o_addr;
+	uint32_t			pci_i2o_len;
+	uint8_t				*i2o_addr;
 
 	unsigned int		drv_data;
 	unsigned int		dmabits;	/* 32 | 64 */
@@ -91,7 +91,7 @@ struct crystalhd_adp {
 
 
 struct crystalhd_adp *chd_get_adp(void);
-struct device * chddev(void);
+struct device *chddev(void);
 #ifdef __APPLE__
 int  chd_dec_api_cmd(struct crystalhd_adp *adp, user_addr_t ua, uint32_t uid, uint32_t cmd, crystalhd_cmd_proc func);
 int  chd_dec_init_chdev(struct crystalhd_adp *adp);

@@ -4,7 +4,7 @@
  *  Name: crystalhd_cmds . c
  *
  *  Description:
- *		BCM70010 Linux driver user command interfaces.
+ *		BCM70012/BCM70015 Linux driver user command interfaces.
  *
  *  HISTORY:
  *
@@ -23,6 +23,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this driver.  If not, see <http://www.gnu.org/licenses/>.
  **********************************************************************/
+
 #include "crystalhd_lnx.h"
 
 static struct crystalhd_user *bc_cproc_get_uid(struct crystalhd_cmd *ctx)
@@ -568,9 +569,10 @@ static BC_STATUS bc_cproc_add_cap_buff(struct crystalhd_cmd *ctx,
 	en_422 = idata->udata.u.RxBuffs.b422Mode;
 
 	sts = bc_cproc_check_inbuffs(0, ubuff, ub_sz, uv_off, en_422);
+
 	if (sts != BC_STS_SUCCESS)
 		return sts;
-
+	
 	sts = crystalhd_map_dio(ctx->adp, ubuff, ub_sz, uv_off,
 			      en_422, 0, &dio_hnd);
 	if (sts != BC_STS_SUCCESS) {
@@ -580,7 +582,7 @@ static BC_STATUS bc_cproc_add_cap_buff(struct crystalhd_cmd *ctx,
 
 	if (!dio_hnd)
 		return BC_STS_ERROR;
-
+	
 	sts = crystalhd_hw_add_cap_buffer(ctx->hw_ctx, dio_hnd, (ctx->state == BC_LINK_READY));
 	if ((sts != BC_STS_SUCCESS) && (sts != BC_STS_BUSY)) {
 		crystalhd_unmap_dio(ctx->adp, dio_hnd);
@@ -712,7 +714,8 @@ static BC_STATUS bc_cproc_get_stats(struct crystalhd_cmd *ctx,
 	BC_DTS_STATS *stats;
 	struct crystalhd_hw_stats	hw_stats;
 	uint32_t pic_width;
-	unsigned long flags = 0;
+	uint8_t flags = 0;
+	bool readTxOnly = false;
 
 	if (!ctx || !idata) {
 		dev_err(chddev(), "%s: Invalid Arg\n", __func__);
@@ -737,11 +740,19 @@ static BC_STATUS bc_cproc_get_stats(struct crystalhd_cmd *ctx,
 	if (ctx->state & BC_LINK_PAUSED)
 		stats->DrvPauseTime = 1;
 
+	// use bit 29 of the input status to indicate that we are trying to read VC1 status
+	// This is important for the BCM70012 which uses a different input queue for VC1
+	if(stats->DrvcpbEmptySize & BC_BIT(29))
+		flags = 0x2;
+	// Bit 30 is used to indicate that we are reading only the TX stats and to not touch the Ready list
+	if(stats->DrvcpbEmptySize & BC_BIT(30))
+		readTxOnly = true;
+
 	ctx->hw_ctx->pfnCheckInputFIFO(ctx->hw_ctx, 0, &stats->DrvcpbEmptySize,
-				      false, flags);
+				      false, &flags);
 
 	/* status peek ahead to retreive the next decoded frame timestamp */
-	if (stats->drvRLL && (stats->DrvNextMDataPLD & BC_BIT(31))) {
+	if (!readTxOnly && stats->drvRLL && (stats->DrvNextMDataPLD & BC_BIT(31))) {
 		pic_width = stats->DrvNextMDataPLD & 0xffff;
 		stats->DrvNextMDataPLD = 0;
 		if (pic_width <= 1920)
@@ -1085,8 +1096,5 @@ bool crystalhd_cmd_interrupt(struct crystalhd_cmd *ctx)
 		return 0;
 	}
 
-	if(ctx->hw_ctx->adp->pdev->device == BC_PCI_DEVID_LINK)
-		return crystalhd_link_hw_interrupt(ctx->adp, ctx->hw_ctx);
-	else
-		return 0;
+	return ctx->hw_ctx->pfnFindAndClearIntr(ctx->adp, ctx->hw_ctx);
 }

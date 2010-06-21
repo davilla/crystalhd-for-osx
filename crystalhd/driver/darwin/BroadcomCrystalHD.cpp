@@ -217,7 +217,7 @@ BroadcomCrystalHD::start( IOService * provider )
 
     g_adp_info->pci_mem_start = 0;
     g_adp_info->pci_mem_len = m_pci_bar2->getLength();
-    g_adp_info->addr = (uint8_t*)m_pci_bar2->getVirtualAddress();
+    g_adp_info->mem_addr = (uint8_t*)m_pci_bar2->getVirtualAddress();
 
     // none of this matters, we just do it for completeness
 		g_adp_info->drv_data = 0;
@@ -289,7 +289,7 @@ BroadcomCrystalHD::stop( IOService * provider )
     }
     chd_dec_release_chdev(g_adp_info);
     // chd_dec_release_chdev uses adp->lock so free lock after.
-    free_spin_lock(&g_adp_info->lock);
+    spin_lock_free(&g_adp_info->lock);
     // free BSD device mode.
     bsd_destroy_device();
 	

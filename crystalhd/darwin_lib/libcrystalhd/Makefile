@@ -1,5 +1,5 @@
 #
-#  Broadcom "BCM970012" Crystal HD device interface library.
+#  Broadcom "BCM970012/BCM970015" Crystal HD device interface library.
 #
 #
 BCLIB=libcrystalhd.dylib
@@ -21,7 +21,7 @@ CPPFLAGS = -D__LINUX_USER__
 
 CPPFLAGS += ${INCLUDES}
 CPPFLAGS += -g -O0 -Wall -fPIC -arch i386 -shared -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
-LDFLAGS = -dynamiclib -flat_namespace -undefined suppress 
+LDFLAGS = -dynamiclib -twolevel_namespace 
 
 SRCFILES = 	libcrystalhd_if.cpp \
 		libcrystalhd_int_if.cpp \
@@ -45,7 +45,7 @@ help:
 clean:
 	rm -f  ${BCLIB} *.o
 	rm -f  ${OBJFILES}
-        
+
 install:
 	# this is messy yes, xbmc needs the headers in /opt/local/include
 	if [ -d /opt/local/include ] ; then mkdir -p /opt/local/include/libcrystalhd ; fi

@@ -50,7 +50,7 @@ void spin_lock_init(spinlock_t *lock)
   *lock = IOLockAlloc();
 }
 
-void free_spin_lock(spinlock_t *lock)
+void spin_lock_free(spinlock_t *lock)
 {
 	IOLockFree(*lock);
 	lock = NULL;
@@ -301,7 +301,8 @@ void* kalloc(size_t size, gfp_t flags)
 }
 void kfree(void *addr)
 {
-	kern_os_free(addr);
+  if (addr)
+    kern_os_free(addr);
 }
 
 void* vmalloc(size_t size)
@@ -310,7 +311,8 @@ void* vmalloc(size_t size)
 }
 void vfree(void *addr)
 {
-	kern_os_free(addr);
+  if (addr)
+    kern_os_free(addr);
 }
 
 
