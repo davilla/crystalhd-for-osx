@@ -2202,7 +2202,7 @@ bool flea_GetPictureInfo(struct crystalhd_hw *hw, crystalhd_rx_dma_pkt * rx_pkt,
 #ifndef __APPLE__
 		res = copy_from_user(dio->pib_va, (void *)(dio->uinfo.xfr_buff), 4);
 #else
-		res = copy_from_mem_descriptor(dio->pib_va, dio->io_class, offset, 4);
+		res = copy_from_mem_descriptor(dio->pib_va, dio->io_class, 0, 4);
 #endif
 		if (res != 0)
 			goto getpictureinfo_err;
