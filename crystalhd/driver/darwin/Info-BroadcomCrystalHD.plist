@@ -20,7 +20,7 @@
 	<string>3.1.0</string>
 	<key>IOKitPersonalities</key>
 	<dict>
-		<key>FirstPersonality</key>
+		<key>BMC70012</key>
 		<dict>
 			<key>CFBundleIdentifier</key>
 			<string>com.broadcom.crystalhd.driver</string>
@@ -30,6 +30,19 @@
 			<string>BroadcomCrystalHD</string>
 			<key>IOPCIMatch</key>
 			<string>0x161214e4</string>
+			<key>IOProviderClass</key>
+			<string>IOPCIDevice</string>
+		</dict>
+		<key>BMC70015</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.broadcom.crystalhd.driver</string>
+			<key>IOClass</key>
+			<string>BroadcomCrystalHD</string>
+			<key>IOMatchCategory</key>
+			<string>BroadcomCrystalHD</string>
+			<key>IOPCIMatch</key>
+			<string>0x161514e4</string>
 			<key>IOProviderClass</key>
 			<string>IOPCIDevice</string>
 		</dict>
