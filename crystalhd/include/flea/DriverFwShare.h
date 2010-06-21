@@ -90,3 +90,4 @@ typedef enum _OUT_OF_BAND_ERR_CODE_
 #define RX_DRAM_WRITE_WRKARND			BC_BIT(1)
 #define RX_MBOX_WRITE_WRKARND			BC_BIT(2)
 #endif
+

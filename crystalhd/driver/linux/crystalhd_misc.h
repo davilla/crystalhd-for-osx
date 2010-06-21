@@ -40,6 +40,7 @@
 #include "bc_dts_glob_lnx.h"
 #include "crystalhd_hw.h"
 
+struct crystalhd_hw;
 /* Global element pool for all Queue management.
  * TX: Active = BC_TX_LIST_CNT, Free = BC_TX_LIST_CNT.
  * RX: Free = BC_RX_LIST_CNT, Active = 2
