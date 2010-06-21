@@ -37,15 +37,21 @@
 #define WR_POINTER_OFF		4
 
 typedef struct _BC_DRV_PIC_INFO_{
-	C011_PIB						DecoPIB;
-	struct _BC_DRV_PIC_INFO_		*Flink;
-}BC_DRV_PIC_INFO,*PBC_DRV_PIC_INFO;
+	C011_PIB			DecoPIB;
+	struct _BC_DRV_PIC_INFO_	*Flink;
+} BC_DRV_PIC_INFO, *PBC_DRV_PIC_INFO;
 
 typedef union _desc_low_addr_reg_ {
 	struct {
+#ifdef	__LITTLE_ENDIAN_BITFIELD
 		uint32_t	list_valid:1;
 		uint32_t	reserved:4;
 		uint32_t	low_addr:27;
+#else
+		uint32_t	low_addr:27;
+		uint32_t	reserved:4;
+		uint32_t	list_valid:1;
+#endif
 	};
 
 	uint32_t	whole_reg;
@@ -53,6 +59,7 @@ typedef union _desc_low_addr_reg_ {
 } desc_low_addr_reg;
 
 typedef struct _dma_descriptor_ {	/* 8 32-bit values */
+#ifdef	__LITTLE_ENDIAN_BITFIELD
 	/* 0th u32 */
 	uint32_t sdram_buff_addr:28;	/* bits 0-27:  SDRAM Address */
 	uint32_t res0:4;		/* bits 28-31: Reserved */
@@ -83,7 +90,38 @@ typedef struct _dma_descriptor_ {	/* 8 32-bit values */
 
 	/* 7th u32 */
 	uint32_t res8;			/* Last 32bits reserved */
+#else
+	/* 0th u32 */
+	uint32_t res0:4;		/* bits 28-31: Reserved */
+	uint32_t sdram_buff_addr:28;	/* bits 0-27:  SDRAM Address */
 
+	/* 1st u32 */
+	uint32_t buff_addr_low;		/* 1 buffer address low */
+	uint32_t buff_addr_high;	/* 2 buffer address high */
+
+	/* 3rd u32 */
+	uint32_t intr_enable:1;		/* 31 - Interrupt After this desc */
+	uint32_t res3:6;		/* 25-30 reserved */
+	uint32_t xfer_size:23;		/* 2-24 = Xfer size in words */
+	uint32_t res2:2;		/* 0-1 - Reserved */
+
+	/* 4th u32 */
+	uint32_t last_rec_indicator:1;	/* 31 bit Last Record Indicator */
+	uint32_t dma_dir:1;		/* 30 bit DMA Direction */
+	uint32_t fill_bytes:2;		/* 28-29 Bits Fill Bytes */
+	uint32_t res4:25;		/* 3 - 27 Reserved bits */
+	uint32_t next_desc_cont:1;	/* 2 - Next desc is in contig memory */
+	uint32_t endian_xlat_align:2;	/* 0-1 Endian Translation */
+
+	/* 5th u32 */
+	uint32_t next_desc_addr_low;	/* 32-bits Next Desc Addr lower */
+
+	/* 6th u32 */
+	uint32_t next_desc_addr_high;	/* 32-bits Next Desc Addr Higher */
+
+	/* 7th u32 */
+	uint32_t res8;			/* Last 32bits reserved */
+#endif
 } dma_descriptor, *pdma_descriptor;
 
 /*
@@ -152,47 +190,47 @@ struct crystalhd_hw_stats{
 	uint32_t	rx_success;
 };
 
-struct crystalhd_hw; // forward declaration for the types
+struct crystalhd_hw; /* forward declaration for the types */
 
-//typedef void*	(*HW_VERIFY_DEVICE)(struct crystalhd_adp*);
-//typedef bool	(*HW_INIT_DEVICE_RESOURCES)(struct crystalhd_adp*);
-//typedef bool	(*HW_CLEAN_DEVICE_RESOURCES)(struct crystalhd_adp*);
+/* typedef void*	(*HW_VERIFY_DEVICE)(struct crystalhd_adp*); */
+/* typedef bool	(*HW_INIT_DEVICE_RESOURCES)(struct crystalhd_adp*); */
+/* typedef bool	(*HW_CLEAN_DEVICE_RESOURCES)(struct crystalhd_adp*); */
 typedef bool	(*HW_START_DEVICE)(struct crystalhd_hw*);
 typedef bool	(*HW_STOP_DEVICE)(struct crystalhd_hw*);
-//typedef bool	(*HW_XLAT_AND_FIRE_SGL)(struct crystalhd_adp*,PVOID,PSCATTER_GATHER_LIST,uint32_t);
-//typedef bool	(*HW_RX_XLAT_SGL)(struct crystalhd_adp*,crystalhd_dio_req *ioreq);
-//typedef bool	(*HW_FIND_AND_CLEAR_INTR)(struct crystalhd_adp*,uint32_t*,uint32_t*);
+/* typedef bool	(*HW_XLAT_AND_FIRE_SGL)(struct crystalhd_adp*,PVOID,PSCATTER_GATHER_LIST,uint32_t); */
+/* typedef bool	(*HW_RX_XLAT_SGL)(struct crystalhd_adp*,crystalhd_dio_req *ioreq); */
+/* typedef bool	(*HW_FIND_AND_CLEAR_INTR)(struct crystalhd_adp*,uint32_t*,uint32_t*); */
 typedef uint32_t	(*HW_READ_DEVICE_REG)(struct crystalhd_adp*,uint32_t);
 typedef void	(*HW_WRITE_DEVICE_REG)(struct crystalhd_adp*,uint32_t,uint32_t);
 typedef uint32_t	(*HW_READ_FPGA_REG)(struct crystalhd_adp*,uint32_t);
 typedef void	(*HW_WRITE_FPGA_REG)(struct crystalhd_adp*,uint32_t,uint32_t);
 typedef BC_STATUS	(*HW_READ_DEV_MEM)(struct crystalhd_hw*,uint32_t,uint32_t,uint32_t*);
 typedef BC_STATUS	(*HW_WRITE_DEV_MEM)(struct crystalhd_hw*,uint32_t,uint32_t,uint32_t*);
-//typedef bool	(*HW_INIT_DRAM)(struct crystalhd_adp*);
-//typedef bool	(*HW_DISABLE_INTR)(struct crystalhd_adp*);
-//typedef bool	(*HW_ENABLE_INTR)(struct crystalhd_adp*);
+/* typedef bool	(*HW_INIT_DRAM)(struct crystalhd_adp*); */
+/* typedef bool	(*HW_DISABLE_INTR)(struct crystalhd_adp*); */
+/* typedef bool	(*HW_ENABLE_INTR)(struct crystalhd_adp*); */
 typedef BC_STATUS	(*HW_POST_RX_SIDE_BUFF)(struct crystalhd_hw*,crystalhd_rx_dma_pkt*);
 typedef bool	(*HW_CHECK_INPUT_FIFO)(struct crystalhd_hw*, uint32_t, uint32_t*,bool,uint8_t);
-typedef void 	(*HW_START_TX_DMA)(struct crystalhd_hw*, uint8_t, addr_64);
+typedef void	(*HW_START_TX_DMA)(struct crystalhd_hw*, uint8_t, addr_64);
 typedef BC_STATUS	(*HW_STOP_TX_DMA)(struct crystalhd_hw*);
-//typedef bool	(*HW_EVENT_NOTIFICATION)(struct crystalhd_adp*,BRCM_EVENT);
-//typedef bool	(*HW_RX_POST_INTR_PROCESSING)(struct crystalhd_adp*,uint32_t,uint32_t);
+/* typedef bool	(*HW_EVENT_NOTIFICATION)(struct crystalhd_adp*,BRCM_EVENT); */
+/* typedef bool	(*HW_RX_POST_INTR_PROCESSING)(struct crystalhd_adp*,uint32_t,uint32_t); */
 typedef void    (*HW_GET_DONE_SIZE)(struct crystalhd_hw *hw, uint32_t, uint32_t*, uint32_t*);
-//typedef bool	(*HW_ADD_DRP_TO_FREE_LIST)(struct crystalhd_adp*,crystalhd_dio_req *ioreq);
+/* typedef bool	(*HW_ADD_DRP_TO_FREE_LIST)(struct crystalhd_adp*,crystalhd_dio_req *ioreq); */
 typedef crystalhd_dio_req*	(*HW_FETCH_DONE_BUFFERS)(struct crystalhd_adp*,bool);
-//typedef bool	(*HW_ADD_ROLLBACK_RXBUF)(struct crystalhd_adp*,crystalhd_dio_req *ioreq);
+/* typedef bool	(*HW_ADD_ROLLBACK_RXBUF)(struct crystalhd_adp*,crystalhd_dio_req *ioreq); */
 typedef bool	(*HW_PEEK_NEXT_DECODED_RXBUF)(struct crystalhd_hw*,uint32_t*,uint32_t);
 typedef BC_STATUS	(*HW_FW_PASSTHRU_CMD)(struct crystalhd_hw*,PBC_FW_CMD);
-//typedef bool	(*HW_CANCEL_FW_CMDS)(struct crystalhd_adp*,OS_CANCEL_CALLBACK);
-//typedef void*	(*HW_GET_FW_DONE_OS_CMD)(struct crystalhd_adp*);
-//typedef PBC_DRV_PIC_INFO	(*SEARCH_FOR_PIB)(struct crystalhd_adp*,bool,uint32_t);
-//typedef bool	(*HW_DO_DRAM_PWR_MGMT)(struct crystalhd_adp*);
+/* typedef bool	(*HW_CANCEL_FW_CMDS)(struct crystalhd_adp*,OS_CANCEL_CALLBACK); */
+/* typedef void*	(*HW_GET_FW_DONE_OS_CMD)(struct crystalhd_adp*); */
+/* typedef PBC_DRV_PIC_INFO	(*SEARCH_FOR_PIB)(struct crystalhd_adp*,bool,uint32_t); */
+/* typedef bool	(*HW_DO_DRAM_PWR_MGMT)(struct crystalhd_adp*); */
 typedef BC_STATUS	(*HW_FW_DOWNLOAD)(struct crystalhd_hw*,uint8_t*,uint32_t);
 typedef BC_STATUS	(*HW_ISSUE_DECO_PAUSE)(struct crystalhd_hw*, bool);
 typedef void	(*HW_STOP_DMA_ENGINES)(struct crystalhd_hw*);
 /*
 typedef BOOLEAN	(*FIRE_RX_REQ_TO_HW)	(PHW_EXTENSION,PRX_DMA_LIST);
-typedef BOOLEAN (*PIC_POST_PROC)		(PHW_EXTENSION,PRX_DMA_LIST,PULONG);
+typedef BOOLEAN (*PIC_POST_PROC)	(PHW_EXTENSION,PRX_DMA_LIST,PULONG);
 typedef BOOLEAN (*HW_ISSUE_DECO_PAUSE)	(PHW_EXTENSION,BOOLEAN,BOOLEAN);
 typedef BOOLEAN (*FIRE_TX_CMD_TO_HW)	(PCONTEXT_FOR_POST_TX);
 typedef VOID	(*NOTIFY_FLL_CHANGE)	(PHW_EXTENSION,ULONG,BOOLEAN);

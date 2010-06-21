@@ -116,12 +116,12 @@ void chd_dec_free_iodata(struct crystalhd_adp *adp, crystalhd_ioctl_data *iodata
 	spin_unlock_irqrestore(&adp->lock, flags);
 }
 
-inline static int crystalhd_user_data(unsigned long ud, void *dr, int size, int set)
+static inline int crystalhd_user_data(unsigned long ud, void *dr, int size, int set)
 {
 	int rc;
 
 	if (!ud || !dr) {
-		dev_err(chd_get_device(), "%s: Invalid arg\n", __func__);
+		dev_err(chddev(), "%s: Invalid arg\n", __func__);
 		return -EINVAL;
 	}
 
@@ -131,7 +131,7 @@ inline static int crystalhd_user_data(unsigned long ud, void *dr, int size, int 
 		rc = copy_from_user(dr, (void *)ud, size);
 
 	if (rc) {
-		dev_err(chd_get_device(), "Invalid args for command\n");
+		dev_err(chddev(), "Invalid args for command\n");
 		rc = -EFAULT;
 	}
 
@@ -145,13 +145,13 @@ static int chd_dec_fetch_cdata(struct crystalhd_adp *adp, crystalhd_ioctl_data *
 	int rc = 0;
 
 	if (!adp || !io || !ua || !m_sz) {
-		dev_err(chd_get_device(), "Invalid Arg!!\n");
+		dev_err(chddev(), "Invalid Arg!!\n");
 		return -EINVAL;
 	}
 
 	io->add_cdata = vmalloc(m_sz);
 	if (!io->add_cdata) {
-		dev_err(chd_get_device(), "kalloc fail for sz:%x\n", m_sz);
+		dev_err(chddev(), "kalloc fail for sz:%x\n", m_sz);
 		return -ENOMEM;
 	}
 
@@ -159,12 +159,11 @@ static int chd_dec_fetch_cdata(struct crystalhd_adp *adp, crystalhd_ioctl_data *
 	ua_off = ua + sizeof(io->udata);
 	rc = crystalhd_user_data(ua_off, io->add_cdata, io->add_cdata_sz, 0);
 	if (rc) {
-		dev_err(chd_get_device(), "failed to pull add_cdata sz:%x ua_off:%x\n",
-			io->add_cdata_sz, (unsigned int)ua_off);
-		if (io->add_cdata) {
-			kfree(io->add_cdata);
-			io->add_cdata = NULL;
-		}
+		dev_err(chddev(), "failed to pull add_cdata sz:%x "
+			"ua_off:%x\n", io->add_cdata_sz,
+			(unsigned int)ua_off);
+		kfree(io->add_cdata);
+		io->add_cdata = NULL;
 		return -ENODATA;
 	}
 
@@ -178,7 +177,7 @@ static int chd_dec_release_cdata(struct crystalhd_adp *adp,
 	int rc;
 
 	if (!adp || !io || !ua) {
-		dev_err(chd_get_device(), "Invalid Arg!!\n");
+		dev_err(chddev(), "Invalid Arg!!\n");
 		return -EINVAL;
 	}
 
@@ -187,8 +186,9 @@ static int chd_dec_release_cdata(struct crystalhd_adp *adp,
 		rc = crystalhd_user_data(ua_off, io->add_cdata,
 					io->add_cdata_sz, 1);
 		if (rc) {
-			dev_err(chd_get_device(), "failed to push add_cdata sz:%x ua_off:%x\n",
-				io->add_cdata_sz, (unsigned int)ua_off);
+			dev_err(chddev(), "failed to push add_cdata sz:%x "
+				"ua_off:%x\n", io->add_cdata_sz,
+				(unsigned int)ua_off);
 			return -ENODATA;
 		}
 	}
@@ -213,13 +213,14 @@ static int chd_dec_proc_user_data(struct crystalhd_adp *adp,
 	uint32_t m_sz = 0;
 
 	if (!adp || !io || !ua) {
-		dev_err(chd_get_device(), "Invalid Arg!!\n");
+		dev_err(chddev(), "Invalid Arg!!\n");
 		return -EINVAL;
 	}
 
 	rc = crystalhd_user_data(ua, &io->udata, sizeof(io->udata), set);
 	if (rc) {
-		dev_err(chd_get_device(), "failed to %s iodata\n", (set ? "set" : "get"));
+		dev_err(chddev(), "failed to %s iodata\n",
+			(set ? "set" : "get"));
 		return rc;
 	}
 
@@ -253,7 +254,7 @@ int chd_dec_api_cmd(struct crystalhd_adp *adp, user_addr_t ua,
 
 	temp = chd_dec_alloc_iodata(adp, 0);
 	if (!temp) {
-		dev_err(chd_get_device(), "Failed to get iodata..\n");
+		dev_err(chddev(), "Failed to get iodata..\n");
 		return -EINVAL;
 	}
 
@@ -287,19 +288,19 @@ static int chd_dec_ioctl(struct inode *in, struct file *fd,
 	struct crystalhd_user *uc;
 
 	if (!adp || !fd) {
-		dev_err(chd_get_device(), "Invalid adp\n");
+		dev_err(chddev(), "Invalid adp\n");
 		return -EINVAL;
 	}
 
 	uc = (struct crystalhd_user *)fd->private_data;
 	if (!uc) {
-		dev_err(chd_get_device(), "Failed to get uc\n");
+		dev_err(chddev(), "Failed to get uc\n");
 		return -ENODATA;
 	}
 
 	cproc = crystalhd_get_cmd_proc(&adp->cmds, cmd, uc);
 	if (!cproc) {
-		dev_err(chd_get_device(), "Unhandled command: %d\n", cmd);
+		dev_err(chddev(), "Unhandled command: %d\n", cmd);
 		return -EINVAL;
 	}
 
@@ -309,24 +310,25 @@ static int chd_dec_ioctl(struct inode *in, struct file *fd,
 static int chd_dec_open(struct inode *in, struct file *fd)
 {
 	struct crystalhd_adp *adp = chd_get_adp();
+	struct device *dev = &adp->pdev->dev;
 	int rc = 0;
 	BC_STATUS sts = BC_STS_SUCCESS;
 	struct crystalhd_user *uc = NULL;
 
-	dev_dbg(&adp->pdev->dev, "Entering %s\n", __func__);
+	dev_dbg(dev, "Entering %s\n", __func__);
 	if (!adp) {
 		dev_err(dev, "Invalid adp\n");
 		return -EINVAL;
 	}
 
 	if (adp->cfg_users >= BC_LINK_MAX_OPENS) {
-		dev_info(&adp->pdev->dev, "Already in use.%d\n", adp->cfg_users);
+		dev_info(dev, "Already in use.%d\n", adp->cfg_users);
 		return -EBUSY;
 	}
 
 	sts = crystalhd_user_open(&adp->cmds, &uc);
 	if (sts != BC_STS_SUCCESS) {
-		dev_err(&adp->pdev->dev, "cmd_user_open - %d\n", sts);
+		dev_err(dev, "cmd_user_open - %d\n", sts);
 		rc = -EBUSY;
 	}
 
@@ -340,17 +342,18 @@ static int chd_dec_open(struct inode *in, struct file *fd)
 static int chd_dec_close(struct inode *in, struct file *fd)
 {
 	struct crystalhd_adp *adp = chd_get_adp();
+	struct device *dev = &adp->pdev->dev;
 	struct crystalhd_user *uc;
 
 	dev_dbg(dev, "Entering %s\n", __func__);
 	if (!adp) {
-		dev_err(&adp->pdev->dev, "Invalid adp\n");
+		dev_err(dev, "Invalid adp\n");
 		return -EINVAL;
 	}
 
 	uc = (struct crystalhd_user *)fd->private_data;
 	if (!uc) {
-		dev_err(&adp->pdev->dev, "Failed to get uc\n");
+		dev_err(dev, "Failed to get uc\n");
 		return -ENODATA;
 	}
 
@@ -375,7 +378,10 @@ static int __devinit chd_dec_init_chdev(struct crystalhd_adp *adp)
 int chd_dec_init_chdev(struct crystalhd_adp *adp)
 #endif
 {
-	struct device *xdev = chd_get_device();
+	struct device *xdev = &adp->pdev->dev;
+#ifndef __APPLE__
+	struct device *dev;
+#endif
 	crystalhd_ioctl_data *temp;
 	int rc = -ENODEV, i = 0;
 
@@ -463,20 +469,19 @@ void chd_dec_release_chdev(struct crystalhd_adp *adp)
 		/* unregister crystalhd class */
 		device_destroy(crystalhd_class, MKDEV(adp->chd_dec_major, 0));
 		unregister_chrdev(adp->chd_dec_major, CRYSTALHD_API_NAME);
-		dev_info(chd_get_device(), "released api device - %d\n",
+		dev_info(chddev(), "released api device - %d\n",
 		       adp->chd_dec_major);
 		class_destroy(crystalhd_class);
 	}
 #else
-  dev_info(chd_get_device(), "released api device - %d\n", adp->chd_dec_major);
+  dev_info(chddev(), "released api device - %d\n", adp->chd_dec_major);
 #endif
 	adp->chd_dec_major = 0;
 
 	/* Clear iodata pool.. */
 	do {
 		temp = chd_dec_alloc_iodata(adp, 0);
-		if (temp)
-			kfree(temp);
+		kfree(temp);
 	} while (temp);
 
 	//crystalhd_delete_elem_pool(adp);
@@ -556,17 +561,17 @@ static void __devexit chd_dec_pci_remove(struct pci_dev *pdev)
 	struct crystalhd_adp *pinfo;
 	BC_STATUS sts = BC_STS_SUCCESS;
 
-	dev_dbg(chd_get_device(), "Entering %s\n", __func__);
+	dev_dbg(chddev(), "Entering %s\n", __func__);
 
 	pinfo = (struct crystalhd_adp *) pci_get_drvdata(pdev);
 	if (!pinfo) {
-		dev_err(chd_get_device(), "could not get adp\n");
+		dev_err(chddev(), "could not get adp\n");
 		return;
 	}
 
 	sts = crystalhd_delete_cmd_context(&pinfo->cmds);
 	if (sts != BC_STS_SUCCESS)
-		dev_err(chd_get_device(), "cmd delete :%d\n", sts);
+		dev_err(chddev(), "cmd delete :%d\n", sts);
 
 	chd_dec_release_chdev(pinfo);
 
@@ -661,24 +666,25 @@ static int __devinit chd_dec_pci_probe(struct pci_dev *pdev,
 int chd_dec_pci_suspend(struct pci_dev *pdev, pm_message_t state)
 {
 	struct crystalhd_adp *adp;
+	struct device *dev = &pdev->dev;
 	crystalhd_ioctl_data *temp;
 	BC_STATUS sts = BC_STS_SUCCESS;
 
 	adp = (struct crystalhd_adp *)pci_get_drvdata(pdev);
 	if (!adp) {
-		dev_err(&pdev->dev, "%s: could not get adp\n", __func__);
+		dev_err(dev, "%s: could not get adp\n", __func__);
 		return -ENODEV;
 	}
 
 	temp = chd_dec_alloc_iodata(adp, false);
 	if (!temp) {
-		dev_err(&pdev->dev, "could not get ioctl data\n");
+		dev_err(dev, "could not get ioctl data\n");
 		return -ENODEV;
 	}
 
 	sts = crystalhd_suspend(&adp->cmds, temp);
 	if (sts != BC_STS_SUCCESS) {
-		dev_err(&pdev->dev, "Crystal HD Suspend %d\n", sts);
+		dev_err(dev, "Crystal HD Suspend %d\n", sts);
 		return -ENODEV;
 	}
 
@@ -695,12 +701,13 @@ int chd_dec_pci_suspend(struct pci_dev *pdev, pm_message_t state)
 int chd_dec_pci_resume(struct pci_dev *pdev)
 {
 	struct crystalhd_adp *adp;
+	struct device *dev = &pdev->dev;
 	BC_STATUS sts = BC_STS_SUCCESS;
 	int rc;
 
 	adp = (struct crystalhd_adp *)pci_get_drvdata(pdev);
 	if (!adp) {
-		dev_err(&pdev->dev, "%s: could not get adp\n", __func__);
+		dev_err(dev, "%s: could not get adp\n", __func__);
 		return -ENODEV;
 	}
 
@@ -709,7 +716,7 @@ int chd_dec_pci_resume(struct pci_dev *pdev)
 
 	/* device's irq possibly is changed, driver should take care */
 	if (pci_enable_device(pdev)) {
-		dev_err(&pdev->dev, "Failed to enable PCI device\n");
+		dev_err(dev, "Failed to enable PCI device\n");
 		return 1;
 	}
 
@@ -717,14 +724,14 @@ int chd_dec_pci_resume(struct pci_dev *pdev)
 
 	rc = chd_dec_enable_int(adp);
 	if (rc) {
-		dev_err(&pdev->dev, "_enable_int err:%d\n", rc);
+		dev_err(dev, "_enable_int err:%d\n", rc);
 		pci_disable_device(pdev);
 		return -ENODEV;
 	}
 
 	sts = crystalhd_resume(&adp->cmds);
 	if (sts != BC_STS_SUCCESS) {
-		dev_err(&pdev->dev, "Crystal HD Resume %d\n", sts);
+		dev_err(dev, "Crystal HD Resume %d\n", sts);
 		pci_disable_device(pdev);
 		return -ENODEV;
 	}
@@ -733,6 +740,7 @@ int chd_dec_pci_resume(struct pci_dev *pdev)
 }
 #endif
 
+#ifndef __APPLE__
 #if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 24)
 static DEFINE_PCI_DEVICE_TABLE(chd_dec_pci_id_table) = {
 	{ PCI_VDEVICE(BROADCOM, 0x1612), 8 },
@@ -759,15 +767,16 @@ static struct pci_driver bc_chd_driver = {
 #endif
 };
 #endif
+#endif
 
 struct crystalhd_adp *chd_get_adp(void)
 {
 	return g_adp_info;
 }
 
-struct device * chd_get_device(void)
+inline struct device *chddev(void)
 {
-	return &g_adp_info->pdev->dev;
+	return &chd_get_adp()->pdev->dev;
 }
 
 #ifndef __APPLE__

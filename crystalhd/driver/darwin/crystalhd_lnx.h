@@ -91,7 +91,7 @@ struct crystalhd_adp {
 
 
 struct crystalhd_adp *chd_get_adp(void);
-struct device * chd_get_device(void);
+struct device * chddev(void);
 #ifdef __APPLE__
 int  chd_dec_api_cmd(struct crystalhd_adp *adp, user_addr_t ua, uint32_t uid, uint32_t cmd, crystalhd_cmd_proc func);
 int  chd_dec_init_chdev(struct crystalhd_adp *adp);

@@ -67,7 +67,7 @@ uint32_t link_dec_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 			__func__, adp->addr + reg_off, val);
 */
 			
-  return val;
+	return val;
 }
 
 /**
@@ -100,10 +100,10 @@ void link_dec_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t val)
 	dev_dbg(&adp->pdev->dev, "%s: writel(0x%08x @ 0x%p).\n",
 			__func__, val, adp->addr + reg_off);
 */
-  writel(val, adp->addr + reg_off);
+	writel(val, adp->addr + reg_off);
 			
-  /* the udelay require for latest 70012, not for others... :( */
-  udelay(8);
+	/* the udelay require for latest 70012, not for others... :( */
+	udelay(8);
 }
 
 /**
@@ -140,7 +140,7 @@ uint32_t crystalhd_link_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 			__func__, adp->i2o_addr + reg_off, val);
 */
 			
-  return val;
+	return val;
 }
 
 /**
@@ -174,7 +174,7 @@ void crystalhd_link_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t
 			__func__, val, adp->i2o_addr + reg_off);
 */
 			
-  writel(val, adp->i2o_addr + reg_off);
+	writel(val, adp->i2o_addr + reg_off);
 }
 
 inline uint32_t crystalhd_link_dram_rd(struct crystalhd_hw *hw, uint32_t mem_off)
@@ -492,14 +492,17 @@ bool crystalhd_link_load_firmware_config(struct crystalhd_hw *hw)
 bool crystalhd_link_start_device(struct crystalhd_hw *hw)
 {
 	uint32_t dbg_options, glb_cntrl = 0, reg_pwrmgmt = 0;
+	struct device *dev;
 
 	if (!hw)
 		return -EINVAL;
 
-	dev_dbg(&hw->adp->pdev->dev, "Starting Crystal HD Device\n");
+	dev = &hw->adp->pdev->dev;
+
+	dev_dbg(dev, "Starting Crystal HD Device\n");
 
 	if (!crystalhd_link_bring_out_of_rst(hw)) {
-		dev_err(&hw->adp->pdev->dev, "Failed To Bring BCM70012 Out Of Reset\n");
+		dev_err(dev, "Failed To Bring BCM70012 Out Of Reset\n");
 		return false;
 	}
 
@@ -723,7 +726,7 @@ bool link_GetPictureInfo(uint32_t picHeight, uint32_t picWidth, crystalhd_dio_re
 	}
 
 #ifndef __APPLE__
-	res = copy_from_user(dio->pib_va, (void *)((uint8_t*)dio->uinfo.xfr_buff+offset), size);
+	res = copy_from_user(dio->pib_va, (void *)(dio->uinfo.xfr_buff+offset), size);
 #else
 	res = copy_from_mem_descriptor(dio->pib_va, dio->io_class, offset, size);
 #endif
@@ -763,7 +766,7 @@ bool link_GetPictureInfo(uint32_t picHeight, uint32_t picWidth, crystalhd_dio_re
 		offset = (PicInfoLineNum * picWidth);
 
 #ifndef __APPLE__
-	res = copy_from_user(dio->pib_va, (void *)((uint8_t*)dio->uinfo.xfr_buff+offset), 12);
+	res = copy_from_user(dio->pib_va, (void *)(dio->uinfo.xfr_buff+offset), 12);
 #else
 	res = copy_from_mem_descriptor(dio->pib_va, dio->io_class, offset, 12);
 #endif
@@ -1021,16 +1024,19 @@ void crystalhd_link_start_tx_dma_engine(struct crystalhd_hw *hw, uint8_t list_id
  */
 BC_STATUS crystalhd_link_stop_tx_dma_engine(struct crystalhd_hw *hw)
 {
+	struct device *dev;
 	uint32_t dma_cntrl, cnt = 30;
 	uint32_t l1 = 1, l2 = 1;
 	unsigned long flags = 0;
 
 	dma_cntrl = hw->pfnReadFPGARegister(hw->adp, MISC1_TX_SW_DESC_LIST_CTRL_STS);
 
-	dev_dbg(&hw->adp->pdev->dev, "Stopping TX DMA Engine..\n");
+	dev = &hw->adp->pdev->dev;
+
+	dev_dbg(dev, "Stopping TX DMA Engine..\n");
 
 	if (!(dma_cntrl & DMA_START_BIT)) {
-		dev_dbg(&hw->adp->pdev->dev, "Already Stopped\n");
+		dev_dbg(dev, "Already Stopped\n");
 		return BC_STS_SUCCESS;
 	}
 
@@ -1040,7 +1046,7 @@ BC_STATUS crystalhd_link_stop_tx_dma_engine(struct crystalhd_hw *hw)
 	dma_cntrl &= ~DMA_START_BIT;
 	hw->pfnWriteFPGARegister(hw->adp, MISC1_TX_SW_DESC_LIST_CTRL_STS, dma_cntrl);
 
-	dev_dbg(&hw->adp->pdev->dev, "Cleared the DMA Start bit\n");
+	dev_dbg(dev, "Cleared the DMA Start bit\n");
 
 	/* Poll for 3seconds (30 * 100ms) on both the lists..*/
 	while ((l1 || l2) && cnt) {
@@ -1063,7 +1069,7 @@ BC_STATUS crystalhd_link_stop_tx_dma_engine(struct crystalhd_hw *hw)
 	}
 
 	if (!cnt) {
-		dev_err(&hw->adp->pdev->dev, "Failed to stop TX DMA.. l1 %d, l2 %d\n", l1, l2);
+		dev_err(dev, "Failed to stop TX DMA.. l1 %d, l2 %d\n", l1, l2);
 		crystalhd_link_enable_interrupts(hw);
 		return BC_STS_ERROR;
 	}
@@ -1071,7 +1077,7 @@ BC_STATUS crystalhd_link_stop_tx_dma_engine(struct crystalhd_hw *hw)
 	spin_lock_irqsave(&hw->lock, flags);
 	hw->tx_list_post_index = 0;
 	spin_unlock_irqrestore(&hw->lock, flags);
-	dev_dbg(&hw->adp->pdev->dev, "stopped TX DMA..\n");
+	dev_dbg(dev, "stopped TX DMA..\n");
 	crystalhd_link_enable_interrupts(hw);
 
 	return BC_STS_SUCCESS;
@@ -1287,6 +1293,7 @@ void crystalhd_link_start_rx_dma_engine(struct crystalhd_hw *hw)
 
 void crystalhd_link_stop_rx_dma_engine(struct crystalhd_hw *hw)
 {
+	struct device *dev = &hw->adp->pdev->dev;
 	uint32_t dma_cntrl = 0, count = 30;
 	uint32_t l0y = 1, l0uv = 1, l1y = 1, l1uv = 1;
 
@@ -1344,13 +1351,14 @@ void crystalhd_link_stop_rx_dma_engine(struct crystalhd_hw *hw)
 
 	hw->rx_list_post_index = 0;
 
-	dev_dbg(&hw->adp->pdev->dev, "Capture Stop: %d List0:Sts:%x List1:Sts:%x\n",
+	dev_dbg(dev, "Capture Stop: %d List0:Sts:%x List1:Sts:%x\n",
 		count, hw->rx_list_sts[0], hw->rx_list_sts[1]);
 }
 
 BC_STATUS crystalhd_link_hw_prog_rxdma(struct crystalhd_hw *hw,
 					 crystalhd_rx_dma_pkt *rx_pkt)
 {
+	struct device *dev;
 	uint32_t y_low_addr_reg, y_high_addr_reg;
 	uint32_t uv_low_addr_reg, uv_high_addr_reg;
 	addr_64 desc_addr;
@@ -1361,8 +1369,10 @@ BC_STATUS crystalhd_link_hw_prog_rxdma(struct crystalhd_hw *hw,
 		return BC_STS_INV_ARG;
 	}
 
+	dev = &hw->adp->pdev->dev;
+
 	if (hw->rx_list_post_index >= DMA_ENGINE_CNT) {
-		dev_err(&hw->adp->pdev->dev, "List Out Of bounds %x\n", hw->rx_list_post_index);
+		dev_err(dev, "List Out Of bounds %x\n", hw->rx_list_post_index);
 		return BC_STS_INV_ARG;
 	}
 
@@ -1798,6 +1808,7 @@ BC_STATUS crystalhd_link_put_ddr2sleep(struct crystalhd_hw *hw)
 BC_STATUS crystalhd_link_download_fw(struct crystalhd_hw *hw,
 				uint8_t *buffer, uint32_t sz)
 {
+	struct device *dev;
 	uint32_t reg_data, cnt, *temp_buff;
 	uint32_t fw_sig_len = 36;
 	uint32_t dram_offset = BC_FWIMG_ST_ADDR, sig_reg;
@@ -1807,11 +1818,13 @@ BC_STATUS crystalhd_link_download_fw(struct crystalhd_hw *hw,
 		return BC_STS_INV_ARG;
 	}
 
-	dev_dbg(&hw->adp->pdev->dev, "%s entered\n", __func__);
+	dev = &hw->adp->pdev->dev;
+
+	dev_dbg(dev, "%s entered\n", __func__);
 
 	reg_data = hw->pfnReadFPGARegister(hw->adp, OTP_CMD);
 	if (!(reg_data & 0x02)) {
-		dev_err(&hw->adp->pdev->dev, "Invalid hw config.. otp not programmed\n");
+		dev_err(dev, "Invalid hw config.. otp not programmed\n");
 		return BC_STS_ERROR;
 	}
 
@@ -1828,7 +1841,7 @@ BC_STATUS crystalhd_link_download_fw(struct crystalhd_hw *hw,
 		reg_data = hw->pfnReadFPGARegister(hw->adp, DCI_STATUS);
 		reg_data &= BC_BIT(4);
 		if (--cnt == 0) {
-			dev_err(&hw->adp->pdev->dev, "Firmware Download RDY Timeout.\n");
+			dev_err(dev, "Firmware Download RDY Timeout.\n");
 			return BC_STS_TIMEOUT;
 		}
 	}
@@ -1880,16 +1893,17 @@ BC_STATUS crystalhd_link_download_fw(struct crystalhd_hw *hw,
 		hw->pfnWriteFPGARegister(hw->adp, DCI_CMD, reg_data);
 
 	} else {
-		dev_err(&hw->adp->pdev->dev, "F/w Signature mismatch\n");
+		dev_err(dev, "F/w Signature mismatch\n");
 		return BC_STS_FW_AUTH_FAILED;
 	}
 
-	dev_info(&hw->adp->pdev->dev, "Firmware Downloaded Successfully\n");
+	dev_info(dev, "Firmware Downloaded Successfully\n");
 	return BC_STS_SUCCESS;;
 }
 
 BC_STATUS crystalhd_link_do_fw_cmd(struct crystalhd_hw *hw, BC_FW_CMD *fw_cmd)
 {
+	struct device *dev;
 	uint32_t cnt = 0, cmd_res_addr;
 	uint32_t *cmd_buff, *res_buff;
 	wait_queue_head_t fw_cmd_event;
@@ -1903,13 +1917,15 @@ BC_STATUS crystalhd_link_do_fw_cmd(struct crystalhd_hw *hw, BC_FW_CMD *fw_cmd)
 		return BC_STS_INV_ARG;
 	}
 
-	dev_dbg(&hw->adp->pdev->dev, "%s entered\n", __func__);
+	dev = &hw->adp->pdev->dev;
+
+	dev_dbg(dev, "%s entered\n", __func__);
 
 	cmd_buff = fw_cmd->cmd;
 	res_buff = fw_cmd->rsp;
 
 	if (!cmd_buff || !res_buff) {
-		dev_err(&hw->adp->pdev->dev, "Invalid Parameters for F/W Command\n");
+		dev_err(dev, "Invalid Parameters for F/W Command\n");
 		return BC_STS_INV_ARG;
 	}
 
@@ -1932,18 +1948,18 @@ BC_STATUS crystalhd_link_do_fw_cmd(struct crystalhd_hw *hw, BC_FW_CMD *fw_cmd)
 	if (!rc) {
 		sts = BC_STS_SUCCESS;
 	} else if (rc == -EBUSY) {
-		dev_err(&hw->adp->pdev->dev, "Firmware command T/O\n");
+		dev_err(dev, "Firmware command T/O\n");
 		sts = BC_STS_TIMEOUT;
 	} else if (rc == -EINTR) {
-		dev_dbg(&hw->adp->pdev->dev, "FwCmd Wait Signal int.\n");
+		dev_dbg(dev, "FwCmd Wait Signal int.\n");
 		sts = BC_STS_IO_USER_ABORT;
 	} else {
-		dev_err(&hw->adp->pdev->dev, "FwCmd IO Error.\n");
+		dev_err(dev, "FwCmd IO Error.\n");
 		sts = BC_STS_IO_ERROR;
 	}
 
 	if (sts != BC_STS_SUCCESS) {
-		dev_err(&hw->adp->pdev->dev, "FwCmd Failed.\n");
+		dev_err(dev, "FwCmd Failed.\n");
 		return sts;
 	}
 
@@ -1954,13 +1970,13 @@ BC_STATUS crystalhd_link_do_fw_cmd(struct crystalhd_hw *hw, BC_FW_CMD *fw_cmd)
 	crystalhd_link_mem_rd(hw, cmd_res_addr, FW_CMD_BUFF_SZ, res_buff);
 
 	if (res_buff[2] != C011_RET_SUCCESS) {
-		dev_err(&hw->adp->pdev->dev, "res_buff[2] != C011_RET_SUCCESS\n");
+		dev_err(dev, "res_buff[2] != C011_RET_SUCCESS\n");
 		return BC_STS_FW_CMD_ERR;
 	}
 
 	sts = crystalhd_link_fw_cmd_post_proc(hw, fw_cmd);
 	if (sts != BC_STS_SUCCESS)
-		dev_err(&hw->adp->pdev->dev, "crystalhd_fw_cmd_post_proc Failed.\n");
+		dev_err(dev, "crystalhd_fw_cmd_post_proc Failed.\n");
 
 	return sts;
 }

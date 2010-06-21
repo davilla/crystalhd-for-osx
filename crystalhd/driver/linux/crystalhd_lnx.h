@@ -89,7 +89,7 @@ struct crystalhd_adp {
 
 
 struct crystalhd_adp *chd_get_adp(void);
-struct device * chd_get_device(void);
+inline struct device * chddev(void);
 
 #endif
 

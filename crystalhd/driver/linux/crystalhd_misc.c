@@ -350,18 +350,17 @@ void crystalhd_delete_dioq(struct crystalhd_adp *adp, crystalhd_dioq_t *dioq)
 BC_STATUS crystalhd_dioq_add(crystalhd_dioq_t *ioq, void *data,
 			   bool wake, uint32_t tag)
 {
-	struct device *dev = chd_get_device();
 	unsigned long flags = 0;
 	crystalhd_elem_t *tmp;
 
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG) || !data) {
-		dev_err(dev, "%s: Invalid arg\n", __func__);
+		dev_err(chddev(), "%s: Invalid arg\n", __func__);
 		return BC_STS_INV_ARG;
 	}
 
 	tmp = crystalhd_alloc_elem(ioq->adp);
 	if (!tmp) {
-		dev_err(dev, "%s: No free elements.\n", __func__);
+		dev_err(chddev(), "%s: No free elements.\n", __func__);
 		return BC_STS_INSUFF_RES;
 	}
 
@@ -392,14 +391,13 @@ BC_STATUS crystalhd_dioq_add(crystalhd_dioq_t *ioq, void *data,
  */
 void *crystalhd_dioq_fetch(crystalhd_dioq_t *ioq)
 {
-	struct device *dev = chd_get_device();
 	unsigned long flags = 0;
 	crystalhd_elem_t *tmp;
 	crystalhd_elem_t *ret = NULL;
 	void *data = NULL;
 
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG)) {
-		dev_err(dev, "%s: Invalid arg\n", __func__);
+		dev_err(chddev(), "%s: Invalid arg\n", __func__);
 		return data;
 	}
 
@@ -431,14 +429,13 @@ void *crystalhd_dioq_fetch(crystalhd_dioq_t *ioq)
  */
 void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq, uint32_t tag)
 {
-	struct device *dev = chd_get_device();
 	unsigned long flags = 0;
 	crystalhd_elem_t *tmp;
 	crystalhd_elem_t *ret = NULL;
 	void *data = NULL;
 
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG)) {
-		dev_err(dev, "%s: Invalid arg\n", __func__);
+		dev_err(chddev(), "%s: Invalid arg\n", __func__);
 		return data;
 	}
 
@@ -475,45 +472,23 @@ void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq, uint32_t tag)
  * Return element from head if Q is not empty. Wait for new element
  * if Q is empty for Timeout seconds.
  */
-void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint32_t *sig_pend)
+void *crystalhd_dioq_fetch_wait(void *hw, uint32_t to_secs, uint32_t *sig_pend)
 {
-	struct device *dev = chd_get_device();
+	struct device *dev = chddev();
 	unsigned long flags = 0;
-	int rc = 0, count = to_secs;
+	int rc = 0;
 
 	crystalhd_rx_dma_pkt *r_pkt = NULL;
-	crystalhd_dioq_t *ioq = hw->rx_rdyq;
-/*
+	crystalhd_dioq_t *ioq = ((struct crystalhd_hw *)hw)->rx_rdyq;
 	unsigned long picYcomp = 0;
 
 	unsigned long fetchTimeout = jiffies + msecs_to_jiffies(to_secs * 1000);
-*/
+	
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG) || !to_secs || !sig_pend) {
 		dev_err(dev, "%s: Invalid arg\n", __func__);
 		return r_pkt;
 	}
 
-	spin_lock_irqsave(&ioq->lock, flags);
-	while ((ioq->count == 0) && count) {
-		spin_unlock_irqrestore(&ioq->lock, flags);
-
-		crystalhd_wait_on_event(&ioq->event, (ioq->count > 0), 1000, rc, 0);
-		if (rc == 0) {
-			goto out;
-		} else if (rc == -EINTR) {
-			dev_info(chd_get_device(), "Cancelling fetch wait\n");
-			*sig_pend = 1;
-			return r_pkt;
-		}
-		spin_lock_irqsave(&ioq->lock, flags);
-		count--;
- 	}
-	spin_unlock_irqrestore(&ioq->lock, flags);
-
-out:
-	return crystalhd_dioq_fetch(ioq);
-
-/*
 	spin_lock_irqsave(&ioq->lock, flags);
 	while (!time_after_eq(jiffies, fetchTimeout)) {
 		if(ioq->count == 0) {
@@ -533,7 +508,7 @@ out:
 			if(((struct crystalhd_hw *)hw)->adp->pdev->device == BC_PCI_DEVID_LINK)
 				picYcomp = link_GetRptDropParam(((struct crystalhd_hw *)hw)->PICHeight, ((struct crystalhd_hw *)hw)->PICWidth, (void *)r_pkt);
 			else
-				dev_info(dev,"FLEA NOT IMPLEMENTED YET\n");
+				dev_info(dev, "FLEA NOT IMPLEMENTED YET\n");
 			if(!picYcomp || (picYcomp == ((struct crystalhd_hw *)hw)->LastPicNo) ||
 				(picYcomp == ((struct crystalhd_hw *)hw)->LastTwoPicNo)) {
 				//Discard picture
@@ -558,7 +533,6 @@ out:
 	}
 	spin_unlock_irqrestore(&ioq->lock, flags);
 	return r_pkt;
-*/
 }
 
 /**
@@ -876,7 +850,7 @@ void crystalhd_destroy_dio_pool(struct crystalhd_adp *adp)
  * Create general purpose list element pool to hold pending,
  * and active requests.
  */
-int crystalhd_create_elem_pool(struct crystalhd_adp *adp,
+int __devinit crystalhd_create_elem_pool(struct crystalhd_adp *adp,
 		uint32_t pool_size)
 {
 	uint32_t i;
@@ -928,7 +902,7 @@ void crystalhd_delete_elem_pool(struct crystalhd_adp *adp)
 /*================ Debug support routines.. ================================*/
 void crystalhd_show_buffer(uint32_t off, uint8_t *buff, uint32_t dwcount)
 {
-	struct device *dev = chd_get_device();
+	struct device *dev = chddev();
 	uint32_t i, k = 1;
 
 	for (i = 0; i < dwcount; i++) {

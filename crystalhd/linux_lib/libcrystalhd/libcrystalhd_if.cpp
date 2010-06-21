@@ -1036,7 +1036,7 @@ DtsSetVideoParams(
 	// SingleThreadedAppMode is bit 7 of OptFlags
 	if(OptFlags & 0x80) {
 		Ctx->SingleThreadedAppMode = 1;
-		// Hard code BD mode as well as max frame rate mode for Link
+	// Hard code BD mode as well as max frame rate mode for Link
 		Ctx->VidParams.OptFlags |= 0xD1;
 	}
 	else
@@ -1701,8 +1701,8 @@ DtsProcOutputNoCopy(
 #endif
 
 		Ctx->bEOS = FALSE;
-    /* Update Counters.. */
-    DtsUpdateOutStats(Ctx, pOut);
+		/* Update Counters.. */
+		DtsUpdateOutStats(Ctx, pOut);
 
 		if (pOut->PoutFlags & BC_POUT_FLAGS_FMT_CHANGE) {
 			DtsUpdateVidParams(Ctx, pOut);

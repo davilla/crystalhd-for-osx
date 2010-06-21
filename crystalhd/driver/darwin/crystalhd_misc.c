@@ -368,13 +368,13 @@ BC_STATUS crystalhd_dioq_add(crystalhd_dioq_t *ioq, void *data,
 	crystalhd_elem_t *tmp;
 
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG) || !data) {
-		dev_err(chd_get_device(), "%s: Invalid arg\n", __func__);
+		dev_err(chddev(), "%s: Invalid arg\n", __func__);
 		return BC_STS_INV_ARG;
 	}
 
 	tmp = crystalhd_alloc_elem(ioq->adp);
 	if (!tmp) {
-		dev_err(chd_get_device(), "%s: No free elements.\n", __func__);
+		dev_err(chddev(), "%s: No free elements.\n", __func__);
 		return BC_STS_INSUFF_RES;
 	}
 
@@ -411,7 +411,7 @@ void *crystalhd_dioq_fetch(crystalhd_dioq_t *ioq)
 	void *data = NULL;
 
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG)) {
-		dev_err(chd_get_device(), "%s: Invalid arg\n", __func__);
+		dev_err(chddev(), "%s: Invalid arg\n", __func__);
 		return data;
 	}
 
@@ -449,7 +449,7 @@ void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq, uint32_t tag)
 	void *data = NULL;
 
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG)) {
-		dev_err(chd_get_device(), "%s: Invalid arg\n", __func__);
+		dev_err(chddev(), "%s: Invalid arg\n", __func__);
 		return data;
 	}
 
@@ -488,6 +488,7 @@ void *crystalhd_dioq_find_and_fetch(crystalhd_dioq_t *ioq, uint32_t tag)
  */
 void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint32_t *sig_pend)
 {
+	struct device *dev = chddev();
 	unsigned long flags = 0;
 	int rc = 0, count = to_secs * 10;
 
@@ -499,7 +500,7 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 	unsigned long fetchTimeout = jiffies + msecs_to_jiffies(to_secs * 1000);
 */
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG) || !to_secs || !sig_pend) {
-		dev_err(chd_get_device(), "%s: Invalid arg\n", __func__);
+		dev_err(dev, "%s: Invalid arg\n", __func__);
 		return r_pkt;
 	}
 
@@ -511,7 +512,7 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 		if (rc == 0) {
 			goto out;
 		} else if (rc == -EINTR) {
-			dev_info(chd_get_device(), "Cancelling fetch wait\n");
+			dev_info(dev, "Cancelling fetch wait\n");
 			*sig_pend = 1;
 			return r_pkt;
 		}
@@ -553,7 +554,7 @@ out:
 				r_pkt = NULL;
 			} else {
 				if ((picYcomp - hw->LastPicNo) > 1)
-					dev_info(chd_get_device(), "MISSING %lu PICTURES\n", (picYcomp - hw->LastPicNo));
+					dev_info(dev, "MISSING %lu PICTURES\n", (picYcomp - hw->LastPicNo));
 				hw->LastTwoPicNo = hw->LastPicNo;
 				hw->LastPicNo = picYcomp;
 				return r_pkt;
@@ -600,6 +601,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 			  bool en_422mode, bool dir_tx,
 			  crystalhd_dio_req **dio_hnd)
 {
+	struct device *dev;
 	crystalhd_dio_req	*dio;
 	/* FIXME: jarod: should some of these unsigned longs be uint32_t or uintptr_t? */
 #ifndef __APPLE__
@@ -617,6 +619,8 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 		return BC_STS_INV_ARG;
 	}
 
+	dev = &adp->pdev->dev;
+
 	/* Compute pages */
 	uaddr = (unsigned long)ubuff;
 	count = (unsigned long)ubuff_sz;
@@ -625,13 +629,13 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	nr_pages = end - start;
 
 	if (!count || ((uaddr + count) < uaddr)) {
-		dev_err(&adp->pdev->dev, "User addr overflow!!\n");
+		dev_err(dev, "User addr overflow!!\n");
 		return BC_STS_INV_ARG;
 	}
 
 	dio = crystalhd_alloc_dio(adp);
 	if (!dio) {
-		dev_err(&adp->pdev->dev, "dio pool empty..\n");
+		dev_err(dev, "dio pool empty..\n");
 		return BC_STS_INSUFF_RES;
 	}
 
@@ -644,7 +648,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	}
 
 	if (nr_pages > dio->max_pages) {
-		dev_err(&adp->pdev->dev, "max_pages(%d) exceeded(%d)!!\n",
+		dev_err(dev, "max_pages(%d) exceeded(%d)!!\n",
 			dio->max_pages, nr_pages);
 		crystalhd_unmap_dio(adp, dio);
 		return BC_STS_INSUFF_RES;
@@ -663,7 +667,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 				     (void *)(uaddr + count - dio->fb_size),
 				     dio->fb_size);
 		if (res) {
-			dev_err(&adp->pdev->dev, "failed %d to copy %u fill bytes from %p\n",
+			dev_err(dev, "failed %d to copy %u fill bytes from %p\n",
 				res, dio->fb_size,
 				(void *)(uaddr + count-dio->fb_size));
 			crystalhd_unmap_dio(adp, dio);
@@ -679,7 +683,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	/* Save for release..*/
 	dio->sig = crystalhd_dio_locked;
 	if (res < nr_pages) {
-		dev_err(&adp->pdev->dev, "get pages failed: %d-%d\n", nr_pages, res);
+		dev_err(dev, "get pages failed: %d-%d\n", nr_pages, res);
 		dio->page_cnt = res;
 		crystalhd_unmap_dio(adp, dio);
 		return BC_STS_ERROR;
@@ -725,7 +729,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	dio->sg_cnt = pci_map_sg(adp->pdev, dio->sg,
 				 dio->page_cnt, dio->direction);
 	if (dio->sg_cnt <= 0) {
-		dev_err(&adp->pdev->dev, "sg map %d-%d\n", dio->sg_cnt, dio->page_cnt);
+		dev_err(dev, "sg map %d-%d\n", dio->sg_cnt, dio->page_cnt);
 		crystalhd_unmap_dio(adp, dio);
 		return BC_STS_ERROR;
 	}
@@ -741,7 +745,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 		dio->uinfo.uv_sg_ix = uv_start - start;
 		dio->uinfo.uv_sg_off = ((uaddr + (unsigned long)uv_offset) & PAGE_MASK);
 	}
-	
+
 	dio->fb_size = ubuff_sz & 0x03;
 
 	// map user memory into kernel memory
@@ -894,7 +898,7 @@ BC_STATUS crystalhd_unmap_dio(struct crystalhd_adp *adp, crystalhd_dio_req *dio)
 	IOMemoryDescriptor	*mem_desc;
 
 	if(!adp || !dio ){
-		dev_err(chd_get_device(), "bc_link_unmap_dio:Invalid arg \n");
+		dev_err(chddev(), "bc_link_unmap_dio:Invalid arg \n");
 		return BC_STS_INV_ARG;
 	}
 	dma_command = OSDynamicCast(IODMACommand, (OSMetaClassBase*)dio->io_class);
@@ -929,6 +933,7 @@ BC_STATUS crystalhd_unmap_dio(struct crystalhd_adp *adp, crystalhd_dio_req *dio)
  */
 int crystalhd_create_dio_pool(struct crystalhd_adp *adp, uint32_t max_pages)
 {
+	struct device *dev;
 	uint32_t asz = 0, i = 0;
 	uint8_t	*temp;
 	crystalhd_dio_req *dio;
@@ -938,11 +943,13 @@ int crystalhd_create_dio_pool(struct crystalhd_adp *adp, uint32_t max_pages)
 		return -EINVAL;
 	}
 
+	dev = &adp->pdev->dev;
+
 	/* Get dma memory for fill byte handling..*/
 	adp->fill_byte_pool = pci_pool_create("crystalhd_fbyte",
 					      adp->pdev, 8, 8, 0);
 	if (!adp->fill_byte_pool) {
-		dev_err(&adp->pdev->dev, "failed to create fill byte pool\n");
+		dev_err(dev, "failed to create fill byte pool\n");
 		return -ENOMEM;
 	}
 
@@ -954,13 +961,13 @@ int crystalhd_create_dio_pool(struct crystalhd_adp *adp, uint32_t max_pages)
 	asz = (sizeof(*dio->sg) * max_pages) + sizeof(*dio);
 #endif
 
-	dev_dbg(&adp->pdev->dev, "Initializing Dio pool %d %d %x %p\n",
+	dev_dbg(dev, "Initializing Dio pool %d %d %x %p\n",
 		BC_LINK_SG_POOL_SZ, max_pages, asz, adp->fill_byte_pool);
 
 	for (i = 0; i < BC_LINK_SG_POOL_SZ; i++) {
 		temp = (uint8_t *)kzalloc(asz, GFP_KERNEL);
 		if ((temp) == NULL) {
-			dev_err(&adp->pdev->dev, "Failed to alloc %d mem\n", asz);
+			dev_err(dev, "Failed to alloc %d mem\n", asz);
 			return -ENOMEM;
 		}
 
@@ -977,7 +984,7 @@ int crystalhd_create_dio_pool(struct crystalhd_adp *adp, uint32_t max_pages)
 		dio->fb_va = pci_pool_alloc(adp->fill_byte_pool, GFP_KERNEL,
 					    &dio->fb_pa);
 		if (!dio->fb_va) {
-			dev_err(&adp->pdev->dev, "fill byte alloc failed.\n");
+			dev_err(dev, "fill byte alloc failed.\n");
 			return -ENOMEM;
 		}
 
@@ -1092,7 +1099,7 @@ void crystalhd_delete_elem_pool(struct crystalhd_adp *adp)
 /*================ Debug support routines.. ================================*/
 void crystalhd_show_buffer(uint32_t off, uint8_t *buff, uint32_t dwcount)
 {
-	struct device *dev = chd_get_device();
+	struct device *dev = chddev();
 	uint32_t i, k = 1;
 
 	for (i = 0; i < dwcount; i++) {

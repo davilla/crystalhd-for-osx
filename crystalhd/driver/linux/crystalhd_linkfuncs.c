@@ -65,7 +65,7 @@ uint32_t link_dec_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 			__func__, adp->addr + reg_off, val);
 */
 			
-  return val;
+	return val;
 }
 
 /**
@@ -98,10 +98,10 @@ void link_dec_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t val)
 	dev_dbg(&adp->pdev->dev, "%s: writel(0x%08x @ 0x%p).\n",
 			__func__, val, adp->addr + reg_off);
 */
-  writel(val, adp->addr + reg_off);
+	writel(val, adp->addr + reg_off);
 			
-  /* the udelay require for latest 70012, not for others... :( */
-  udelay(8);
+	/* the udelay require for latest 70012, not for others... :( */
+	udelay(8);
 }
 
 /**
@@ -138,7 +138,7 @@ uint32_t crystalhd_link_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 			__func__, adp->i2o_addr + reg_off, val);
 */
 			
-  return val;
+	return val;
 }
 
 /**
@@ -172,7 +172,7 @@ void crystalhd_link_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t
 			__func__, val, adp->i2o_addr + reg_off);
 */
 			
-  writel(val, adp->i2o_addr + reg_off);
+	writel(val, adp->i2o_addr + reg_off);
 }
 
 inline uint32_t crystalhd_link_dram_rd(struct crystalhd_hw *hw, uint32_t mem_off)
@@ -686,7 +686,7 @@ bool link_GetPictureInfo(uint32_t picHeight, uint32_t picWidth, crystalhd_dio_re
 	/* Limit = Base + (pRxDMAReq->RxYDoneSzInDword * 4); */
 // 	Limit = dio->uinfo.xfr_buff + dio->uinfo.xfr_len;
 
-	PicInfoLineNum = link_GetPicInfoLineNum(dio, (uint8_t*)dio->pib_va);
+	PicInfoLineNum = link_GetPicInfoLineNum(dio, dio->pib_va);
 	if (PicInfoLineNum > 1092) {
 		printk("Invalid Line Number[%d]\n",	(int)PicInfoLineNum);
 		goto getpictureinfo_err;
