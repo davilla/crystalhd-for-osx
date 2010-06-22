@@ -2085,7 +2085,11 @@ bool crystalhd_flea_hw_interrupt_handle(struct crystalhd_adp *adp, struct crysta
 
 	// Try to post RX Capture buffer from ISR context
 	if(bPostRxBuff) {
+#ifndef __APPLE__
+		rx_pkt = crystalhd_dioq_fetch(hw->rx_freeq);
+#else
 		rx_pkt = (crystalhd_rx_dma_pkt*)crystalhd_dioq_fetch(hw->rx_freeq);
+#endif
 		if (rx_pkt)
 			hw->pfnPostRxSideBuff(hw, rx_pkt);
 	}

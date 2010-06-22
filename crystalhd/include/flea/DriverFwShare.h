@@ -41,6 +41,7 @@ _PIC_DELIVERY_HOST_INFO_
 */
 #define HOST_TO_FW_FLL_ADDR			(HOST_TO_FW_PIC_DEL_INFO_ADDR + sizeof(PIC_DELIVERY_HOST_INFO))
 
+
 typedef enum _DRIVER_FW_FLAGS_{
 	DFW_FLAGS_CLEAR			=0,
 	DFW_FLAGS_TX_ABORT	=(1 << (0)),	//Firmware is stopped and will not give anymore buffers.

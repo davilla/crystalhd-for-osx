@@ -544,7 +544,7 @@ out:
 			// If format change packet, then return with out checking anything
 			if (r_pkt->flags & (COMP_FLAG_PIB_VALID | COMP_FLAG_FMT_CHANGE))
 				return r_pkt;
-			if(hw->adp->pdev->device == BC_PCI_DEVID_LINK)
+			if (hw->adp->pdev->device == BC_PCI_DEVID_LINK)
 				picYcomp = link_GetRptDropParam(hw->PICHeight, hw->PICWidth, (void *)r_pkt);
 			else {
 				// For Flea, we don't have the width and height handy since they
@@ -555,7 +555,8 @@ out:
 				if(r_pkt->flags & (COMP_FLAG_PIB_VALID | COMP_FLAG_FMT_CHANGE))
 					return r_pkt;
 			}
-			if (!picYcomp || (picYcomp == hw->LastPicNo) || (picYcomp == hw->LastTwoPicNo)) {
+			if(!picYcomp || (picYcomp == hw->LastPicNo) ||
+				(picYcomp == hw->LastTwoPicNo)) {
 				//Discard picture
 				if(picYcomp != 0) {
 					hw->LastTwoPicNo = hw->LastPicNo;
@@ -564,8 +565,10 @@ out:
 				crystalhd_dioq_add(hw->rx_freeq, r_pkt, false, r_pkt->pkt_tag);
 				r_pkt = NULL;
 			} else {
-				if ((picYcomp - hw->LastPicNo) > 1)
-					dev_info(dev, "MISSING %lu PICTURES\n", (picYcomp - hw->LastPicNo));
+				if(hw->adp->pdev->device == BC_PCI_DEVID_LINK) {
+					if((picYcomp - hw->LastPicNo) > 1)
+						dev_info(dev, "MISSING %lu PICTURES\n", (picYcomp - hw->LastPicNo));
+				}
 				hw->LastTwoPicNo = hw->LastPicNo;
 				hw->LastPicNo = picYcomp;
 				return r_pkt;

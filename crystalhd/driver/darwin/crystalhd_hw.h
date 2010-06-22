@@ -30,9 +30,8 @@
 #include <linux/device.h>
 #endif
 #include "crystalhd_fw_if.h"
-#include "DriverFwShare.h"
-
 #include "crystalhd_misc.h"
+#include "DriverFwShare.h"
 
 /* HW constants..*/
 #define DMA_ENGINE_CNT		2

@@ -685,8 +685,11 @@ bool link_GetPictureInfo(uint32_t picHeight, uint32_t picWidth, crystalhd_dio_re
 	/* Limit = Base + pRxDMAReq->RxYDMADesc.RxBuffSz; */
 	/* Limit = Base + (pRxDMAReq->RxYDoneSzInDword * 4); */
 // 	Limit = dio->uinfo.xfr_buff + dio->uinfo.xfr_len;
-
+#ifndef __APPLE__
+	PicInfoLineNum = link_GetPicInfoLineNum(dio, dio->pib_va);
+#else
 	PicInfoLineNum = link_GetPicInfoLineNum(dio, (uint8_t*)dio->pib_va);
+#endif
 	if (PicInfoLineNum > 1092) {
 		printk("Invalid Line Number[%d]\n",	(int)PicInfoLineNum);
 		goto getpictureinfo_err;
