@@ -779,7 +779,7 @@ struct crystalhd_adp *chd_get_adp(void)
 	return g_adp_info;
 }
 
-inline struct device *chddev(void)
+struct device *chddev(void)
 {
 	return &chd_get_adp()->pdev->dev;
 }
