@@ -2139,11 +2139,7 @@ bool flea_GetPictureInfo(struct crystalhd_hw *hw, crystalhd_rx_dma_pkt * rx_pkt,
 		goto getpictureinfo_err;
 
 	offset = (rx_pkt->dio_req->uinfo.y_done_sz * 4) - PIC_PIB_DATA_OFFSET_FROM_END;
-#ifndef __APPLE__
 	res = copy_from_user(dio->pib_va, (void *)(dio->uinfo.xfr_buff + offset), 4);
-#else
-	res = copy_from_mem_descriptor(dio->pib_va, dio->io_class, offset, 4);
-#endif
 	if (res != 0)
 		goto getpictureinfo_err;
 	PicInfoLineNum = *(uint32_t*)(dio->pib_va);
@@ -2153,11 +2149,7 @@ bool flea_GetPictureInfo(struct crystalhd_hw *hw, crystalhd_rx_dma_pkt * rx_pkt,
 	}
 
 	offset = (rx_pkt->dio_req->uinfo.y_done_sz * 4) - PIC_WIDTH_OFFSET_FROM_END;
-#ifndef __APPLE__
 	res = copy_from_user(dio->pib_va, (void *)(dio->uinfo.xfr_buff + offset), 4);
-#else
-	res = copy_from_mem_descriptor(dio->pib_va, dio->io_class, offset, 4);
-#endif
 	if (res != 0)
 		goto getpictureinfo_err;
 	widthField = *(uint32_t*)(dio->pib_va);
@@ -2176,11 +2168,7 @@ bool flea_GetPictureInfo(struct crystalhd_hw *hw, crystalhd_rx_dma_pkt * rx_pkt,
 		offset = (PicInfoLineNum * hw->PICWidth) + 4;
 	}
 
-#ifndef __APPLE__
 	res = copy_from_user(tmpPicInfo, (void *)(dio->uinfo.xfr_buff+offset), size);
-#else
-	res = copy_from_mem_descriptor(tmpPicInfo, dio->io_class, offset, size);
-#endif
 	if (res != 0)
 		goto getpictureinfo_err;
 
@@ -2203,11 +2191,7 @@ bool flea_GetPictureInfo(struct crystalhd_hw *hw, crystalhd_rx_dma_pkt * rx_pkt,
 			hw->DrvCancelEosFlag = 1;
 
 		hw->DrvEosDetected = 0;
-#ifndef __APPLE__
 		res = copy_from_user(dio->pib_va, (void *)(dio->uinfo.xfr_buff), 4);
-#else
-		res = copy_from_mem_descriptor(dio->pib_va, dio->io_class, 0, 4);
-#endif
 		if (res != 0)
 			goto getpictureinfo_err;
 
@@ -2270,11 +2254,7 @@ bool flea_GetPictureInfo(struct crystalhd_hw *hw, crystalhd_rx_dma_pkt * rx_pkt,
 		else
 			offset = (PicInfoLineNum * hw->PICWidth);
 
-#ifndef __APPLE__
 		res = copy_from_user(dio->pib_va, (void *)(dio->uinfo.xfr_buff+offset), 4);
-#else
-		res = copy_from_mem_descriptor(dio->pib_va, dio->io_class, offset, 4);
-#endif
 		if (res != 0)
 			goto getpictureinfo_err;
 
