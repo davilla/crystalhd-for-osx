@@ -35,7 +35,7 @@
 
 // Some HW specific code defines
 extern uint32_t link_GetRptDropParam(uint32_t picHeight, uint32_t picWidth, void *);
-extern uint32_t flea_GetRptDropParam(void *, void *);
+extern uint32_t flea_GetRptDropParam(struct crystalhd_hw *hw, void *);
 
 static crystalhd_dio_req *crystalhd_alloc_dio(struct crystalhd_adp *adp)
 {
@@ -494,42 +494,25 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 {
 	struct device *dev = chddev();
 	unsigned long flags = 0;
-	int rc = 0, count = to_secs * 10;
+	int rc = 0;
 
 	crystalhd_rx_dma_pkt *r_pkt = NULL;
 	crystalhd_dioq_t *ioq = hw->rx_rdyq;
-/*
 	unsigned long picYcomp = 0;
 
 	unsigned long fetchTimeout = jiffies + msecs_to_jiffies(to_secs * 1000);
-*/
+	
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG) || !to_secs || !sig_pend) {
 		dev_err(dev, "%s: Invalid arg\n", __func__);
 		return r_pkt;
 	}
 
 	spin_lock_irqsave(&ioq->lock, flags);
-	while ((ioq->count == 0) && count) {
-		spin_unlock_irqrestore(&ioq->lock, flags);
-
-		crystalhd_wait_on_event(&ioq->event, (ioq->count > 0), 100, rc, 0);
-		if (rc == 0) {
-			goto out;
-		} else if (rc == -EINTR) {
-			dev_info(dev, "Cancelling fetch wait\n");
-			*sig_pend = 1;
-			return r_pkt;
-		}
-		spin_lock_irqsave(&ioq->lock, flags);
-		count--;
- 	}
-	spin_unlock_irqrestore(&ioq->lock, flags);
-
-out:
-	return crystalhd_dioq_fetch(ioq);
-
-/*
+#ifndef __APPLE__
+	while (!time_after_eq(jiffies, fetchTimeout)) {
+#else
 	while (fetchTimeout >= jiffies) {
+#endif
 		if(ioq->count == 0) {
 			spin_unlock_irqrestore(&ioq->lock, flags);
 			crystalhd_wait_on_event(&ioq->event, (ioq->count > 0),
@@ -581,7 +564,6 @@ out:
 	}
 	spin_unlock_irqrestore(&ioq->lock, flags);
 	return r_pkt;
-*/
 }
 
 #ifdef __APPLE__
@@ -767,7 +749,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 		current_task() );
 	if (mem_desc) {
 		result = mem_desc->prepare();
-		//MPCLOG(MPCLOG_DBG,"bc_link_map_dio:mem_desc=0x%X, prepare result 0x%X \n", (unsigned int)mem_desc, (int)result);
+		//IOLog("bc_link_map_dio:mem_desc=0x%X, prepare result 0x%X \n", (unsigned int)mem_desc, (int)result);
 		dio->io_class = (void*)mem_desc;
 	} else {
 		dev_err(&adp->pdev->dev, "bc_link_map_dio:IOMemoryDescriptor::withAddress failed\n");
@@ -802,7 +784,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 				break;
 			}
 
-			//MPCLOG(MPCLOG_DBG,"bc_link_map_dio:dma_command=0x%X \n", (unsigned int)dma_command);
+			//IOLog("bc_link_map_dio:dma_command=0x%X \n", (unsigned int)dma_command);
 			// point IODMACommand at the memory descriptor, don't use auto prepare option
 			result = dma_command->setMemoryDescriptor(mem_desc, false);
 			if (kIOReturnSuccess != result) {
@@ -811,7 +793,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 			}
 			dio->io_class = (void*)dma_command;
 			result = dma_command->prepare(0, count, true);
-			//MPCLOG(MPCLOG_DBG,"bc_link_map_dio:dma_command->prepare() result 0x%X \n",(int)result);
+			//IOLog("bc_link_map_dio:dma_command->prepare() result 0x%X \n",(int)result);
 	      
 			// generate scatter/gather list using custom segment function. This routine will make
 			// sure that the first s/g entry will have the correct address and length for user
@@ -819,7 +801,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 			UInt64 offset = 0;
 			result = dma_command->gen32IOVMSegments(&offset, (IODMACommand::Segment32*)dio->sg, (UInt32*)&nr_pages);
 	      
-			//MPCLOG(MPCLOG_DBG,"bc_link_map_dio:gen32IOVMSegments nr_pages %d, result %d\n", (int)nr_pages, (int)result);
+			//IOLog("bc_link_map_dio:gen32IOVMSegments nr_pages %d, result %d\n", (int)nr_pages, (int)result);
 			// if ending page is not end 4 byte aligned, decrease last page transfer length
 			//  as those bytes will be handled using the fill byte page.
 			if(dio->fb_size) {
