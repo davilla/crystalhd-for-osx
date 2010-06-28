@@ -93,11 +93,11 @@ unsigned long msleep_interruptible(unsigned int msecs)
 	return(0);
 }
 
-unsigned long readl(void *addr)
+unsigned int readl(void *addr)
 {
 	return OSReadLittleInt32((volatile void*)addr, 0);
 }
-void writel(unsigned long value, void *addr)
+void writel(unsigned int value, void *addr)
 {
 	OSWriteLittleInt32((volatile void*)addr, 0, value);
 }

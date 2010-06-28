@@ -123,8 +123,8 @@ unsigned long mach_jiffies(void);
 unsigned long msecs_to_mach_jiffies(uint32_t msecs);
 
 // FIXME: convert to inlines or defines later
-unsigned long readl(void *addr);
-void writel(unsigned long value, void *addr);
+unsigned int readl(void *addr);
+void writel(unsigned int value, void *addr);
 
 // FIXME: convert to inlines or defines later
 int pci_read_config_byte(  void *dev, uint8_t off,  u8 *val);
