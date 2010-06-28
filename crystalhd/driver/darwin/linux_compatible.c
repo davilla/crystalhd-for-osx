@@ -184,7 +184,7 @@ void* pci_pool_alloc(struct pci_pool *pool, int mem_flags, dma_addr_t *handle)
 
 	if (handle) {
 		*handle = pool->memory->getPhysicalSegment(
-		(uint32_t)vaddr - (uint32_t)pool->memory->getBytesNoCopy(), &segLength);
+			(uint32_t)vaddr - (uint32_t)pool->memory->getBytesNoCopy(), &segLength);
 	}
 
 	return vaddr;
