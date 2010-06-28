@@ -781,7 +781,7 @@ struct crystalhd_adp *chd_get_adp(void)
 
 struct device *chddev(void)
 {
-	return &chd_get_adp()->pdev->dev;
+	return &g_adp_info->pdev->dev;
 }
 
 #ifndef __APPLE__
