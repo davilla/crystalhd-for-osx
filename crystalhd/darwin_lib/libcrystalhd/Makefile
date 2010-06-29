@@ -7,7 +7,7 @@ LIBDIR=/usr/lib
 
 AT   = @
 ECHO = ${AT} echo
-BCGCC = g++
+CXX = /usr/bin/g++-4.0
 
 ROOTDIR = ../..
 
@@ -16,12 +16,12 @@ INCLUDES += -I$(ROOTDIR)/include/link
 INCLUDES += -I$(ROOTDIR)/include/flea
 
 
-CPPFLAGS = -D__LINUX_USER__
+CXXFLAGS = -D__LINUX_USER__
 # -DLDIL_PRINTS_ON
 # -D_USE_SHMEM_
 
-CPPFLAGS += ${INCLUDES}
-CPPFLAGS += -g -O0 -Wall -fPIC -arch i386 -shared -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
+CXXFLAGS += ${INCLUDES}
+CXXFLAGS += -g -O0 -Wall -fPIC -arch i386 -shared -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
 LDFLAGS = -dynamiclib -twolevel_namespace 
 
 SRCFILES = 	libcrystalhd_if.cpp \
@@ -36,7 +36,7 @@ SRCFILES = 	libcrystalhd_if.cpp \
 OBJFILES = ${SRCFILES:.cpp=.o}
 
 all:help $(OBJFILES)
-	$(BCGCC) $(CPPFLAGS) $(LDFLAGS) -o $(BCLIB) ${OBJFILES} 
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(BCLIB) ${OBJFILES} 
 
 help:
 	${ECHO} OBJFILES = ${OBJFILES}
