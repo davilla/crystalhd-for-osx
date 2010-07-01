@@ -163,28 +163,28 @@ typedef enum _list_sts_ {
 } list_sts;
 #ifdef __APPLE__
 inline _list_sts_ operator|(_list_sts_ a, _list_sts_ b) {
-  return _list_sts_(int(a) | int(b));
+  return _list_sts_(int32_t(a) | int32_t(b));
 }
 inline _list_sts_& operator|=(_list_sts_& a, _list_sts_ b) {
-  a = a | b;
+  a = _list_sts_(int32_t(a) | int32_t(b));
   return a;
 }
 inline _list_sts_ operator&(_list_sts_ a, _list_sts_ b) {
-  return _list_sts_(int(a) & int(b));
+  return _list_sts_(int32_t(a) & int32_t(b));
 }
 inline _list_sts_& operator&=(_list_sts_& a, _list_sts_ b) {
-  a = a & b;
+  a = _list_sts_(int32_t(a) & int32_t(b));
   return a;
 }
 inline _list_sts_ operator^(_list_sts_ a, _list_sts_ b) {
-  return _list_sts_(int(a) ^ int(b));
+  return _list_sts_(int32_t(a) ^ int32_t(b));
 }
 inline _list_sts_& operator^=(_list_sts_& a, _list_sts_ b) {
-  a = a ^ b;
+  a = _list_sts_(int32_t(a) ^ int32_t(b));
   return a;
 }
 inline _list_sts_ operator~(_list_sts_ a) {
-  return _list_sts_(~int(a));
+  return _list_sts_(~int32_t(a));
 }
 #endif
 
