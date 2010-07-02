@@ -1927,7 +1927,7 @@ BC_STATUS DtsPrepareMdata(DTS_LIB_CONTEXT *Ctx, uint64_t timeStamp, DTS_INPUT_MD
 	/* Alloc clears all fields */
 	if( (temp = DtsAllocMdata(Ctx)) == NULL)
 	{
-		DebugLog_Trace(LDIL_DBG,"COULD not find free MDATA");
+		DebugLog_Trace(LDIL_DBG,"COULD not find free MDATA\n");
 		return BC_STS_BUSY;
 	}
 	/* Store all app data */
