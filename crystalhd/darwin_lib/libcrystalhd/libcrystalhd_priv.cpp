@@ -867,7 +867,7 @@ static BC_STATUS DtsDeleteMdataPool(DTS_LIB_CONTEXT *Ctx)
 	/* Remove all Pending elements */
 	temp = Ctx->MDPendHead;
 
-	while(temp != DTS_MDATA_PEND_LINK(Ctx)){
+	while(temp && temp != DTS_MDATA_PEND_LINK(Ctx)){
 		DebugLog_Trace(LDIL_DBG,"Clearing InMdata %p %x \n", temp->Spes.SeqNum, temp->IntTag);
 		DtsRemoveMdata(Ctx,temp,FALSE);
 		temp = Ctx->MDPendHead;
@@ -1752,7 +1752,7 @@ BC_STATUS DtsClrPendMdataList(DTS_LIB_CONTEXT *Ctx)
 	/* Remove all Pending elements */
 	temp = Ctx->MDPendHead;
 
-	while(temp != DTS_MDATA_PEND_LINK(Ctx)){
+	while(temp && temp != DTS_MDATA_PEND_LINK(Ctx)){
 		DebugLog_Trace(LDIL_DBG,"Clearing PendMdata %p %x \n", temp->Spes.SeqNum, temp->IntTag);
 		DtsRemoveMdata(Ctx,temp,FALSE);
 		temp = Ctx->MDPendHead;
@@ -1833,7 +1833,7 @@ BC_STATUS DtsFetchMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, BC_DTS_PROC_OUT *po
 	temp = Ctx->MDPendHead;
 
 	DtsLock(Ctx);
-	while(temp != DTS_MDATA_PEND_LINK(Ctx)){
+	while(temp && temp != DTS_MDATA_PEND_LINK(Ctx)){
 		if(temp->IntTag == InTag){
 			pout->PicInfo.timeStamp = temp->appTimeStamp;
 			sts = BC_STS_SUCCESS;
@@ -1856,7 +1856,7 @@ BC_STATUS DtsFetchMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, BC_DTS_PROC_OUT *po
 			InTag = DtsMdataGetIntTag(Ctx, tsnum);
 			temp = Ctx->MDPendHead;
 			DtsLock(Ctx);
-			while(temp != DTS_MDATA_PEND_LINK(Ctx)){
+			while(temp && temp != DTS_MDATA_PEND_LINK(Ctx)){
 				if(temp->IntTag == InTag){
 					DtsRemoveMdata(Ctx, temp, FALSE);
 					break;
@@ -1897,7 +1897,7 @@ BC_STATUS DtsFetchTimeStampMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, uint64_t *
 	temp = Ctx->MDPendHead;
 
 	DtsLock(Ctx);
-	while(temp != DTS_MDATA_PEND_LINK(Ctx)) {
+	while(temp && temp != DTS_MDATA_PEND_LINK(Ctx)) {
 		if(temp->IntTag == InTag) {
 
 			*TimeStamp = temp->appTimeStamp;
