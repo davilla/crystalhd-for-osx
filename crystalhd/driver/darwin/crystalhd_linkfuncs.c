@@ -67,6 +67,7 @@ uint32_t link_dec_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 	dev_dbg(&adp->pdev->dev, "%s: read(0x%p) = 0x%08x\n",
 		__func__, adp->mem_addr + reg_off, val);
 */
+
 	return val;
 }
 
@@ -95,6 +96,7 @@ void link_dec_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t val)
 			__func__, reg_off);
 		return;
 	}
+
 /*
 	dev_dbg(&adp->pdev->dev, "%s: writel(0x%08x @ 0x%p).\n",
 			__func__, val, adp->mem_addr + reg_off);
@@ -138,6 +140,7 @@ uint32_t crystalhd_link_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 	dev_dbg(&adp->pdev->dev, "%s: read(0x%p) = 0x%08x\n",
 		__func__, adp->i2o_addr + reg_off, val);
 */
+
 	return val;
 }
 
@@ -167,10 +170,12 @@ void crystalhd_link_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t
 				__func__, reg_off);
 				return;
 	}
+
 /*
 	dev_dbg(&adp->pdev->dev, "%s: writel(0x%08x @ 0x%p).\n",
 		__func__, val, adp->i2o_addr + reg_off);
 */
+
 	writel(val, adp->i2o_addr + reg_off);
 }
 
@@ -308,7 +313,7 @@ bool crystalhd_link_bring_out_of_rst(struct crystalhd_hw *hw)
 	rst_deco_cntrl.stop_bcm_7412_clk = 0;
 	rst_deco_cntrl.bcm7412_rst = 1;
 	hw->pfnWriteFPGARegister(hw->adp, MISC_PERST_DECODER_CTRL, rst_deco_cntrl.whole_reg);
-	msleep_interruptible(50);
+	msleep_interruptible(10);
 
 	rst_deco_cntrl.whole_reg = hw->pfnReadFPGARegister(hw->adp, MISC_PERST_DECODER_CTRL);
 	rst_deco_cntrl.bcm7412_rst = 0;
@@ -652,7 +657,7 @@ uint32_t link_GetHeightFromPib(crystalhd_dio_req *dio,
 bool link_GetPictureInfo(uint32_t picHeight, uint32_t picWidth, crystalhd_dio_req *dio,
 			   uint32_t *PicNumber, uint64_t *PicMetaData)
 {
-	unsigned long PicInfoLineNum = 0, HeightInPib = 0, offset = 0, size = 0;
+	uint32_t PicInfoLineNum = 0, HeightInPib = 0, offset = 0, size = 0;
 	PBC_PIC_INFO_BLOCK pPicInfoLine = NULL;
 	uint32_t pic_number = 0;
 	uint8_t *tmp = (uint8_t *)&pic_number;
@@ -1234,7 +1239,7 @@ void crystalhd_link_proc_pib(struct crystalhd_hw *hw)
 				hw->PICWidth = 720;
 
 			dev_info(&hw->adp->pdev->dev,
-				"App PIB:%x %x %x %x %x %x %x %x %x %x\n",
+				"[FMT CH] PIB:%x %x %x %x %x %x %x %x %x %x\n",
 				rx_pkt->pib.picture_number,
 				rx_pkt->pib.aspect_ratio,
 				rx_pkt->pib.chroma_format,
@@ -1909,9 +1914,9 @@ BC_STATUS crystalhd_link_do_fw_cmd(struct crystalhd_hw *hw, BC_FW_CMD *fw_cmd)
 	}
 
 	dev = &hw->adp->pdev->dev;
-/*
+
 	dev_dbg(dev, "%s entered\n", __func__);
-*/
+
 	cmd_buff = fw_cmd->cmd;
 	res_buff = fw_cmd->rsp;
 
@@ -2031,4 +2036,9 @@ bool crystalhd_link_hw_interrupt_handle(struct crystalhd_adp *adp, struct crysta
 void crystalhd_link_notify_fll_change(struct crystalhd_hw *hw, bool bCleanupContext)
 {
 	return;
+}
+
+bool crystalhd_link_notify_event(struct crystalhd_hw *hw, BRCM_EVENT EventCode)
+{
+	return true;
 }

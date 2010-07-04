@@ -46,6 +46,8 @@ typedef unsigned char      u8;
 typedef unsigned short    u16;
 typedef unsigned int      u32;
 
+#define rdtscll(val)  __asm__ __volatile__("rdtsc" : "=A" (val))
+
 typedef IOPhysicalAddress dma_addr_t;
 typedef uint32_t          wait_queue_head_t;
 typedef IOLock*           spinlock_t;

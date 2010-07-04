@@ -44,8 +44,8 @@ _PIC_DELIVERY_HOST_INFO_
 
 typedef enum _DRIVER_FW_FLAGS_{
 	DFW_FLAGS_CLEAR			=0,
-	DFW_FLAGS_TX_ABORT	=(1 << (0)),	//Firmware is stopped and will not give anymore buffers.
-	DFW_FLAGS_WRAP			=(1 << (1))	//Instruct the Firmware to WRAP the input buffer pointer
+	DFW_FLAGS_TX_ABORT		=BC_BIT(0),	//Firmware is stopped and will not give anymore buffers.
+	DFW_FLAGS_WRAP			=BC_BIT(1)	//Instruct the Firmware to WRAP the input buffer pointer
 }DRIVER_FW_FLAGS;
 
 typedef struct
@@ -91,4 +91,3 @@ typedef enum _OUT_OF_BAND_ERR_CODE_
 #define RX_DRAM_WRITE_WRKARND			BC_BIT(1)
 #define RX_MBOX_WRITE_WRKARND			BC_BIT(2)
 #endif
-

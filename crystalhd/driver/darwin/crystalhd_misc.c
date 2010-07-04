@@ -498,10 +498,10 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 
 	crystalhd_rx_dma_pkt *r_pkt = NULL;
 	crystalhd_dioq_t *ioq = hw->rx_rdyq;
-	unsigned long picYcomp = 0;
+	uint32_t picYcomp = 0;
 
 	unsigned long fetchTimeout = jiffies + msecs_to_jiffies(to_secs * 1000);
-	
+
 	if (!ioq || (ioq->sig != BC_LINK_DIOQ_SIG) || !to_secs || !sig_pend) {
 		dev_err(dev, "%s: Invalid arg\n", __func__);
 		return r_pkt;
@@ -523,7 +523,11 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 		if (rc == 0) {
 			// Found a packet. Check if it is a repeated picture or not
 			// Drop the picture if it is a repeated picture
+#ifndef __APPLE__
+			r_pkt = crystalhd_dioq_fetch(ioq);
+#else
 			r_pkt = (crystalhd_rx_dma_pkt*)crystalhd_dioq_fetch(ioq);
+#endif
 			// If format change packet, then return with out checking anything
 			if (r_pkt->flags & (COMP_FLAG_PIB_VALID | COMP_FLAG_FMT_CHANGE))
 				return r_pkt;
@@ -550,7 +554,7 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 			} else {
 				if(hw->adp->pdev->device == BC_PCI_DEVID_LINK) {
 					if((picYcomp - hw->LastPicNo) > 1)
-						dev_info(dev, "MISSING %lu PICTURES\n", (picYcomp - hw->LastPicNo));
+						dev_info(dev, "MISSING %u PICTURES\n", (picYcomp - hw->LastPicNo));
 				}
 				hw->LastTwoPicNo = hw->LastPicNo;
 				hw->LastPicNo = picYcomp;
@@ -562,6 +566,7 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 		}
 		spin_lock_irqsave(&ioq->lock, flags);
 	}
+	dev_info(dev, "FETCH TIMEOUT\n");
 	spin_unlock_irqrestore(&ioq->lock, flags);
 	return r_pkt;
 }
@@ -599,13 +604,12 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 {
 	struct device *dev;
 	crystalhd_dio_req	*dio;
-	/* FIXME: jarod: should some of these unsigned longs be uint32_t or uintptr_t? */
+	uint32_t start = 0, end = 0, count = 0;
+	unsigned long uaddr = 0, uv_start = 0;
 #ifndef __APPLE__
-	unsigned long start = 0, end = 0, uaddr = 0, count = 0;
-	unsigned long spsz = 0, uv_start = 0;
+	uint32_t spsz = 0;
 	int i = 0, rw = 0, res = 0, nr_pages = 0, skip_fb_sg = 0;
 #else
-	unsigned long start=0, end=0, uaddr=0, count=0, uv_start=0;
 	int rw = 0;
 	uint32_t nr_pages = 0;
 #endif
@@ -619,7 +623,7 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 
 	/* Compute pages */
 	uaddr = (unsigned long)ubuff;
-	count = (unsigned long)ubuff_sz;
+	count = ubuff_sz;
 	end = (uaddr + count + PAGE_SIZE - 1) >> PAGE_SHIFT;
 	start = uaddr >> PAGE_SHIFT;
 	nr_pages = end - start;
@@ -652,9 +656,9 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 
 #ifndef __APPLE__
 	if (uv_offset) {
-		uv_start = (uaddr + (unsigned long)uv_offset)  >> PAGE_SHIFT;
+		uv_start = (uaddr + uv_offset)  >> PAGE_SHIFT;
 		dio->uinfo.uv_sg_ix = uv_start - start;
-		dio->uinfo.uv_sg_off = ((uaddr + (unsigned long)uv_offset) & ~PAGE_MASK);
+		dio->uinfo.uv_sg_off = ((uaddr + uv_offset) & ~PAGE_MASK);
 	}
 
 	dio->fb_size = ubuff_sz & 0x03;
@@ -737,9 +741,9 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	IOReturn              result;
 
 	if (uv_offset) {
-		uv_start = (uaddr + (unsigned long)uv_offset)  >> PAGE_SHIFT;
+		uv_start = (uaddr + uv_offset)  >> PAGE_SHIFT;
 		dio->uinfo.uv_sg_ix = uv_start - start;
-		dio->uinfo.uv_sg_off = ((uaddr + (unsigned long)uv_offset) & PAGE_MASK);
+		dio->uinfo.uv_sg_off = ((uaddr + uv_offset) & PAGE_MASK);
 	}
 
 	dio->fb_size = ubuff_sz & 0x03;
@@ -1039,8 +1043,6 @@ void crystalhd_destroy_dio_pool(struct crystalhd_adp *adp)
  * Create general purpose list element pool to hold pending,
  * and active requests.
  */
-
-// curtis why define __devinit  ?
 int crystalhd_create_elem_pool(struct crystalhd_adp *adp,
 		uint32_t pool_size)
 {

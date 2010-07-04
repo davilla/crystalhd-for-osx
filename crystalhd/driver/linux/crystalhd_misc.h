@@ -63,7 +63,7 @@ enum _crystalhd_dio_sig {
 };
 
 struct crystalhd_dio_user_info {
-	uint8_t			*xfr_buff;
+	void			*xfr_buff;
 	uint32_t		xfr_len;
 	uint32_t		uv_offset;
 	bool			dir_tx;

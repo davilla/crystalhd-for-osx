@@ -145,7 +145,7 @@ static int chd_dec_fetch_cdata(struct crystalhd_adp *adp, crystalhd_ioctl_data *
 	int rc = 0;
 
 	if (!adp || !io || !ua || !m_sz) {
-		dev_err(chddev(), "Invalid Arg!!\n");
+		dev_err(chddev(), "%s: Invalid Arg!!\n", __func__);
 		return -EINVAL;
 	}
 
@@ -162,8 +162,10 @@ static int chd_dec_fetch_cdata(struct crystalhd_adp *adp, crystalhd_ioctl_data *
 		dev_err(chddev(), "failed to pull add_cdata sz:%x "
 			"ua_off:%x\n", io->add_cdata_sz,
 			(unsigned int)ua_off);
-		kfree(io->add_cdata);
-		io->add_cdata = NULL;
+		if (io->add_cdata) {
+			kfree(io->add_cdata);
+			io->add_cdata = NULL;
+		}
 		return -ENODATA;
 	}
 
@@ -177,7 +179,7 @@ static int chd_dec_release_cdata(struct crystalhd_adp *adp,
 	int rc;
 
 	if (!adp || !io || !ua) {
-		dev_err(chddev(), "Invalid Arg!!\n");
+		dev_err(chddev(), "%s: Invalid Arg!!\n", __func__);
 		return -EINVAL;
 	}
 
@@ -213,7 +215,7 @@ static int chd_dec_proc_user_data(struct crystalhd_adp *adp,
 	uint32_t m_sz = 0;
 
 	if (!adp || !io || !ua) {
-		dev_err(chddev(), "Invalid Arg!!\n");
+		dev_err(chddev(), "%s: Invalid Arg!!\n", __func__);
 		return -EINVAL;
 	}
 
@@ -292,7 +294,11 @@ static int chd_dec_ioctl(struct inode *in, struct file *fd,
 		return -EINVAL;
 	}
 
+#ifndef __APPLE__
+	uc = fd->private_data;
+#else
 	uc = (struct crystalhd_user *)fd->private_data;
+#endif
 	if (!uc) {
 		dev_err(chddev(), "Failed to get uc\n");
 		return -ENODATA;
@@ -351,7 +357,11 @@ static int chd_dec_close(struct inode *in, struct file *fd)
 		return -EINVAL;
 	}
 
+#ifndef __APPLE__
+	uc = fd->private_data;
+#else
 	uc = (struct crystalhd_user *)fd->private_data;
+#endif
 	if (!uc) {
 		dev_err(dev, "Failed to get uc\n");
 		return -ENODATA;
@@ -425,9 +435,8 @@ int chd_dec_init_chdev(struct crystalhd_adp *adp)
 
 	/* Allocate general purpose ioctl pool. */
 	for (i = 0; i < CHD_IODATA_POOL_SZ; i++) {
-		/* FIXME: jarod: why atomic? */
 #ifndef __APPLE__
-		temp = kzalloc(sizeof(crystalhd_ioctl_data), GFP_ATOMIC);
+		temp = kzalloc(sizeof(crystalhd_ioctl_data), GFP_KERNEL);
 #else
 		temp = (crystalhd_ioctl_data*)kzalloc(sizeof(crystalhd_ioctl_data), GFP_ATOMIC);
 #endif
@@ -481,7 +490,8 @@ void chd_dec_release_chdev(struct crystalhd_adp *adp)
 	/* Clear iodata pool.. */
 	do {
 		temp = chd_dec_alloc_iodata(adp, 0);
-		kfree(temp);
+		if (temp)
+			kfree(temp);
 	} while (temp);
 
 	//crystalhd_delete_elem_pool(adp);
@@ -756,6 +766,7 @@ static DEFINE_PCI_DEVICE_TABLE(chd_dec_pci_id_table) = {
 static struct pci_device_id chd_dec_pci_id_table[] = {
 /*	vendor, device, subvendor, subdevice, class, classmask, driver_data */
 	{ 0x14e4, 0x1612, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 8 },
+	{ 0x14e4, 0x1615, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 8 },
 	{ 0, },
 };
 #endif
