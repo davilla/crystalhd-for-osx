@@ -239,7 +239,7 @@ BroadcomCrystalHD::start( IOService * provider )
     m_pciNub->setBusMasterEnable(true);
     
     // setup power handling
-    if (g_adp_info->pdev->device == BC_PCI_DEVID_LINK) {
+    if (g_adp_info->pdev->device != BC_PCI_DEVID_FLEA && g_adp_info->pdev->device != BC_PCI_DEVID_LINK) {
       registerWithPolicyMaker(this);
       provider->joinPMtree(this);
     }
