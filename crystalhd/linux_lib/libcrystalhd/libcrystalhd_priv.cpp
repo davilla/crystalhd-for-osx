@@ -1836,7 +1836,7 @@ BC_STATUS DtsFetchMdata(DTS_LIB_CONTEXT *Ctx, uint16_t snum, BC_DTS_PROC_OUT *po
 		temp = temp->flink;
 	}
 	DtsUnLock(Ctx);
-	// If we found a tag, clear out all the old entries - from (tag - 10) to (tag-20)
+	// If we found a tag, clear out all the old entries - from (tag - 10) to (tag-110)
 	// This is to work around the issue of lost pictures for which tags will never get freed
 	if(sts == BC_STS_SUCCESS) {
 		for(i = 0; i < 100; i++) {
