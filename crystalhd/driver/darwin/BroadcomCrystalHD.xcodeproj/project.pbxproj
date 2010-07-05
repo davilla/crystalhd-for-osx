@@ -20,7 +20,7 @@
 		F5959CB910F03F8D004B58B3 /* crystalhd_lnx.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CB010F03F8D004B58B3 /* crystalhd_lnx.h */; };
 		F5959CBA10F03F8D004B58B3 /* crystalhd_misc.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CB110F03F8D004B58B3 /* crystalhd_misc.h */; };
 		F5959CBB10F03F8D004B58B3 /* crystalhd_misc.c in Sources */ = {isa = PBXBuildFile; fileRef = F5959CB210F03F8D004B58B3 /* crystalhd_misc.c */; };
-		F5959CEB10F042CA004B58B3 /* version_lnx.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CEA10F042CA004B58B3 /* version_lnx.h */; };
+		F5959CEB10F042CA004B58B3 /* libcrystalhd_version.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959CEA10F042CA004B58B3 /* libcrystalhd_version.h */; };
 		F5959DAB10F052EE004B58B3 /* linux_compatible.c in Sources */ = {isa = PBXBuildFile; fileRef = F5959DA910F052EE004B58B3 /* linux_compatible.c */; };
 		F5959DAC10F052EE004B58B3 /* linux_compatible.h in Headers */ = {isa = PBXBuildFile; fileRef = F5959DAA10F052EE004B58B3 /* linux_compatible.h */; };
 		F59AE39411CF1AE8000A28B3 /* crystalhd_flea_ddr.c in Sources */ = {isa = PBXBuildFile; fileRef = F59AE39011CF1AE8000A28B3 /* crystalhd_flea_ddr.c */; };
@@ -183,7 +183,7 @@
 		F5959CB110F03F8D004B58B3 /* crystalhd_misc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crystalhd_misc.h; sourceTree = "<group>"; };
 		F5959CB210F03F8D004B58B3 /* crystalhd_misc.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = crystalhd_misc.c; sourceTree = "<group>"; };
 		F5959CBD10F03F9E004B58B3 /* Info-BroadcomCrystalHD.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-BroadcomCrystalHD.plist"; sourceTree = "<group>"; };
-		F5959CEA10F042CA004B58B3 /* version_lnx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = version_lnx.h; path = ../../include/version_lnx.h; sourceTree = SOURCE_ROOT; };
+		F5959CEA10F042CA004B58B3 /* libcrystalhd_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libcrystalhd_version.h; path = ../../include/libcrystalhd_version.h; sourceTree = SOURCE_ROOT; };
 		F5959DA910F052EE004B58B3 /* linux_compatible.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = linux_compatible.c; sourceTree = "<group>"; };
 		F5959DAA10F052EE004B58B3 /* linux_compatible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = linux_compatible.h; sourceTree = "<group>"; };
 		F59AE39011CF1AE8000A28B3 /* crystalhd_flea_ddr.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = crystalhd_flea_ddr.c; sourceTree = SOURCE_ROOT; };
@@ -600,7 +600,7 @@
 			isa = PBXGroup;
 			children = (
 				F59D702D10419DFA00AD752F /* bc_dts_glob_osx.h */,
-				F5959CEA10F042CA004B58B3 /* version_lnx.h */,
+				F5959CEA10F042CA004B58B3 /* libcrystalhd_version.h */,
 				F59D702610419DED00AD752F /* bc_dts_types.h */,
 				F59D702710419DED00AD752F /* bc_dts_defs.h */,
 				F59D702810419DED00AD752F /* 7411d.h */,
@@ -639,7 +639,7 @@
 				F5959CB810F03F8D004B58B3 /* crystalhd_fw_if.h in Headers */,
 				F5959CB910F03F8D004B58B3 /* crystalhd_lnx.h in Headers */,
 				F5959CBA10F03F8D004B58B3 /* crystalhd_misc.h in Headers */,
-				F5959CEB10F042CA004B58B3 /* version_lnx.h in Headers */,
+				F5959CEB10F042CA004B58B3 /* libcrystalhd_version.h in Headers */,
 				F5959DAC10F052EE004B58B3 /* linux_compatible.h in Headers */,
 				F50FE3F511B1931600C8B8CD /* crystalhd_linkfuncs.h in Headers */,
 				F59AE39611CF1AE8000A28B3 /* crystalhd_flea_ddr.h in Headers */,

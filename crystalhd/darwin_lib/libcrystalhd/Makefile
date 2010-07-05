@@ -53,10 +53,12 @@ install:
 	if [ -d /opt/local/include ] ; then cp libcrystalhd_if.h /opt/local/include/libcrystalhd/; fi
 	if [ -d /opt/local/include ] ; then cp $(ROOTDIR)/include/bc_dts_defs.h /opt/local/include/libcrystalhd/ ; fi
 	if [ -d /opt/local/include ] ; then cp $(ROOTDIR)/include/bc_dts_types.h /opt/local/include/libcrystalhd/ ; fi
+	if [ -d /opt/local/include ] ; then cp $(ROOTDIR)/include/libcrystalhd_version.h /opt/local/include/libcrystalhd/ ; fi
 	mkdir -p /usr/include/libcrystalhd
 	cp libcrystalhd_if.h /usr/include/libcrystalhd/
 	cp $(ROOTDIR)/include/bc_dts_defs.h /usr/include/libcrystalhd/
 	cp $(ROOTDIR)/include/bc_dts_types.h /usr/include/libcrystalhd/
+	cp $(ROOTDIR)/include/libcrystalhd_version.h /usr/include/libcrystalhd/
 	cp $(ROOTDIR)/firmware/fwbin/70012/bcm70012fw.bin $(LIBDIR)
 	cp $(ROOTDIR)/firmware/fwbin/70015/bcm70015fw.bin $(LIBDIR)
 	cp $(BCLIB) $(LIBDIR)

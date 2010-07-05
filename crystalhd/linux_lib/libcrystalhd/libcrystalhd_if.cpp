@@ -33,7 +33,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include "7411d.h"
-#include "version_lnx.h"
+#include "libcrystalhd_version.h"
 #include "bc_decoder_regs.h"
 #include "libcrystalhd_if.h"
 #include "libcrystalhd_priv.h"
