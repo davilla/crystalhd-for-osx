@@ -52,6 +52,11 @@ typedef IOPhysicalAddress dma_addr_t;
 typedef uint32_t          wait_queue_head_t;
 typedef IOLock*           spinlock_t;
 typedef uint32_t          gfp_t;
+#ifdef __DARWIN_BIG_ENDIAN
+  #define __LITTLE_ENDIAN_BITFIELD
+#else
+  #define __BIG_ENDIAN_BITFIELD
+#endif
 #define GFP_KERNEL 1
 #define GFP_ATOMIC 1
 #define __devinit
