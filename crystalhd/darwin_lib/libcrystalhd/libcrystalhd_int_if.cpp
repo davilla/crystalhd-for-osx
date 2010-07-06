@@ -74,9 +74,14 @@ DtsGetHwType(
 		return sts;
 	}
 
-	*DeviceID	= 	pHWInfo->PciDevId;
+	*DeviceID	=	pHWInfo->PciDevId;
 	*VendorID	=	pHWInfo->PciVenId;
 	*HWRev		=	pHWInfo->HwRev;
+
+	// Set these early
+	Ctx->DevId = pHWInfo->PciDevId;
+	Ctx->hwRevId = pHWInfo->HwRev;
+	Ctx->VendorId = pHWInfo->PciVenId;
 
 	DtsRelIoctlData(Ctx,pIocData);
 

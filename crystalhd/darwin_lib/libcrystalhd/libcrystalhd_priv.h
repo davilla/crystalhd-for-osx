@@ -217,6 +217,7 @@ typedef struct _DTS_LIB_CONTEXT{
 	uint32_t				MpoolCnt;		/* Number of entries */
 	uint32_t				CfgFlags;		/* Application specifi flags */
 	uint32_t				OpMode;			/* Mode of operation playback etc..*/
+	uint32_t				VendorId;		/* HW Vendor ID */
 	uint32_t				DevId;			/* HW Device ID */
 	uint32_t				hwRevId;		/* HW revision ID */
 	uint32_t				fwcmdseq;		/* FW Cmd Sequence number */

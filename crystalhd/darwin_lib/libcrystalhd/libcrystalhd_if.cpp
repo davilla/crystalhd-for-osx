@@ -276,23 +276,8 @@ static __attribute__((aligned(4))) uint8_t btp_video_plunge_es[] =
 static __attribute__((aligned(4))) uint8_t ExtData[] =
 { 0x00, 0x00};
 
-static uint32_t g_nDeviceID = BC_PCI_DEVID_INVALID;
 pid_t		g_nProcID = 0;
 uint8_t		g_bDecOpened = 0;
-
-uint32_t	g_nDevID = BC_PCI_DEVID_INVALID;
-uint32_t	g_nRevID = 0;
-uint32_t	g_nVendID = 0;
-
-uint32_t DtsGetDevID()
-{
-	uint32_t nDevID, nRevID, nVendID;
-
-	if (g_nDevID == BC_PCI_DEVID_INVALID)
-		DtsGetDevType(&nDevID, &nRevID, &nVendID);
-
-	return g_nDevID;
-}
 
 uint8_t DtsIsDecOpened(pid_t nNewPID)
 {
@@ -321,59 +306,6 @@ void DtsSetDecStat(bool bDecOpen, pid_t PID)
 		g_nProcID = 0;
 
 	g_bDecOpened = bDecOpen;
-}
-
-BC_STATUS DtsGetDevType(uint32_t *pDevID, uint32_t *pVendID, uint32_t *pRevID)
-{
-	int drvHandle = 1;
-	BC_IOCTL_DATA IO;
-	int rc;
-
-	if (g_nDevID == BC_PCI_DEVID_INVALID)
-	{
-		drvHandle =open(CRYSTALHD_API_DEV_NAME, O_RDWR);
-
-		if(drvHandle >= 0)
-		{
-			memset(&IO, 0, sizeof(BC_IOCTL_DATA));
-			IO.Timeout = 0;
-			IO.RetSts = BC_STS_SUCCESS;
-			IO.u.hwType.PciDevId = 0xffff;
-			IO.u.hwType.PciVenId =  0xffff;
-			IO.u.hwType.HwRev = 0xff;
-
-			IO.RetSts = BC_STS_SUCCESS;
-
-#ifndef __APPLE__
-			rc = ioctl(drvHandle, BCM_IOC_GET_HWTYPE, &IO);
-#else
-			BC_IOCTL_ARG tmp;
-			tmp.user_address = CAST_USER_ADDR_T(&IO);
-			tmp.user_padding = 0;
-			//DebugLog_Trace(LDIL_DBG,"DtsDrvCmd:ioctl 0x%x 0x%llX, %p\n", Code, tmp.user_address, pIo);
-			rc = ioctl(drvHandle, BCM_IOC_GET_HWTYPE, &tmp);
-#endif
-
-			if (rc >= 0 && IO.RetSts == BC_STS_SUCCESS)
-			{
-				g_nDevID = IO.u.hwType.PciDevId;
-				g_nRevID = IO.u.hwType.HwRev;
-				g_nVendID = IO.u.hwType.PciVenId;
-			}
-			close(drvHandle);
-		}
-	}
-
-	if (g_nDevID != BC_PCI_DEVID_INVALID)
-	{
-		*pDevID = g_nDevID;
-		*pRevID = g_nRevID;
-		*pVendID = g_nVendID;
-		return BC_STS_SUCCESS;
-	}
-
-	return BC_STS_ERROR;
-
 }
 
 static BC_STATUS DtsSetupHardware(HANDLE hDevice, BOOL IgnClkChk)
@@ -517,12 +449,6 @@ DtsDeviceOpen(
 
 	processID = getpid();
 
-	if (DtsGetDevID() == BC_PCI_DEVID_INVALID)
-	{
-		DebugLog_Trace(LDIL_DBG, "DtsDeviceOpen: DtsGetDevID Failed\n");
-		return BC_STS_ERROR;
-	}
-
 	FixFlags = mode;
 	mode &= 0xFF;
 
@@ -628,9 +554,6 @@ DtsDeviceOpen(
 		close(drvHandle);
 		return Sts;
 	}
-	// set Ctx->DevId early, others depend on it
-	DtsGetContext(*hDevice)->DevId = DeviceID;
-	g_nDeviceID = DeviceID;
 
 	/* NAREN Program clock */
 	if(DeviceID == BC_PCI_DEVID_LINK)
@@ -3044,15 +2967,16 @@ DtsGetDriverStatus( HANDLE  hDevice,
 
 DRVIFLIB_API BC_STATUS DtsGetCapabilities (HANDLE  hDevice, PBC_HW_CAPS	pCapsBuffer)
 {
-	uint32_t deviceID = DtsGetDevID();
+	DTS_LIB_CONTEXT *Ctx;
+	DTS_GET_CTX(hDevice,Ctx);
 
-	if (deviceID == BC_PCI_DEVID_INVALID)
+	if (Ctx->DevId == BC_PCI_DEVID_INVALID)
 	{
 		return BC_STS_ERROR;
 	}
 
 	// Should check with driver/FW if current video is supported or not, and output supported format
-	if(deviceID == BC_PCI_DEVID_LINK)
+	if(Ctx->DevId == BC_PCI_DEVID_LINK)
 	{
 		pCapsBuffer->flags = PES_CONV_SUPPORT;
 		pCapsBuffer->ColorCaps.Count = 3;
@@ -3065,7 +2989,7 @@ DRVIFLIB_API BC_STATUS DtsGetCapabilities (HANDLE  hDevice, PBC_HW_CAPS	pCapsBuf
 		//Decoder Capability
 		pCapsBuffer->DecCaps = BC_DEC_FLAGS_H264 | BC_DEC_FLAGS_MPEG2 | BC_DEC_FLAGS_VC1;
 	}
-	if(deviceID == BC_PCI_DEVID_DOZER)
+	if(Ctx->DevId == BC_PCI_DEVID_DOZER)
 	{
 		pCapsBuffer->flags = PES_CONV_SUPPORT;
 		pCapsBuffer->ColorCaps.Count = 1;
@@ -3077,7 +3001,7 @@ DRVIFLIB_API BC_STATUS DtsGetCapabilities (HANDLE  hDevice, PBC_HW_CAPS	pCapsBuf
 		//Decoder Capability
 		pCapsBuffer->DecCaps = BC_DEC_FLAGS_H264 | BC_DEC_FLAGS_MPEG2 | BC_DEC_FLAGS_VC1;
 	}
-	if(deviceID == BC_PCI_DEVID_FLEA)
+	if(Ctx->DevId == BC_PCI_DEVID_FLEA)
 	{
 		pCapsBuffer->flags = PES_CONV_SUPPORT;
 		pCapsBuffer->ColorCaps.Count = 1;
