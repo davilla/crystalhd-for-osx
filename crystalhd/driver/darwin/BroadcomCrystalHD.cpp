@@ -44,6 +44,9 @@
 #include "BroadcomCrystalHD.h"
 #include "crystalhd_lnx.h"
 
+// problems with chd suspend/resume, disable for now.
+//#define ENABLE_POWERHANDLING
+
 // Define the metaclass information that is used for runtime
 // typechecking of IOKit objects. We're a subclass of IOService,
 // but usually we would subclass from a family class.
@@ -119,7 +122,9 @@ BroadcomCrystalHD::start( IOService * provider )
     if( !super::start( provider ))
         return( false );
 
+#ifdef ENABLE_POWERHANDLING
     PMinit();
+#endif
 	
     // create BSD dev and make device node
     if (bsd_create_device() != kIOReturnSuccess) {
@@ -238,11 +243,15 @@ BroadcomCrystalHD::start( IOService * provider )
     // Enable bus-mastering from the card
     m_pciNub->setBusMasterEnable(true);
     
+#ifdef ENABLE_POWERHANDLING
     // setup power handling
-    if (g_adp_info->pdev->device != BC_PCI_DEVID_FLEA && g_adp_info->pdev->device != BC_PCI_DEVID_LINK) {
+    if (g_adp_info->pdev->device != BC_PCI_DEVID_FLEA) {
       registerWithPolicyMaker(this);
       provider->joinPMtree(this);
     }
+#else
+    m_pciNub->enablePCIPowerManagement(kPCIPMCSPowerStateD0);
+#endif
 
     m_workloop->enableAllEventSources();
     m_interrupt_source->enable();
@@ -298,7 +307,9 @@ BroadcomCrystalHD::stop( IOService * provider )
     g_bcm_dma_info->flushCollection();
     SAFE_RELEASE(g_bcm_dma_info);
     
+#ifdef ENABLE_POWERHANDLING
     PMstop();
+#endif
     super::stop( provider );
 }
 
@@ -527,7 +538,7 @@ bsd_open(dev_t dev, int flags, int devtype, struct proc *p)
     bsd_add_user(dev, proc_pid(p), uc);
     adp->cfg_users++;
 
-    //BCMLOG(BCMLOG_INFO,"BroadcomCrystalHD opened\n");
+    IOLog("BroadcomCrystalHD opened\n");
 exitOpen:
     return rc;
 }
@@ -554,7 +565,7 @@ bsd_close(dev_t dev, int flags, int devtype, struct proc *p)
     bsd_del_user(dev, proc_pid(p), uc);
     adp->cfg_users--;
 
-    //BCMLOG(BCMLOG_INFO,"BroadcomCrystalHD closed\n");
+    IOLog("BroadcomCrystalHD closed\n");
     return 0;
 }
 
