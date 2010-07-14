@@ -29,6 +29,7 @@
 #include <linux/delay.h>
 #include <linux/device.h>
 #include <asm/tsc.h>
+#include <asm/msr.h>
 #endif
 #include "crystalhd_lnx.h"
 #include "crystalhd_linkfuncs.h"
@@ -43,7 +44,6 @@ BC_STATUS crystalhd_hw_open(struct crystalhd_hw *hw, struct crystalhd_adp *adp)
 		return BC_STS_INV_ARG;
 	}
 
-	printk(KERN_ERR "opening HW\n");
 	if (hw->dev_started)
 		return BC_STS_SUCCESS;
 
@@ -103,6 +103,7 @@ BC_STATUS crystalhd_hw_open(struct crystalhd_hw *hw, struct crystalhd_adp *adp)
 	hw->adp = adp;
 	spin_lock_init(&hw->lock);
 	spin_lock_init(&hw->rx_lock);
+	sema_init(&hw->fetch_sem, 1);
 
 	// Seed for error checking and debugging. Random numbers */
 	hw->tx_ioq_tag_seed = 0x70023070;
@@ -124,7 +125,7 @@ BC_STATUS crystalhd_hw_close(struct crystalhd_hw *hw)
 		printk(KERN_ERR "%s: Invalid Arguments\n", __func__);
 		return BC_STS_SUCCESS;
 	}
-	printk("Closing HW\n");
+
 	if (!hw->dev_started)
 		return BC_STS_SUCCESS;
 
@@ -133,6 +134,7 @@ BC_STATUS crystalhd_hw_close(struct crystalhd_hw *hw)
 #ifdef __APPLE__
 	spin_lock_free(&hw->lock);
 	spin_lock_free(&hw->rx_lock);
+	sema_free(&hw->fetch_sem);
 #endif
 	hw->dev_started = false;
 
@@ -383,7 +385,7 @@ BC_STATUS crystalhd_hw_free_dma_rings(struct crystalhd_hw *hw)
 	}
 
 	dev_dbg(&hw->adp->pdev->dev, "Releasing RX Pkt pool\n");
-	do {
+	for (i = 0; i < BC_RX_LIST_CNT; i++) {
 		rpkt = crystalhd_hw_alloc_rx_pkt(hw);
 		if (!rpkt)
 			break;
@@ -391,7 +393,7 @@ BC_STATUS crystalhd_hw_free_dma_rings(struct crystalhd_hw *hw)
 				 rpkt->desc_mem.pdma_desc_start,
 				 rpkt->desc_mem.phy_addr);
 		kfree(rpkt);
-	} while (rpkt);
+	}
 
 	return BC_STS_SUCCESS;
 }
@@ -707,12 +709,12 @@ BC_STATUS crystalhd_rx_pkt_done(struct crystalhd_hw *hw,
 		}
 		else if( hw->hw_pause_issued == false )
 		{
-			if(crystalhd_dioq_count(hw->rx_rdyq) > hw->PauseThreshold)//HW_PAUSE_THRESHOLD
-			{
-				dev_info(&hw->adp->pdev->dev, "HW PAUSE\n");
-				hw->pfnIssuePause(hw, true);
-				hw->hw_pause_issued = true;
-			}
+// 			if(crystalhd_dioq_count(hw->rx_rdyq) > hw->PauseThreshold)//HW_PAUSE_THRESHOLD
+// 			{
+// 				dev_info(&hw->adp->pdev->dev, "HW PAUSE\n");
+// 				hw->pfnIssuePause(hw, true);
+// 				hw->hw_pause_issued = true;
+// 			}
 		}
 
 		return sts;
@@ -808,9 +810,6 @@ BC_STATUS crystalhd_hw_post_tx(struct crystalhd_hw *hw, crystalhd_dio_req *ioreq
 
 	hw->tx_list_post_index = (hw->tx_list_post_index + 1) % DMA_ENGINE_CNT;
 
-	spin_unlock_irqrestore(&hw->lock, flags);
-
-
 	/* Insert in Active Q..*/
 	crystalhd_dioq_add(hw->tx_actq, tx_dma_packet, false,
 			 tx_dma_packet->list_tag);
@@ -826,6 +825,8 @@ BC_STATUS crystalhd_hw_post_tx(struct crystalhd_hw *hw, crystalhd_dio_req *ioreq
 
 	hw->pfnStartTxDMA(hw, list_posted, desc_addr);
 
+	spin_unlock_irqrestore(&hw->lock, flags);
+
 	return BC_STS_SUCCESS;
 }
 
@@ -840,12 +841,15 @@ BC_STATUS crystalhd_hw_post_tx(struct crystalhd_hw *hw, crystalhd_dio_req *ioreq
  */
 BC_STATUS crystalhd_hw_cancel_tx(struct crystalhd_hw *hw, uint32_t list_id)
 {
+	unsigned long flags;
 	if (!hw || !list_id) {
 		printk(KERN_ERR "%s: Invalid Arguments\n", __func__);
 		return BC_STS_INV_ARG;
 	}
 
+	spin_lock_irqsave(&hw->lock, flags);
 	hw->pfnStopTxDMA(hw);
+	spin_unlock_irqrestore(&hw->lock, flags);
 	crystalhd_hw_tx_req_complete(hw, list_id, BC_STS_IO_USER_ABORT);
 
 	return BC_STS_SUCCESS;
@@ -884,8 +888,9 @@ BC_STATUS crystalhd_hw_add_cap_buffer(struct crystalhd_hw *hw,
 		rpkt->uv_phy_addr = rpkt->desc_mem.phy_addr +
 				    (sizeof(dma_descriptor) * (uv_desc_ix + 1));
 
-	if (en_post && !hw->hw_pause_issued)
+	if (en_post && !hw->hw_pause_issued) {
 		sts = hw->pfnPostRxSideBuff(hw, rpkt);
+	}
 	else {
 		sts = crystalhd_dioq_add(hw->rx_freeq, rpkt, false, tag);
 		hw->pfnNotifyFLLChange(hw, false);
@@ -913,7 +918,7 @@ BC_STATUS crystalhd_hw_get_cap_buffer(struct crystalhd_hw *hw,
 	rpkt = (crystalhd_rx_dma_pkt*)crystalhd_dioq_fetch_wait(hw, timeout, &sig_pending);
 #endif
 
-		if( hw->adp->pdev->device == BC_PCI_DEVID_FLEA)
+	if( hw->adp->pdev->device == BC_PCI_DEVID_FLEA)
 	{
 		//printk("pre-PU state %x RLL %x Rtsh %x, currentPS %d,\n",
 		//	hw->FleaPowerState, crystalhd_dioq_count(hw->rx_rdyq) , hw->ResumeThreshold, hw->FleaPowerState);
@@ -927,12 +932,12 @@ BC_STATUS crystalhd_hw_get_cap_buffer(struct crystalhd_hw *hw,
 	}
 	else if( hw->hw_pause_issued)
 	{
-		if(crystalhd_dioq_count(hw->rx_rdyq) < hw->PauseThreshold ) //HW_RESUME_THRESHOLD
-		{
-			dev_info(&hw->adp->pdev->dev, "HW RESUME with rdy list %u \n",crystalhd_dioq_count(hw->rx_rdyq));
-			hw->pfnIssuePause(hw, false);
-			hw->hw_pause_issued = false;
-		}
+// 		if(crystalhd_dioq_count(hw->rx_rdyq) < hw->PauseThreshold ) //HW_RESUME_THRESHOLD
+// 		{
+// 			dev_info(&hw->adp->pdev->dev, "HW RESUME with rdy list %u \n",crystalhd_dioq_count(hw->rx_rdyq));
+// 			hw->pfnIssuePause(hw, false);
+// 			hw->hw_pause_issued = false;
+// 		}
 	}
 
 	if (!rpkt) {

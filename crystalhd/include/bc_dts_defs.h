@@ -243,7 +243,7 @@ typedef struct _BC_PIB_EXT_VC1 {
 /*------------------------------------------------------*
  *    Picture Information Block				*
  *------------------------------------------------------*/
-#if defined(_WIN32) || defined(_WIN64) || defined(__LINUX_USER__)
+#if defined(__LINUX_USER__)
 /* Values for 'pulldown' field.  '0' means no pulldown information
  * was present for this picture. */
 enum {
@@ -363,7 +363,7 @@ enum {
 
 #define VDEC_FLAG_PICTURE_META_DATA_PRESENT	(0x40000)
 
-#endif /* _WIN32 || _WIN64 */
+#endif /* __LINUX_USER__ */
 
 typedef struct _BC_PIC_INFO_BLOCK {
 	/* Common fields. */
@@ -584,6 +584,7 @@ typedef struct _BC_INPUT_FORMAT_ {
 	uint8_t     *pMetaData;     /*Metadata buffer that is used to pass sequence header*/
 	uint32_t    metaDataSz;     /*Metadata size*/
 	uint8_t     bEnableScaling;
+	BC_SCALING_PARAMS ScalingParams;
 } BC_INPUT_FORMAT;
 
 typedef struct _BC_INFO_CRYSTAL_ {

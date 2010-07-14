@@ -27,7 +27,14 @@ extern struct crystalhd_adp *g_adp_info;
 static struct class *crystalhd_class;
 
 static struct crystalhd_adp *g_adp_info;
+#endif
 
+struct device *chddev(void)
+{
+	return &g_adp_info->pdev->dev;
+}
+
+#ifndef __APPLE__
 #if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 18)
 static irqreturn_t chd_dec_isr(int irq, void *arg)
 #else
@@ -145,7 +152,7 @@ static int chd_dec_fetch_cdata(struct crystalhd_adp *adp, crystalhd_ioctl_data *
 	int rc = 0;
 
 	if (!adp || !io || !ua || !m_sz) {
-		dev_err(chddev(), "%s: Invalid Arg!!\n", __func__);
+		dev_err(chddev(), "Invalid Arg!!\n");
 		return -EINVAL;
 	}
 
@@ -179,7 +186,7 @@ static int chd_dec_release_cdata(struct crystalhd_adp *adp,
 	int rc;
 
 	if (!adp || !io || !ua) {
-		dev_err(chddev(), "%s: Invalid Arg!!\n", __func__);
+		dev_err(chddev(), "Invalid Arg!!\n");
 		return -EINVAL;
 	}
 
@@ -215,7 +222,7 @@ static int chd_dec_proc_user_data(struct crystalhd_adp *adp,
 	uint32_t m_sz = 0;
 
 	if (!adp || !io || !ua) {
-		dev_err(chddev(), "%s: Invalid Arg!!\n", __func__);
+		dev_err(chddev(), "Invalid Arg!!\n");
 		return -EINVAL;
 	}
 
@@ -788,11 +795,6 @@ static struct pci_driver bc_chd_driver = {
 struct crystalhd_adp *chd_get_adp(void)
 {
 	return g_adp_info;
-}
-
-struct device *chddev(void)
-{
-	return &g_adp_info->pdev->dev;
 }
 
 #ifndef __APPLE__

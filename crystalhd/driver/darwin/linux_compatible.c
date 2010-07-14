@@ -68,6 +68,28 @@ void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
 	IOLockUnlock(*lock);
 }
 
+void sema_init(semaphore_t *sema, int value)
+{
+  semaphore_create(current_task(), sema, SYNC_POLICY_FIFO, value);
+}
+void sema_free(semaphore_t *sema)
+{
+  semaphore_destroy(current_task(), *sema);
+}
+int down_interruptible(semaphore_t *sema)
+{
+  kern_return_t k_rtn;
+  k_rtn = semaphore_wait(*sema);
+  if (k_rtn == KERN_ABORTED)
+    return -EINTR;
+
+  return 0;
+}
+void up(semaphore_t *sema)
+{
+  semaphore_signal(*sema);
+}
+
 unsigned long mach_jiffies(void)
 {
   uint64_t nanoseconds;

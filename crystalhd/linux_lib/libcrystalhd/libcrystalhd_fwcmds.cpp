@@ -1,13 +1,7 @@
 /********************************************************************
- * Copyright(c) 2006 Broadcom Corporation, all rights reserved.
- * Contains proprietary and confidential information.
+ * Copyright(c) 2006-2009 Broadcom Corporation.
  *
- * This source file is the property of Broadcom Corporation, and
- * may not be copied or distributed in any isomorphic form without
- * the prior written consent of Broadcom Corporation.
- *
- *
- *  Name: bc_fwcmds.cpp
+ *  Name: libcrystalhd_fwcmds.cpp
  *
  *  Description: FW commands.
  *
@@ -15,7 +9,23 @@
  *
  *  HISTORY:
  *
+ ********************************************************************
+ *
+ * This file is part of libcrystalhd.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 2.1 of the License.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ *
  *******************************************************************/
+
 #include "7411d.h"
 #include "libcrystalhd_fwcmds.h"
 #include "libcrystalhd_priv.h"

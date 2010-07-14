@@ -318,6 +318,7 @@ static BC_STATUS DtsSetupHardware(HANDLE hDevice, BOOL IgnClkChk)
 	if( !IgnClkChk){
 		if(Ctx->DevId == BC_PCI_DEVID_LINK || Ctx->DevId == BC_PCI_DEVID_FLEA){
 			if(DtsGetHwInitSts() != BC_DIL_HWINIT_NOT_YET){
+				DebugLog_Trace(LDIL_DBG," HW init already?\n");
 				return BC_STS_SUCCESS;
 			}
 		}
@@ -445,7 +446,7 @@ DtsDeviceOpen(
 	DebugLog_Trace(LDIL_DBG,"Running DIL (%d.%d.%d) Version\n",
 		DIL_MAJOR_VERSION,DIL_MINOR_VERSION,DIL_REVISION );
 
-	uint32_t clkSet = (mode >> 19) & 0x7;
+// 	uint32_t clkSet = (mode >> 19) & 0x7;
 
 	processID = getpid();
 
@@ -458,22 +459,22 @@ DtsDeviceOpen(
 		return BC_STS_ERROR;
 	}
 
-	switch (clkSet) {
-		case 6: clkSet = 200;
-				break;
-		case 5: clkSet = 180;
-				break;
-		case 4: clkSet = 165;
-				break;
-		case 3: clkSet = 150;
-				break;
-		case 2: clkSet = 125;
-				break;
-		case 1: clkSet = 105;
-				break;
-		default: clkSet = 165;
-				break;
-	}
+// 	switch (clkSet) {
+// 		case 6: clkSet = 200;
+// 				break;
+// 		case 5: clkSet = 180;
+// 				break;
+// 		case 4: clkSet = 165;
+// 				break;
+// 		case 3: clkSet = 150;
+// 				break;
+// 		case 2: clkSet = 125;
+// 				break;
+// 		case 1: clkSet = 105;
+// 				break;
+// 		default: clkSet = 165;
+// 				break;
+// 	}
 
 	DebugLog_Trace(LDIL_DBG,"DtsDeviceOpen: Opening HW in mode %x\n", mode);
 
@@ -555,9 +556,10 @@ DtsDeviceOpen(
 		return Sts;
 	}
 
-	/* NAREN Program clock */
-	if(DeviceID == BC_PCI_DEVID_LINK)
-		DtsSetCoreClock(*hDevice, clkSet);
+	// set Ctx->DevId early, other depend on it
+	DtsGetContext(*hDevice)->DevId = DeviceID;
+
+	DtsSetCoreClock(*hDevice, 165);
 
 	/*
 	 * We have to specify the mode to the driver.
@@ -918,6 +920,8 @@ DtsOpenDecoder(
 	Ctx->bEOSCheck = FALSE;
 	Ctx->bEOS = FALSE;
 	Ctx->CapState = 0;
+	Ctx->hw_paused = false;
+	Ctx->fw_cmd_issued = false;
 
 	sts = DtsSetVideoClock(hDevice,0);
 	if (sts != BC_STS_SUCCESS)
@@ -1118,6 +1122,7 @@ DtsSetInputFormat(
 {
 	DTS_LIB_CONTEXT *Ctx = NULL;
 	uint32_t videoAlgo = BC_VID_ALGO_H264;
+	uint32_t	ScaledWidth = 0;
 
 	DTS_GET_CTX(hDevice,Ctx);
 
@@ -1172,8 +1177,19 @@ DtsSetInputFormat(
 
 	if(Ctx->DevId == BC_PCI_DEVID_FLEA)
 	{
-		//Ctx->EnableScaling = 0; // Disable Scaling
-		Ctx->EnableScaling = 0x32032000|1; // Enable Scaling and Scaling Width
+		if(pInputFormat->bEnableScaling) {
+			if((pInputFormat->ScalingParams.sWidth > 1920)||
+			   (pInputFormat->ScalingParams.sWidth < 128))
+				ScaledWidth = 1280;
+			else
+				ScaledWidth = pInputFormat->ScalingParams.sWidth;
+
+			Ctx->EnableScaling = (ScaledWidth << 20) | (ScaledWidth << 8) |
+					     pInputFormat->bEnableScaling;
+		} else {
+			Ctx->EnableScaling = 0;
+		}
+
 		Ctx->bEnable720pDropHalf = 0;
 	}
 
@@ -1237,6 +1253,11 @@ DtsStopDecoder(
 		return BC_STS_SUCCESS;
 	}
 
+	// On LINK if the decoder is paused due to the RLL being full, un pause it before flush
+	if(Ctx->DevId == BC_PCI_DEVID_LINK && Ctx->hw_paused) {
+		DtsFWPauseVideo(hDevice,eC011_PAUSE_MODE_OFF);
+		Ctx->hw_paused = false;
+	}
 	DtsCancelFetchOutInt(Ctx);
 
 	sts = DtsFWStopVideo(hDevice,Ctx->OpenRsp.channelId, FALSE);
@@ -1493,7 +1514,7 @@ DtsCancelTxRequest(
 	HANDLE	hDevice,
 	uint32_t Operation)
 {
-	return BC_STS_SUCCESS; // Since we always check before TX, there can never be a TX holding in the Driver. FIXME
+	return BC_STS_SUCCESS; // Since we always check before TX, there can never be a TX holding   in the Driver. FIXME
 }
 
 
@@ -1545,6 +1566,7 @@ DtsProcOutput(
 		memset(&OutBuffs,0,sizeof(OutBuffs));
 
 		sts = DtsFetchOutInterruptible(Ctx,&OutBuffs,milliSecWait);
+
 		if(sts != BC_STS_SUCCESS)
 		{
 			if(sts == BC_STS_TIMEOUT)
@@ -1592,7 +1614,6 @@ DtsProcOutput(
 
 			DtsRelRxBuff(Ctx,&Ctx->pOutData->u.RxBuffs,TRUE);
 
-
 			return BC_STS_FMT_CHANGE;
 		}
 
@@ -1610,10 +1631,10 @@ DtsProcOutput(
 			if (DtsCheckRptPic(Ctx, &OutBuffs) == TRUE)
 			{
 				DtsRelRxBuff(Ctx,&Ctx->pOutData->u.RxBuffs,FALSE);
-				DebugLog_Trace(LDIL_DBG,"repeated picture\n");
 				return BC_STS_NO_DATA;
 			}
 		}
+
 		if(pOut->DropFrames)
 		{
 			/* We need to release the buffers even if we fail to copy..*/
@@ -1625,7 +1646,6 @@ DtsProcOutput(
 				return sts;
 			}
 			pOut->DropFrames--;
-			DebugLog_Trace(LDIL_DBG,"DtsProcOutput: Drop count.. %d\n", pOut->DropFrames);
 
 			/* Get back the original flags */
 			pOut->PoutFlags = savFlags;
@@ -1775,8 +1795,6 @@ DtsProcOutputNoCopy(
 				return sts;
 			}
 			pOut->DropFrames--;
-			DebugLog_Trace(LDIL_DBG,"DtsProcOutput: Drop count.. %d\n", pOut->DropFrames);
-
 		}
 		else
 			break;
@@ -2098,6 +2116,7 @@ DtsAlignSendData( HANDLE  hDevice ,
 				break; // On any other error condition
 		}
 	}
+
 	return sts;
 }
 
@@ -2112,7 +2131,7 @@ DtsProcInput( HANDLE  hDevice ,
 	BC_STATUS	sts = BC_STS_SUCCESS;
 	DTS_LIB_CONTEXT		*Ctx = NULL;
 
-	uint32_t Offset;
+	uint32_t Offset = 0;
 
 	DTS_GET_CTX(hDevice,Ctx);
 
@@ -2376,6 +2395,12 @@ DtsFlushInput( HANDLE  hDevice ,
 			return sts;
 		}
 		DtsClrPendMdataList(Ctx);
+	}
+
+	// On LINK if the decoder is paused due to the RLL being full, un pause it before flush
+	if(Ctx->DevId == BC_PCI_DEVID_LINK && Ctx->hw_paused) {
+		DtsFWPauseVideo(hDevice,eC011_PAUSE_MODE_OFF);
+		Ctx->hw_paused = false;
 	}
 
 	if(Op == 4)
@@ -2962,6 +2987,19 @@ DtsGetDriverStatus( HANDLE  hDevice,
 		}
 	}
 
+	// For LINK Pause HW if the RLL is too full. Prevent overflows
+	// Hard coded values for now
+	if(Ctx->DevId == BC_PCI_DEVID_LINK && Ctx->SingleThreadedAppMode) {
+		if(pStatus->ReadyListCount > 10 && !Ctx->hw_paused && !Ctx->fw_cmd_issued) {
+			DtsFWPauseVideo(hDevice,eC011_PAUSE_MODE_ON);
+			Ctx->hw_paused = true;
+		}
+		else if (pStatus->ReadyListCount  < 6 && Ctx->hw_paused && !Ctx->fw_cmd_issued) {
+			DtsFWPauseVideo(hDevice,eC011_PAUSE_MODE_OFF);
+			Ctx->hw_paused = false;
+		}
+	}
+
 	return ret;
 }
 
@@ -3017,9 +3055,26 @@ DRVIFLIB_API BC_STATUS DtsGetCapabilities (HANDLE  hDevice, PBC_HW_CAPS	pCapsBuf
 	return BC_STS_SUCCESS;
 }
 
-DRVIFLIB_API BC_STATUS DtsSetScaleParams (HANDLE  hDevice,PBC_SCALING_PARAMS pScaleParams)
+DRVIFLIB_API BC_STATUS DtsSetScaleParams(HANDLE hDevice, PBC_SCALING_PARAMS pScaleParams)
 {
-	return BC_STS_NOT_IMPL;
+	DTS_LIB_CONTEXT *Ctx = NULL;
+	DTS_GET_CTX(hDevice, Ctx);
+	uint32_t ScaledWidth = 0;
+
+	if (Ctx->DevId == BC_PCI_DEVID_FLEA) {
+		if ((pScaleParams->sWidth > 1920) || (pScaleParams->sWidth < 128))
+			ScaledWidth = 1280;
+		else
+			ScaledWidth = pScaleParams->sWidth;
+
+		Ctx->EnableScaling = (ScaledWidth << 20) | (ScaledWidth << 8) | 1;
+
+	} else {
+		DebugLog_Trace(LDIL_ERR,"DtsSetScaleParams: not supported\n");
+		return BC_STS_INV_ARG;
+	}
+
+	return DtsCheckProfile(hDevice);
 }
 
 DRVIFLIB_API BC_STATUS DtsCrystalHDVersion(HANDLE  hDevice, PBC_INFO_CRYSTAL bCrystalInfo)

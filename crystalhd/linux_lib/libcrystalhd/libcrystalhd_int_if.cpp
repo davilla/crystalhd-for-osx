@@ -78,6 +78,11 @@ DtsGetHwType(
 	*VendorID	=	pHWInfo->PciVenId;
 	*HWRev		=	pHWInfo->HwRev;
 
+	// Set these early
+	Ctx->DevId 	= 	pHWInfo->PciDevId;
+	Ctx->hwRevId = 	pHWInfo->HwRev;
+	Ctx->VendorId = pHWInfo->PciVenId;
+
 	DtsRelIoctlData(Ctx,pIocData);
 
 	return BC_STS_SUCCESS;
@@ -243,7 +248,7 @@ DtsSetCoreClock(
 	uint32_t refresh_reg;
 
 	DTS_GET_CTX(hDevice,Ctx);
-	if(Ctx->DevId != BC_PCI_DEVID_LINK && Ctx->DevId != BC_PCI_DEVID_DOZER)
+	if(Ctx->DevId != BC_PCI_DEVID_LINK)
 	{
 		DebugLog_Trace(LDIL_DBG,"DtsSetCoreClock is not supported in this device\n");
 		return BC_STS_ERROR;
@@ -299,7 +304,7 @@ DtsSetCoreClock(
 	DtsDevRegisterWr(hDevice,SDRAM_REF_PARAM,((1 << 12) | refresh_reg));
 
 	DtsDevRegisterWr(hDevice, DecHt_PllACtl, reg);
-	DebugLog_Trace(LDIL_DBG,"C set %d\n", freq);
+	DebugLog_Trace(LDIL_DBG,"Clock set to %d\n", freq);
 	i = 0;
 
 	while (i < 10) {
@@ -1327,10 +1332,13 @@ DtsCopyRawDataToOutBuff(DTS_LIB_CONTEXT	*Ctx,
 		else
 			dstHeightInPixels = Vout->PicInfo.height;
 		/* Check for Valid data based on the filter information */
+/* interlaced frames currently don't get delivered from the library if this check is in place */
+#if 0
 		if(Vout->YBuffDoneSz < (dstWidthInPixels * dstHeightInPixels / 2)) {
 			DebugLog_Trace(LDIL_DBG,"DtsCopy422: XFER ERROR dnsz %u, w %u, h %u\n", Vout->YBuffDoneSz, dstWidthInPixels, dstHeightInPixels);
 			return BC_STS_IO_XFR_ERROR;
 		}
+#endif
 		srcWidthInPixels = Ctx->picWidth;
 		srcHeightInPixels = dstHeightInPixels;
 	} else {

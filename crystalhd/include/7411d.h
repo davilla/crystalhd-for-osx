@@ -1133,10 +1133,10 @@ typedef struct {
     uint32_t	command;
     uint32_t	sequence;
     eC011_TEST_ID testId;
-	uint32_t	mode;
-	uint32_t	height;
-	uint32_t	width;
-	uint32_t	rsvd[5];
+    uint32_t	mode;
+    uint32_t	height;
+    uint32_t	width;
+    uint32_t	rsvd[5];
 } C011CmdSelfTest;
 
 typedef struct {

@@ -39,6 +39,7 @@
 #ifndef _LINUX_COMPATIBLE_H_
 #define _LINUX_COMPATIBLE_H_
 
+#include <mach/semaphore.h>
 #include <IOKit/IOLib.h>
 #include <IOKit/IOBufferMemoryDescriptor.h>
 
@@ -47,6 +48,7 @@ typedef unsigned short    u16;
 typedef unsigned int      u32;
 
 #define rdtscll(val)  __asm__ __volatile__("rdtsc" : "=A" (val))
+#define smp_mb() __asm__ __volatile__("mfence":::"memory")
 
 typedef IOPhysicalAddress dma_addr_t;
 typedef uint32_t          wait_queue_head_t;
@@ -57,6 +59,7 @@ typedef uint32_t          gfp_t;
 #else
   #define __BIG_ENDIAN_BITFIELD
 #endif
+#define EINTR 4 /* Interrupted system call */
 #define GFP_KERNEL 1
 #define GFP_ATOMIC 1
 #define __devinit
@@ -118,6 +121,11 @@ void spin_lock_init(spinlock_t *lock);
 void spin_lock_free(spinlock_t *lock);
 void spin_lock_irqsave(spinlock_t *lock, unsigned long flags);
 void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags);
+
+void sema_init(semaphore_t *sema, int value);
+void sema_free(semaphore_t *sema);
+int down_interruptible(semaphore_t *sema);
+void up(semaphore_t *sema);
 
 // FIXME: convert to inlines or defines later
 void udelay(unsigned int microseconds);
