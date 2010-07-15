@@ -1,9 +1,9 @@
 /********************************************************************
  * Copyright(c) 2006-2009 Broadcom Corporation.
  *
- *  Name: libcrystalhd_fwcmds.h
+ *  Name: libcrystalhd_fwdcmds.h
  *
- *  Description: FW commands.
+ *  Description: Driver Interface library Internal.
  *
  *  AU
  *
@@ -25,7 +25,6 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  *
  *******************************************************************/
-
 #ifndef _BCM_FWCMDS_H_
 #define _BCM_FWCMDS_H_
 

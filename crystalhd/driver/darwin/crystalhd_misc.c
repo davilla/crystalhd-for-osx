@@ -608,11 +608,12 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	struct device *dev;
 	crystalhd_dio_req	*dio;
 	uint32_t start = 0, end = 0, count = 0;
-	unsigned long uaddr = 0, uv_start = 0;
 #ifndef __APPLE__
 	uint32_t spsz = 0;
+	unsigned long uaddr = 0, uv_start = 0;
 	int i = 0, rw = 0, res = 0, nr_pages = 0, skip_fb_sg = 0;
 #else
+	unsigned long uaddr = 0, uv_start = 0;
 	int rw = 0;
 	uint32_t nr_pages = 0;
 #endif

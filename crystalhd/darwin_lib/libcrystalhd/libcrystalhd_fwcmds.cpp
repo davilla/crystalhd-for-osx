@@ -1,9 +1,9 @@
 /********************************************************************
  * Copyright(c) 2006-2009 Broadcom Corporation.
  *
- *  Name: libcrystalhd_fwcmds.cpp
+ *  Name: libcrystalhd_fwdcmds.cpp
  *
- *  Description: FW commands.
+ *  Description: Driver Interface library Internal.
  *
  *  AU
  *
@@ -25,7 +25,6 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  *
  *******************************************************************/
-
 #include "7411d.h"
 #include "libcrystalhd_fwcmds.h"
 #include "libcrystalhd_priv.h"
@@ -318,8 +317,8 @@ DtsFWHwSelfTest(
 	{
 		if (testID>3 || testID<6){
 			stest->mode = testID;
-			stest->height = Ctx->picHeight;
-			stest->width = Ctx->picWidth;
+			stest->height = Ctx->HWOutPicHeight;
+			stest->width = Ctx->HWOutPicWidth;
 		}
 	}
 

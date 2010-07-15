@@ -31,8 +31,8 @@
 #include "crystalhd_misc.h"
 
 // Some HW specific code defines
-extern uint32_t link_GetRptDropParam(void *, uint32_t picHeight, uint32_t picWidth, void *);
-extern uint32_t flea_GetRptDropParam(void *, void *);
+extern uint32_t link_GetRptDropParam(struct crystalhd_hw *hw, uint32_t picHeight, uint32_t picWidth, void *);
+extern uint32_t flea_GetRptDropParam(struct crystalhd_hw *hw, void *);
 
 static crystalhd_dio_req *crystalhd_alloc_dio(struct crystalhd_adp *adp)
 {
@@ -576,8 +576,8 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	struct device *dev;
 	crystalhd_dio_req	*dio;
 	uint32_t start = 0, end = 0, count = 0;
-	unsigned long uaddr = 0, uv_start = 0;
 	uint32_t spsz = 0;
+	unsigned long uaddr = 0, uv_start = 0;
 	int i = 0, rw = 0, res = 0, nr_pages = 0, skip_fb_sg = 0;
 
 	if (!adp || !ubuff || !ubuff_sz || !dio_hnd) {

@@ -47,8 +47,6 @@
 */
 uint32_t link_dec_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 {
-	uint32_t val;
-
 	if (!adp) {
 		printk(KERN_ERR "%s: Invalid args\n", __func__);
 		return 0;
@@ -60,13 +58,7 @@ uint32_t link_dec_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 		return 0;
 	}
 
-	val = readl(adp->mem_addr + reg_off);
-/*
-	dev_dbg(&adp->pdev->dev, "%s: read(0x%p) = 0x%08x\n",
-		__func__, adp->mem_addr + reg_off, val);
-*/
-
-	return val;
+	return readl(adp->mem_addr + reg_off);
 }
 
 /**
@@ -95,13 +87,9 @@ void link_dec_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t val)
 		return;
 	}
 
-/*
-	dev_dbg(&adp->pdev->dev, "%s: writel(0x%08x @ 0x%p).\n",
-			__func__, val, adp->mem_addr + reg_off);
-*/
 	writel(val, adp->mem_addr + reg_off);
 
-	/* the udelay require for latest 70012, not for others... :( */
+	/* the udelay is required for latest 70012, not for others... :( */
 	udelay(8);
 }
 
@@ -120,8 +108,6 @@ void link_dec_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t val)
 */
 uint32_t crystalhd_link_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 {
-	uint32_t val;
-
 	if (!adp) {
 		printk(KERN_ERR "%s: Invalid args\n", __func__);
 		return 0;
@@ -133,13 +119,7 @@ uint32_t crystalhd_link_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 		return 0;
 	}
 
-	val = readl(adp->i2o_addr + reg_off);
-/*
-	dev_dbg(&adp->pdev->dev, "%s: read(0x%p) = 0x%08x\n",
-		__func__, adp->i2o_addr + reg_off, val);
-*/
-
-	return val;
+	return readl(adp->i2o_addr + reg_off);
 }
 
 /**
@@ -168,11 +148,6 @@ void crystalhd_link_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t
 				__func__, reg_off);
 				return;
 	}
-
-/*
-	dev_dbg(&adp->pdev->dev, "%s: writel(0x%08x @ 0x%p).\n",
-		__func__, val, adp->i2o_addr + reg_off);
-*/
 
 	writel(val, adp->i2o_addr + reg_off);
 }
@@ -857,7 +832,10 @@ bool crystalhd_link_peek_next_decoded_frame(struct crystalhd_hw *hw,
 			else
 				return false; // don't use the meta_payload information
 		}
+		return true;
 	}
+	spin_unlock_irqrestore(&ioq->lock, flags);
+
 	return true;
 }
 
