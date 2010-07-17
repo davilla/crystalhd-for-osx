@@ -241,7 +241,6 @@ void crystalhd_flea_init_dram(struct crystalhd_hw *hw)
 
 uint32_t crystalhd_flea_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 {
-	uint32_t val;
 	uint32_t baseAddr = reg_off >> 16;
 	void	*regAddr;
 
@@ -258,12 +257,7 @@ uint32_t crystalhd_flea_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 					__func__, reg_off);
 			return 0;
 		}
-		val = readl(regAddr);
-/*
-		dev_dbg(&adp->pdev->dev, "%s: read(0x%p) = 0x%08x\n",
-				__func__, regAddr, val);
-*/
-		return val;
+		return readl(regAddr);
 	}
 	else // non directly mapped region
 	{
@@ -274,12 +268,7 @@ uint32_t crystalhd_flea_reg_rd(struct crystalhd_adp *adp, uint32_t reg_off)
 		regAddr = adp->i2o_addr + FLEA_GISB_INDIRECT_ADDRESS;
 		writel(reg_off | 0x10000000, regAddr);
 		regAddr = adp->i2o_addr + FLEA_GISB_INDIRECT_DATA;
-		val = readl(regAddr);
-/*
-		dev_dbg(&adp->pdev->dev, "%s: read(0x%p) = 0x%08x\n",
-				__func__, regAddr, val);
-*/
-		return val;
+		return readl(regAddr);
 	}
 }
 
@@ -302,10 +291,6 @@ void crystalhd_flea_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t
 					return ;
 		}
 		writel(val, regAddr);
-/*
-		dev_dbg(&adp->pdev->dev, "%s: write(0x%p) = 0x%08x\n",
-				__func__, regAddr, val);
-*/
 	}
 	else // non directly mapped region
 	{
@@ -317,10 +302,6 @@ void crystalhd_flea_reg_wr(struct crystalhd_adp *adp, uint32_t reg_off, uint32_t
 		writel(reg_off | 0x10000000, regAddr);
 		regAddr = adp->i2o_addr + FLEA_GISB_INDIRECT_DATA;
 		writel(val, regAddr);
-/*
-		dev_dbg(&adp->pdev->dev, "%s: write(0x%p) = 0x%08x\n",
-				__func__, regAddr, val);
-*/
 	}
 }
 

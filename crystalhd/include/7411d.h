@@ -545,7 +545,7 @@ typedef struct {
     uint32_t	pcrOffset;
     uint32_t	stcValue;
     uint32_t	stcWritten;	  // 1 -> host updated STC, 0 -> stream ARC ack
-    int32_t		ptsStcOffset;	// PTS - STC
+    int32_t	ptsStcOffset;	// PTS - STC
     uint32_t	pVdecStatusBlk;     /* pointer to vdec status block */ /* Change from void * to make it 64-bit safe */
     uint32_t	lastPicture;	 // 1 -> decoder last picture indication
     uint32_t	pictureTag;	  /* Picture Tag from VDEC */
