@@ -28,7 +28,11 @@
 #define _CRYSTALHD_HW_H_
 #ifndef __APPLE__
 #include <linux/device.h>
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 24)
 #include <linux/semaphore.h>
+#else
+#include <asm/semaphore.h>
+#endif
 #endif
 #include "crystalhd_fw_if.h"
 #include "crystalhd_misc.h"
