@@ -556,7 +556,7 @@ DtsDeviceOpen(
 	// set Ctx->DevId early, other depend on it
 	DtsGetContext(*hDevice)->DevId = DeviceID;
 
-	DtsSetCoreClock(*hDevice, 165);
+	DtsSetCoreClock(*hDevice, 180);
 
 	/*
 	 * We have to specify the mode to the driver.
