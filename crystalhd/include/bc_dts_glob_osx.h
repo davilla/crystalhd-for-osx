@@ -206,7 +206,8 @@ typedef struct _BC_DTS_STATS {
 
 	float			Temperature;
 	uint32_t		TempFromDriver;
-	uint32_t		res1[8];
+	uint32_t		picNumFlags;
+	uint32_t		res1[7];
 
 } BC_DTS_STATS;
 
@@ -352,7 +353,7 @@ typedef struct _crystalhd_ioctl_data {
 
 enum _crystalhd_kmod_ver{
 	crystalhd_kmod_major	= 3,
-	crystalhd_kmod_minor	= 1,
+	crystalhd_kmod_minor	= 5,
 	crystalhd_kmod_rev	= 0,
 };
 

@@ -43,7 +43,7 @@
 #define BCHP_CLK_TEMP_MON_STATUS 0x00070044 /* Temperature monitor status. */
 
 
-//===================================Externs ============================================
+//===================================Externs ===========================================
 DRVIFLIB_INT_API BC_STATUS
 DtsGetHwType(
     HANDLE  hDevice,
@@ -891,7 +891,7 @@ DtsDevMemRd(
 					pIoctlData,
 					AllocSz,
 					(LPDWORD)&BytesReturned,
-					NULL))
+					0))
 	{
 		DebugLog_Trace(LDIL_DBG,"DtsDevMemRd: DeviceIoControl Failed\n");
 		return BC_STS_ERROR;
@@ -1160,6 +1160,7 @@ DtsGetDrvStat(
 	pDrvStat->DrvNextMDataPLD = pIntDrvStat->DrvNextMDataPLD;
 	pDrvStat->DrvcpbEmptySize = pIntDrvStat->DrvcpbEmptySize;
 	pDrvStat->eosDetected = pIntDrvStat->eosDetected;
+	pDrvStat->picNumFlags = pIntDrvStat->picNumFlags;
 
 
 //
@@ -1565,7 +1566,7 @@ DtsPushFwBinToLink(
 	pMemAccess->NumDwords = BuffSz/4;
 	memcpy(pXferBuff, Buffer, BuffSz);
 
-	if (!DtsDrvIoctl(hDevice, BCM_IOC_FW_DOWNLOAD, pIoctlData, AllocSz, pIoctlData, AllocSz, (LPDWORD)&BytesReturned, NULL)) {
+	if (!DtsDrvIoctl(hDevice, BCM_IOC_FW_DOWNLOAD, pIoctlData, AllocSz, pIoctlData, AllocSz, (LPDWORD)&BytesReturned, 0)) {
 		DebugLog_Trace(LDIL_DBG,"DtsPushFwBinToLink: DeviceIoControl Failed\n");
 		return BC_STS_ERROR;
 	}

@@ -246,8 +246,10 @@ static BC_STATUS bc_cproc_cfg_rd(struct crystalhd_cmd *ctx,
 	off = idata->udata.u.pciCfg.Offset;
 	len = idata->udata.u.pciCfg.Size;
 
-	if (len <= 4)
-		return crystalhd_pci_cfg_rd(ctx->adp, off, len, temp);
+	if (len <= 4) {
+		sts = crystalhd_pci_cfg_rd(ctx->adp, off, len, temp);
+		return sts;
+	}
 
 	/* Truncate to dword alignment..*/
 	len = 4;
@@ -797,11 +799,12 @@ static BC_STATUS bc_cproc_get_stats(struct crystalhd_cmd *ctx,
 	spin_unlock_irqrestore(&ctx->hw_ctx->lock, irqflags);
 
 	/* status peek ahead to retreive the next decoded frame timestamp */
-	if (!readTxOnly && stats->drvRLL && (stats->DrvNextMDataPLD & BC_BIT(31))) {
+//	if (!readTxOnly && stats->drvRLL && (stats->DrvNextMDataPLD & BC_BIT(31))) {
+	if (!readTxOnly && stats->drvRLL) {
 		pic_width = stats->DrvNextMDataPLD & 0xffff;
 		stats->DrvNextMDataPLD = 0;
 		if (pic_width <= 1920) {
-			if(ctx->hw_ctx->pfnPeekNextDeodedFr(ctx->hw_ctx,&stats->DrvNextMDataPLD, pic_width)) {
+			if(ctx->hw_ctx->pfnPeekNextDeodedFr(ctx->hw_ctx,&stats->DrvNextMDataPLD, &stats->picNumFlags, pic_width)) {
 				// Check in case we dropped a picture here
 				crystalhd_hw_stats(ctx->hw_ctx, &hw_stats);
 				stats->drvRLL = hw_stats.rdyq_count;
@@ -969,7 +972,10 @@ BC_STATUS crystalhd_user_open(struct crystalhd_cmd *ctx,
 	dev_info(dev, "Opening new user[%x] handle\n", uc->uid);
 
 	ctx->hw_ctx = (struct crystalhd_hw*)kmalloc(sizeof(struct crystalhd_hw), GFP_KERNEL);
-	memset(ctx->hw_ctx, 0, sizeof(struct crystalhd_hw));
+	if(ctx->hw_ctx != NULL)
+		memset(ctx->hw_ctx, 0, sizeof(struct crystalhd_hw));
+	else
+		return BC_STS_ERROR;
 
 	crystalhd_hw_open(ctx->hw_ctx, ctx->adp);
 

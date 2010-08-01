@@ -2,6 +2,8 @@
 #  Broadcom "BCM970012/BCM970015" Crystal HD device interface library.
 #
 #
+BCLIB_MINOR=5
+BCLIB_MAJOR=3
 BCLIB=libcrystalhd.dylib
 LIBDIR=/usr/lib
 

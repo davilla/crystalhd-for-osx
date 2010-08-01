@@ -38,6 +38,8 @@ struct _DecIf
 };
 typedef struct _DecIf BcmDecIF;
 
+BC_STATUS decif_getcaps(BcmDecIF *decif, BC_HW_CAPS *hwCaps);
+
 BC_STATUS
 decif_open(BcmDecIF * decif);
 
@@ -69,7 +71,7 @@ BC_STATUS
 decif_setcolorspace(BcmDecIF * decif, BC_OUTPUT_FORMAT mode);
 
 BC_STATUS
-decif_get_drv_status(BcmDecIF * decif, gboolean* suspended, guint32 *rll);
+decif_get_drv_status(BcmDecIF * decif, gboolean* suspended, guint32 *rll, guint32 *picNumFlags);
 
 BC_STATUS
 decif_get_eos(BcmDecIF *decif, gboolean *bEOS);
