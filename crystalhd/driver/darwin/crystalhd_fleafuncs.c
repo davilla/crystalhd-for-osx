@@ -1952,7 +1952,7 @@ bool crystalhd_flea_peek_next_decoded_frame(struct crystalhd_hw *hw, uint64_t *m
 	}
 	spin_unlock_irqrestore(&ioq->lock, flags);
 
-	return true;
+	return false;
 
 }
 
@@ -2749,8 +2749,8 @@ bool flea_GetPictureInfo(struct crystalhd_hw *hw, crystalhd_rx_dma_pkt * rx_pkt,
 	if (!dio)
 		goto getpictureinfo_err_nosem;
 
-	if(down_interruptible(&hw->fetch_sem))
-		goto getpictureinfo_err_nosem;
+// 	if(down_interruptible(&hw->fetch_sem))
+// 		goto getpictureinfo_err_nosem;
 
 	tmpPicInfo = kmalloc(2 * sizeof(BC_PIC_INFO_BLOCK) + 16, GFP_KERNEL); // since copy_from_user can sleep anyway
 	if(tmpPicInfo == NULL)
@@ -2894,12 +2894,12 @@ bool flea_GetPictureInfo(struct crystalhd_hw *hw, crystalhd_rx_dma_pkt * rx_pkt,
 	if(tmpPicInfo)
 		kfree(tmpPicInfo);
 
-	up(&hw->fetch_sem);
+// 	up(&hw->fetch_sem);
 
 	return rtVal;
 
 getpictureinfo_err:
-	up(&hw->fetch_sem);
+// 	up(&hw->fetch_sem);
 
 getpictureinfo_err_nosem:
 	if(dio->pib_va)

@@ -1541,7 +1541,6 @@ DtsProcOutput(
 
 	savFlags = pOut->PoutFlags;
 	pOut->discCnt = 0;
-	pOut->b422Mode = Ctx->b422Mode;
 
 	do
 	{
@@ -1656,23 +1655,28 @@ DtsProcOutput(
 		OutBuffs.PoutFlags |= pOut->PoutFlags;
 		width = Ctx->HWOutPicWidth;
 		OutBuffs.b422Mode = Ctx->b422Mode;
-		pOut->AppCallBack(	pOut->hnd,
-							width,
-							OutBuffs.PicInfo.height,
-							0,
-							&OutBuffs);
+		pOut->AppCallBack(pOut->hnd,
+					width,
+					OutBuffs.PicInfo.height,
+					0,
+					&OutBuffs);
 	}
 
-	if(Ctx->b422Mode) {
-		sts = DtsCopyRawDataToOutBuff(Ctx,pOut,&OutBuffs);
-	}else{
-		if(pOut->PoutFlags & BC_POUT_FLAGS_YV12){
-			sts = DtsCopyNV12ToYV12(Ctx,pOut,&OutBuffs);
-		}else {
-			sts = DtsCopyNV12(Ctx,pOut,&OutBuffs);
+	if (pOut->PoutFlags & BC_POUT_FLAGS_MODE) {
+		sts = DtsCopyFormat(Ctx,pOut,&OutBuffs);
+	} else {
+		pOut->b422Mode = Ctx->b422Mode;
+		if(Ctx->b422Mode) {
+			sts = DtsCopyRawDataToOutBuff(Ctx,pOut,&OutBuffs);
+		}else{
+			if(pOut->PoutFlags & BC_POUT_FLAGS_YV12){
+				sts = DtsCopyNV12ToYV12(Ctx,pOut,&OutBuffs);
+			}else {
+				sts = DtsCopyNV12(Ctx,pOut,&OutBuffs);
+			}
 		}
 	}
-
+	
 	if(pOut->PoutFlags & BC_POUT_FLAGS_PIB_VALID){
 		pOut->PicInfo = OutBuffs.PicInfo;
 	}

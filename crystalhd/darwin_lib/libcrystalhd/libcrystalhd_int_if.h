@@ -250,10 +250,10 @@ DtsChkYUVSizes(
 	BC_DTS_PROC_OUT *Vout,
 	BC_DTS_PROC_OUT *Vin);
 
-BC_STATUS
-DtsCopyRawDataToOutBuff(struct _DTS_LIB_CONTEXT	*Ctx,
-						BC_DTS_PROC_OUT *Vout,
-						BC_DTS_PROC_OUT *Vin);
+BC_STATUS DtsCopyRawDataToOutBuff(
+	struct _DTS_LIB_CONTEXT	*Ctx,
+	BC_DTS_PROC_OUT *Vout,
+	BC_DTS_PROC_OUT *Vin);
 
 BC_STATUS DtsCopyNV12ToYV12(
 	struct _DTS_LIB_CONTEXT	*Ctx,
@@ -263,6 +263,11 @@ BC_STATUS DtsCopyNV12ToYV12(
 BC_STATUS DtsCopyNV12(
 	struct _DTS_LIB_CONTEXT	*Ctx,
 	BC_DTS_PROC_OUT *Vout,
+	BC_DTS_PROC_OUT *Vin);
+
+BC_STATUS DtsCopyFormat(
+	struct _DTS_LIB_CONTEXT	*Ctx, 
+	BC_DTS_PROC_OUT *Vout, 
 	BC_DTS_PROC_OUT *Vin);
 
 extern DRVIFLIB_INT_API BC_STATUS

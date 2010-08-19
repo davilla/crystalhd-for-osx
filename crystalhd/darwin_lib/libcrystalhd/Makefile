@@ -2,7 +2,7 @@
 #  Broadcom "BCM970012/BCM970015" Crystal HD device interface library.
 #
 #
-BCLIB_MINOR=5
+BCLIB_MINOR=6
 BCLIB_MAJOR=3
 BCLIB=libcrystalhd.dylib
 LIBDIR=/usr/lib
@@ -23,7 +23,7 @@ CXXFLAGS = -D__LINUX_USER__
 # -D_USE_SHMEM_
 
 CXXFLAGS += ${INCLUDES}
-CXXFLAGS += -g -O0 -Wall -fPIC -arch i386 -shared -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
+CXXFLAGS += -O2 -Wall -fPIC -arch i386 -shared -fstrict-aliasing -msse2 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
 LDFLAGS = -dynamiclib -twolevel_namespace 
 
 SRCFILES = 	libcrystalhd_if.cpp \
