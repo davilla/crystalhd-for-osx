@@ -97,7 +97,11 @@ enum _BC_DTS_GLOBALS {
 	BC_LINK_MAX_OPENS	= 3,		/* Maximum simultaneous opens*/
 	BC_LINK_MAX_SGLS	= 1024,		/* Maximum SG elements 4M/4K */
 	BC_TX_LIST_CNT		= 2,		/* Max Tx DMA Rings */
+#ifndef __APPLE__
 	BC_RX_LIST_CNT		= 16,		/* Max Rx DMA Rings*/
+else
+	BC_RX_LIST_CNT		= 8,		/* Max Rx DMA Rings*/
+#endif
 	BC_PROC_OUTPUT_TIMEOUT	= 2000,		/* Milliseconds */
 	BC_INFIFO_THRESHOLD	= 0x10000,
 };
