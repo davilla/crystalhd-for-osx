@@ -823,17 +823,19 @@ bool crystalhd_link_peek_next_decoded_frame(struct crystalhd_hw *hw,
 									&PicNumber, meta_payload);
 				if(!PicNumber || (PicNumber == hw->LastPicNo) || (PicNumber == hw->LastTwoPicNo)) {
 					// discard picture
+					if(PicNumber != 0) {
+						hw->LastTwoPicNo = hw->LastPicNo;
+						hw->LastPicNo = PicNumber;
+					}
 #ifndef __APPLE__
 					rpkt = crystalhd_dioq_fetch(hw->rx_rdyq);
 #else
 					rpkt = (crystalhd_rx_dma_pkt*)crystalhd_dioq_fetch(hw->rx_rdyq);
 #endif
-					if(PicNumber != 0) {
-						hw->LastTwoPicNo = hw->LastPicNo;
-						hw->LastPicNo = PicNumber;
+					if (rpkt) {
+						crystalhd_dioq_add(hw->rx_freeq, rpkt, false, rpkt->pkt_tag);
+						rpkt = NULL;
 					}
-					crystalhd_dioq_add(hw->rx_freeq, rpkt, false, rpkt->pkt_tag);
-					rpkt = NULL;
 					*meta_payload = 0;
 				}
 				return true;
