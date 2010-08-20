@@ -2265,10 +2265,10 @@ static void crystalhd_flea_update_tx_done_to_fw(struct crystalhd_hw *hw)
 	regVal = hw->pfnReadDevRegister(hw->adp, INDICATE_TX_DONE_REG);
 	regVal++;
 	hw->pfnWriteDevRegister(hw->adp, INDICATE_TX_DONE_REG, regVal);
-
+/*
 	dev_dbg(dev, "TxUpdate[SeqNum DRAM Addr:%x] SeqNum:%x ScratchValue:%x\n",
 		seqNumAddr, seqVal, regVal);
-
+*/
 	return;
 }
 
