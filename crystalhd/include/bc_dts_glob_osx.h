@@ -99,7 +99,7 @@ enum _BC_DTS_GLOBALS {
 	BC_TX_LIST_CNT		= 2,		/* Max Tx DMA Rings */
 #ifndef __APPLE__
 	BC_RX_LIST_CNT		= 16,		/* Max Rx DMA Rings*/
-else
+#else
 	BC_RX_LIST_CNT		= 8,		/* Max Rx DMA Rings*/
 #endif
 	BC_PROC_OUTPUT_TIMEOUT	= 2000,		/* Milliseconds */
