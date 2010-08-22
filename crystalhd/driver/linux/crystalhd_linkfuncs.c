@@ -827,8 +827,6 @@ bool crystalhd_link_peek_next_decoded_frame(struct crystalhd_hw *hw,
 						crystalhd_dioq_add(hw->rx_freeq, rpkt, false, rpkt->pkt_tag);
 						rpkt = NULL;
 					}
-					crystalhd_dioq_add(hw->rx_freeq, rpkt, false, rpkt->pkt_tag);
-					rpkt = NULL;
 					*meta_payload = 0;
 				}
 				return true;
