@@ -45,7 +45,7 @@
 #include "crystalhd_lnx.h"
 
 // problems with chd suspend/resume, disable for now.
-//#define ENABLE_POWERHANDLING
+#define ENABLE_POWERHANDLING
 
 // Define the metaclass information that is used for runtime
 // typechecking of IOKit objects. We're a subclass of IOService,
@@ -245,10 +245,8 @@ BroadcomCrystalHD::start( IOService * provider )
     
 #ifdef ENABLE_POWERHANDLING
     // setup power handling
-    if (g_adp_info->pdev->device != BC_PCI_DEVID_FLEA) {
-      registerWithPolicyMaker(this);
-      provider->joinPMtree(this);
-    }
+    registerWithPolicyMaker(this);
+    provider->joinPMtree(this);
 #else
     m_pciNub->enablePCIPowerManagement(kPCIPMCSPowerStateD0);
 #endif
