@@ -475,7 +475,7 @@ bool crystalhd_link_start_device(struct crystalhd_hw *hw)
 
 	dev = &hw->adp->pdev->dev;
 
-	dev_dbg(dev, "Starting Crystal HD Device\n");
+	dev_dbg(dev, "Starting Crystal HD BCM70012 Device\n");
 
 	if (!crystalhd_link_bring_out_of_rst(hw)) {
 		dev_err(dev, "Failed To Bring BCM70012 Out Of Reset\n");
@@ -523,7 +523,7 @@ bool crystalhd_link_stop_device(struct crystalhd_hw *hw)
 	uint32_t reg;
 	BC_STATUS sts;
 
-	dev_dbg(&hw->adp->pdev->dev, "Stopping Crystal HD Device\n");
+	dev_dbg(&hw->adp->pdev->dev, "Stopping Crystal HD BCM70012 Device\n");
 	sts = crystalhd_link_put_ddr2sleep(hw);
 	if (sts != BC_STS_SUCCESS) {
 		dev_err(&hw->adp->pdev->dev, "Failed to Put DDR To Sleep!!\n");
@@ -639,6 +639,8 @@ bool link_GetPictureInfo(struct crystalhd_hw *hw, uint32_t picHeight, uint32_t p
 	int i;
 	unsigned long res = 0;
 
+	dev_dbg(&hw->adp->pdev->dev, "getting Picture Info\n");
+
 	*PicNumber = 0;
 	*PicMetaData = 0;
 
@@ -673,7 +675,7 @@ bool link_GetPictureInfo(struct crystalhd_hw *hw, uint32_t picHeight, uint32_t p
 	PicInfoLineNum = link_GetPicInfoLineNum(dio, (uint8_t*)dio->pib_va);
 #endif
 	if (PicInfoLineNum > 1092) {
-		printk("Invalid Line Number[%x]\n",	(int)PicInfoLineNum);
+		dev_dbg(&hw->adp->pdev->dev, "Invalid Line Number[%x]\n", (int)PicInfoLineNum);
 		goto getpictureinfo_err;
 	}
 
@@ -688,7 +690,7 @@ bool link_GetPictureInfo(struct crystalhd_hw *hw, uint32_t picHeight, uint32_t p
 	if (picHeight) {
 		if ((PicInfoLineNum != picHeight) &&
 		    (PicInfoLineNum != picHeight/2)) {
-			printk("PicInfoLineNum[%d] != PICHeight "
+			dev_dbg(&hw->adp->pdev->dev, "PicInfoLineNum[%d] != PICHeight "
 				"Or PICHeight/2 [%d]\n",
 				(int)PicInfoLineNum, picHeight);
 			goto getpictureinfo_err;
@@ -1895,7 +1897,7 @@ BC_STATUS crystalhd_link_download_fw(struct crystalhd_hw *hw,
 		return BC_STS_FW_AUTH_FAILED;
 	}
 
-	dev_info(dev, "Firmware Downloaded Successfully\n");
+	dev_dbg(dev, "Firmware Downloaded Successfully\n");
 
 	// Load command response addresses
 	hw->fwcmdPostAddr = TS_Host2CpuSnd;
@@ -1952,8 +1954,9 @@ BC_STATUS crystalhd_link_do_fw_cmd(struct crystalhd_hw *hw, BC_FW_CMD *fw_cmd)
 
 	msleep_interruptible(50);
 
+	// FW commands should complete even if we got a signal from the upper layer
 	crystalhd_wait_on_event(&fw_cmd_event, hw->fwcmd_evt_sts,
-				20000, rc, false);
+				20000, rc, true);
 
 	if (!rc) {
 		sts = BC_STS_SUCCESS;
@@ -1961,7 +1964,7 @@ BC_STATUS crystalhd_link_do_fw_cmd(struct crystalhd_hw *hw, BC_FW_CMD *fw_cmd)
 		dev_err(dev, "Firmware command T/O\n");
 		sts = BC_STS_TIMEOUT;
 	} else if (rc == -EINTR) {
-		dev_dbg(dev, "FwCmd Wait Signal int.\n");
+		dev_err(dev, "FwCmd Wait Signal int - Should never happen\n");
 		sts = BC_STS_IO_USER_ABORT;
 	} else {
 		dev_err(dev, "FwCmd IO Error.\n");

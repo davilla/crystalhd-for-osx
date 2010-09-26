@@ -91,8 +91,6 @@ static crystalhd_elem_t *crystalhd_alloc_elem(struct crystalhd_adp *adp)
 		adp->elem_pool_head = adp->elem_pool_head->flink;
 		memset(temp, 0, sizeof(*temp));
 	}
-	else
-		printk(KERN_ERR "no element found\n");
 
 	spin_unlock_irqrestore(&adp->lock, flags);
 
@@ -146,7 +144,7 @@ static inline void crystalhd_init_sg(struct scatterlist *sg, unsigned int entrie
  * Return:
  *	Status.
  *
- * Get value from Link's PCIe config space.
+ * Get value from PCIe config space.
  */
 BC_STATUS crystalhd_pci_cfg_rd(struct crystalhd_adp *adp, uint32_t off,
 			     uint32_t len, uint32_t *val)
@@ -862,7 +860,11 @@ BC_STATUS crystalhd_map_dio(struct crystalhd_adp *adp, void *ubuff,
 	dio->sig = crystalhd_dio_sg_mapped;
 	/* Fill in User info.. */
 	dio->uinfo.xfr_len   = ubuff_sz;
+#ifndef __APPLE__
+	dio->uinfo.xfr_buff  = ubuff;
+#else
 	dio->uinfo.xfr_buff  = (uint8_t*)ubuff;
+#endif
 	dio->uinfo.uv_offset = uv_offset;
 	dio->uinfo.b422mode  = en_422mode;
 	dio->uinfo.dir_tx    = dir_tx;

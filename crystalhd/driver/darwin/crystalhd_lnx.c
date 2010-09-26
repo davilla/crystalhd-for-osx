@@ -14,7 +14,7 @@
   You should have received a copy of the GNU General Public License
   along with this driver.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
-#define DEBUG
+
 #ifndef __APPLE__
 #include <linux/version.h>
 #endif
@@ -622,7 +622,7 @@ static int __devinit chd_dec_pci_probe(struct pci_dev *pdev,
 	int rc;
 	BC_STATUS sts = BC_STS_SUCCESS;
 
-	dev_dbg(dev, "Starting Device:0x%04x\n", pdev->device);
+	dev_info(dev, "Starting Device:0x%04x\n", pdev->device);
 
 	pinfo = kzalloc(sizeof(struct crystalhd_adp), GFP_KERNEL);
 	if (!pinfo) {
@@ -644,8 +644,11 @@ static int __devinit chd_dec_pci_probe(struct pci_dev *pdev,
 
 	rc = chd_pci_reserve_mem(pinfo);
 	if (rc) {
-		dev_err(dev, "%s: Failed to setup memory regions.\n",
+		dev_err(dev, "%s: Failed to set up memory regions.\n",
 			__func__);
+#ifndef __APPLE__
+		pci_disable_device(pdev);
+#endif
 		return -ENOMEM;
 	}
 

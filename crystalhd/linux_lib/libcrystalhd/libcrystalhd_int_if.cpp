@@ -252,7 +252,7 @@ DtsSetCoreClock(
 	DTS_GET_CTX(hDevice,Ctx);
 	if(Ctx->DevId != BC_PCI_DEVID_LINK)
 	{
-		DebugLog_Trace(LDIL_DBG,"DtsSetCoreClock is not supported in this device\n");
+		//DebugLog_Trace(LDIL_DBG,"DtsSetCoreClock is not supported in this device\n");
 		return BC_STS_ERROR;
 	}
 
@@ -741,28 +741,25 @@ DtsDevRegisterWr(
 	BC_STATUS	sts = BC_STS_SUCCESS;
 
 
-	DTS_GET_CTX(hDevice,Ctx);
+	DTS_GET_CTX(hDevice, Ctx);
 
-	if(!(pIocData = DtsAllocIoctlData(Ctx)))
+	if (!(pIocData = DtsAllocIoctlData(Ctx)))
 		return BC_STS_INSUFF_RES;
 
 	reg_acc_wr = (BC_CMD_REG_ACC *) &pIocData->u.regAcc;
 
-	//
 	// Prepare the command here.
-	//
 	reg_acc_wr->Offset		= offset;
 	reg_acc_wr->Value		= Value;
 
-	if( (sts=DtsDrvCmd(Ctx,BCM_IOC_REG_WR,0,pIocData,FALSE)) != BC_STS_SUCCESS){
-		DtsRelIoctlData(Ctx,pIocData);
-		DebugLog_Trace(LDIL_DBG,"DtsDevRegisterWr: Ioctl failed: %d\n",sts);
-		return sts;
-	}
+	sts = DtsDrvCmd(Ctx, BCM_IOC_REG_WR, 0, pIocData, FALSE);
+
+	if (sts != BC_STS_SUCCESS)
+		DebugLog_Trace(LDIL_DBG,"DtsDevRegisterWr: Ioctl failed: %d\n", sts);
 
 	DtsRelIoctlData(Ctx,pIocData);
 
-	return BC_STS_SUCCESS;
+	return sts;
 }
 
 DRVIFLIB_INT_API BC_STATUS
@@ -1050,7 +1047,7 @@ DtsTxDmaText( HANDLE  hDevice ,
 
 	*dramOff = pIocData->u.ProcInput.DramOffset;
 
-	if( BC_STS_SUCCESS != status)
+	if( BC_STS_SUCCESS != status && BC_STS_IO_USER_ABORT != status)
 	{
 		DebugLog_Trace(LDIL_DBG,"DtsTxDmaText: DeviceIoControl Failed with Sts %d\n", status);
 	}
@@ -1352,7 +1349,7 @@ DtsCopyRawDataToOutBuff(DTS_LIB_CONTEXT	*Ctx,
 			return BC_STS_IO_XFR_ERROR;
 		}
 #endif
-	srcWidthInPixels = Ctx->HWOutPicWidth;
+		srcWidthInPixels = Ctx->HWOutPicWidth;
 		srcHeightInPixels = dstHeightInPixels;
 	} else {
 		dstWidthInPixels = Vin->PicInfo.width;
