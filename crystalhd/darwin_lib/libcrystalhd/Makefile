@@ -4,12 +4,15 @@
 #
 BCLIB_MINOR=6
 BCLIB_MAJOR=3
-BCLIB=libcrystalhd.dylib
+BCLIB_NAME=libcrystalhd.dylib
+BCLIB_SL=$(BCLIB_NAME).$(BCLIB_MAJOR)
+BCLIB=$(BCLIB_NAME).$(BCLIB_MAJOR).$(BCLIB_MINOR)
 LIBDIR=/usr/lib
 
 AT   = @
 ECHO = ${AT} echo
 CXX = /usr/bin/g++-4.0
+SDK = -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
 
 ROOTDIR = ../..
 
@@ -23,8 +26,8 @@ CXXFLAGS = -D__LINUX_USER__
 # -D_USE_SHMEM_
 
 CXXFLAGS += ${INCLUDES}
-CXXFLAGS += -O2 -Wall -fPIC -arch i386 -shared -fstrict-aliasing -msse2 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
-LDFLAGS = -dynamiclib -twolevel_namespace 
+CXXFLAGS += -O2 -Wall -fPIC -arch i386 -shared -fstrict-aliasing -msse2 $(SDK)
+LDFLAGS = -dynamiclib -twolevel_namespace -compatibility_version $(BCLIB_MAJOR).5.0 -current_version $(BCLIB_MAJOR).$(BCLIB_MINOR).0
 
 SRCFILES = 	libcrystalhd_if.cpp \
 		libcrystalhd_int_if.cpp \
@@ -39,6 +42,8 @@ OBJFILES = ${SRCFILES:.cpp=.o}
 
 all:help $(OBJFILES)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(BCLIB) ${OBJFILES} 
+	ln -sf $(BCLIB) $(BCLIB_NAME)
+	ln -sf $(BCLIB) $(BCLIB_SL)
 
 help:
 	${ECHO} OBJFILES = ${OBJFILES}
@@ -46,7 +51,7 @@ help:
 	${ECHO} LNM = ${BCLIB} ${BCLIB_SL}
 
 clean:
-	rm -f  ${BCLIB} *.o
+	rm -f  ${BCLIB} ${BCLIB_SL} ${BCLIB_NAME} *.o
 	rm -f  ${OBJFILES}
 
 install:
@@ -65,4 +70,6 @@ install:
 	cp $(ROOTDIR)/firmware/fwbin/70015/bcm70015fw.bin $(LIBDIR)
 	cp $(BCLIB) $(LIBDIR)
 	install -m 755 $(BCLIB) $(LIBDIR)
+	(cd $(DESTDIR)$(LIBDIR); ln -sf $(BCLIB) $(BCLIB_NAME))
+	(cd $(DESTDIR)$(LIBDIR); ln -sf $(BCLIB) $(BCLIB_SL))
 
