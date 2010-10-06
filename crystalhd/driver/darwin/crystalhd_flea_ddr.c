@@ -23,7 +23,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this driver.  If not, see <http://www.gnu.org/licenses/>.
  **********************************************************************/
-
+#ifndef __APPLE__
+#include <linux/delay.h>
+#endif
 #include "crystalhd_hw.h"
 #include "crystalhd_flea_ddr.h"
 
