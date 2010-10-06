@@ -639,7 +639,7 @@ bool link_GetPictureInfo(struct crystalhd_hw *hw, uint32_t picHeight, uint32_t p
 	int i;
 	unsigned long res = 0;
 
-	dev_dbg(&hw->adp->pdev->dev, "getting Picture Info\n");
+	//dev_dbg(&hw->adp->pdev->dev, "getting Picture Info\n");
 
 	*PicNumber = 0;
 	*PicMetaData = 0;
@@ -675,7 +675,7 @@ bool link_GetPictureInfo(struct crystalhd_hw *hw, uint32_t picHeight, uint32_t p
 	PicInfoLineNum = link_GetPicInfoLineNum(dio, (uint8_t*)dio->pib_va);
 #endif
 	if (PicInfoLineNum > 1092) {
-		dev_dbg(&hw->adp->pdev->dev, "Invalid Line Number[%x]\n", (int)PicInfoLineNum);
+		//dev_dbg(&hw->adp->pdev->dev, "Invalid Line Number[%x]\n", (int)PicInfoLineNum);
 		goto getpictureinfo_err;
 	}
 

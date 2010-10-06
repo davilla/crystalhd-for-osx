@@ -2774,8 +2774,10 @@ bool flea_GetPictureInfo(struct crystalhd_hw *hw, crystalhd_rx_dma_pkt * rx_pkt,
 		goto getpictureinfo_err;
 	PicInfoLineNum = *(uint32_t*)(dio->pib_va);
 	if (PicInfoLineNum > 1092) {
+/*
 		dev_err(dev, "Invalid Line Number[%x], DoneSz:0x%x Bytes\n",
 			(int)PicInfoLineNum, rx_pkt->dio_req->uinfo.y_done_sz * 4);
+*/
 		goto getpictureinfo_err;
 	}
 
