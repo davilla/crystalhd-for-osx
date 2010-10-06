@@ -62,9 +62,9 @@ enum _crystalhd_ldil_globals {
 	BC_INPUT_MDATA_POOL_SZ_COLLECT  = 256,		/* Input Meta Data Pool size for collector */
 	BC_MAX_SW_VOUT_BUFFS    = BC_RX_LIST_CNT,	/* MAX - pre allocated buffers..*/
 	RX_START_DELIVERY_THRESHOLD = 0,
-	PAUSE_DECODER_THRESHOLD = 12,
-	RESUME_DECODER_THRESHOLD = 5,
-	FLEA_RT_PD_THRESHOLD = 14,
+	PAUSE_DECODER_THRESHOLD = ((BC_RX_LIST_CNT * 12) / 16), /* 12 for 16 buffers, 6 for 8 buffers */
+	RESUME_DECODER_THRESHOLD = 3,
+	FLEA_RT_PD_THRESHOLD = ((BC_RX_LIST_CNT * 14) / 16), /* 14 for 16 buffers, 7 for 8 buffers */
 	FLEA_RT_PU_THRESHOLD = 3,
 	HARDWARE_INIT_RETRY_CNT = 10,
 	HARDWARE_INIT_RETRY_LINK_CNT = 1,
