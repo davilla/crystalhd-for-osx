@@ -551,7 +551,7 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 	}
 	dev_info(dev, "FETCH TIMEOUT\n");
 	spin_unlock_irqrestore(&ioq->lock, flags);
-	return r_pkt;
+	return NULL;
 sem_error:
 	return NULL;
 sem_rel_return:

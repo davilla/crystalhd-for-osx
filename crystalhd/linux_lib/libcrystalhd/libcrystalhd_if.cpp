@@ -2946,11 +2946,11 @@ DtsGetDriverStatus( HANDLE  hDevice,
 	// For LINK Pause HW if the RLL is too full. Prevent overflows
 	// Hard coded values for now
 	if(Ctx->DevId == BC_PCI_DEVID_LINK) {
-		if(pStatus->ReadyListCount > (BC_RX_LIST_CNT * 0.875) && !Ctx->hw_paused && !Ctx->fw_cmd_issued) {
+		if(pStatus->ReadyListCount > PAUSE_DECODER_THRESHOLD && !Ctx->hw_paused && !Ctx->fw_cmd_issued) {
 			DtsFWPauseVideo(hDevice,eC011_PAUSE_MODE_ON);
 			Ctx->hw_paused = true;
 		}
-		else if (pStatus->ReadyListCount < 3 && Ctx->hw_paused && !Ctx->fw_cmd_issued) {
+		else if (pStatus->ReadyListCount < RESUME_DECODER_THRESHOLD && Ctx->hw_paused && !Ctx->fw_cmd_issued) {
 			DtsFWPauseVideo(hDevice,eC011_PAUSE_MODE_OFF);
 			Ctx->hw_paused = false;
 		}
