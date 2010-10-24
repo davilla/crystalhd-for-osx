@@ -567,7 +567,7 @@ void *crystalhd_dioq_fetch_wait(struct crystalhd_hw *hw, uint32_t to_secs, uint3
 			}
 		} else if (rc == -EINTR) {
 			*sig_pend = 1;
-			return r_pkt;
+			return NULL;
 		}
 		spin_lock_irqsave(&ioq->lock, flags);
 	}
