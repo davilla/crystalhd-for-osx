@@ -45,7 +45,7 @@
 #include "crystalhd_lnx.h"
 
 // problems with chd suspend/resume, disable for now.
-#define ENABLE_POWERHANDLING
+//#define ENABLE_POWERHANDLING
 
 // Define the metaclass information that is used for runtime
 // typechecking of IOKit objects. We're a subclass of IOService,
